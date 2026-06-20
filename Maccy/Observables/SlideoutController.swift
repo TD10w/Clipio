@@ -107,7 +107,9 @@ class SlideoutController {
 
   private var autoOpenTask: Task<Void, Never>?
   private var autoOpenSuppressed = false
-  private var autoOpenEnabled = true
+  // Disabled for the shelf layout: the slideout preview is not shown, so auto-open
+  // must never run or it would animate the window frame a second after it appears.
+  private var autoOpenEnabled = false
 
   init(onContentResize: @escaping (CGFloat) -> Void, onSlideoutResize: @escaping (CGFloat) -> Void) {
     self.onContentResize = onContentResize
@@ -243,7 +245,9 @@ class SlideoutController {
   }
 
   func enableAutoOpen() {
-    autoOpenEnabled = true
+    // Intentionally a no-op in the shelf layout — keeps the slideout preview from
+    // auto-opening and resizing the window. Remove when a new preview is wired up.
+    autoOpenEnabled = false
   }
 
   func disableAutoOpen() {

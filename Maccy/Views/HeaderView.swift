@@ -27,6 +27,12 @@ struct HeaderView: View {
         } label: {
           Image(systemName: "gearshape")
         }
+
+        ToolbarButton {
+          AppState.shared.quit()
+        } label: {
+          Image(systemName: "power")
+        }
         .padding(.trailing, Popup.horizontalPadding)
       }
       .opacity(appState.searchVisible ? 1 : 0)

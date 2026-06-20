@@ -37,7 +37,27 @@ struct CardItemView: View {
           lineWidth: 0.5
         )
     )
+    .overlay(alignment: .topLeading) {
+      if let key = item.shortcuts.first?.description.last {
+        Text(String(key))
+          .font(.system(size: 10, weight: .medium, design: .rounded))
+          .foregroundStyle(.white.opacity(0.9))
+          .frame(width: 16, height: 16)
+          .background(Color.black.opacity(0.45))
+          .clipShape(RoundedRectangle(cornerRadius: 4))
+          .padding(5)
+      }
+    }
+    .overlay(alignment: .topTrailing) {
+      if item.isPinned {
+        Image(systemName: "pin.fill")
+          .font(.system(size: 9))
+          .foregroundStyle(Color(red: 1, green: 0.83, blue: 0.47))
+          .padding(5)
+      }
+    }
     .onHover { isHovered = $0 }
+    .hoverSelectionId(item.id)
     .onTapGesture { onSelect() }
     .onDrag {
       dragProvider()

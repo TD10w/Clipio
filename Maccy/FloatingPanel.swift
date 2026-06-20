@@ -52,10 +52,13 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     standardWindowButton(.miniaturizeButton)?.isHidden = true
     standardWindowButton(.zoomButton)?.isHidden = true
 
-    contentView = NSHostingView(
+    let hostingView = NSHostingView(
       rootView: view()
         .ignoresSafeArea()
     )
+    // Keep the window at its set size; don't let the horizontal card row grow it wider.
+    hostingView.sizingOptions = []
+    contentView = hostingView
     contentView?.layer?.cornerRadius = Popup.cornerRadius + Popup.horizontalPadding
   }
 
@@ -69,8 +72,18 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
     let size = Defaults[.windowSize]
-    setContentSize(NSSize(width: min(frame.width, size.width), height: min(height, size.height)))
-    setFrameOrigin(popupPosition.origin(size: frame.size, statusBarButton: statusBarButton))
+    // Shelf layout has a fixed default height; fall back to it when no dynamic height is set.
+    let targetHeight = height > 0 ? min(height, size.height) : size.height
+    setContentSize(NSSize(width: min(frame.width, size.width), height: targetHeight))
+    // Shelf drops down from the top-center of the screen, just under the menu bar.
+    if let screen = NSScreen.main {
+      let visible = screen.visibleFrame
+      let originX = visible.minX + (visible.width - frame.width) / 2
+      let originY = visible.maxY - frame.height
+      setFrameOrigin(NSPoint(x: originX, y: originY))
+    } else {
+      setFrameOrigin(popupPosition.origin(size: frame.size, statusBarButton: statusBarButton))
+    }
     orderFrontRegardless()
     makeKey()
     isPresented = true
