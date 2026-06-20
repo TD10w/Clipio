@@ -1,6 +1,7 @@
 import AppKit
 import SwiftHEXColors
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CardItemView: View {
   let item: HistoryItemDecorator
@@ -135,17 +136,37 @@ struct CardItemView: View {
   }
 
   private func dragProvider() -> NSItemProvider {
-    if let panel = NSApp.windows.compactMap({ $0 as? FloatingPanel<ContentView> }).first {
-      panel.isDragging = true
-      DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-        panel.isDragging = false
+    // Keep the panel open while the drag is in flight, otherwise resignKey closes it
+    // and cancels the drag. FloatingPanel clears this on the next mouse-up.
+    AppState.shared.appDelegate?.panel.isDragging = true
+
+    let provider = NSItemProvider()
+
+    // Image item: hand over normalized PNG data so other apps accept the drop.
+    if item.hasImage,
+       let data = item.item.imageData,
+       let rep = NSBitmapImageRep(data: data),
+       let png = rep.representation(using: .png, properties: [:]) {
+      provider.registerDataRepresentation(
+        forTypeIdentifier: UTType.png.identifier,
+        visibility: .all
+      ) { completion in
+        completion(png, nil)
+        return nil
       }
+      return provider
     }
 
-    if let image = item.thumbnailImage {
-      return NSItemProvider(object: image)
+    // Text item.
+    let text = item.text
+    provider.registerDataRepresentation(
+      forTypeIdentifier: UTType.utf8PlainText.identifier,
+      visibility: .all
+    ) { completion in
+      completion(Data(text.utf8), nil)
+      return nil
     }
-    return NSItemProvider(object: item.text as NSString)
+    return provider
   }
 
   @ViewBuilder

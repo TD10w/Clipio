@@ -60,6 +60,20 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     hostingView.sizingOptions = []
     contentView = hostingView
     contentView?.layer?.cornerRadius = Popup.cornerRadius + Popup.horizontalPadding
+
+    // A drag may set `isDragging` to keep the panel open while in flight. Clear it the
+    // moment the mouse is released (inside or outside the app) so clicking outside can
+    // close the panel again right after a drag ends.
+    NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
+      guard let self, self.isDragging else { return }
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.isDragging = false }
+    }
+    NSEvent.addLocalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] event in
+      if let self, self.isDragging {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.isDragging = false }
+      }
+      return event
+    }
   }
 
   func toggle(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
