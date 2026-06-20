@@ -21,19 +21,12 @@ struct HeaderView: View {
         .padding(.horizontal, Popup.horizontalPadding)
 
         ToolbarButton {
-          controller.togglePreview()
+          Task { @MainActor in
+            AppState.shared.openPreferences()
+          }
         } label: {
-          Image(
-            systemName: previewPlacement == .right
-              ? "sidebar.left" : "sidebar.right"
-          )
+          Image(systemName: "gearshape")
         }
-        .shortcutKeyHelp(
-          name: .togglePreview,
-          key: "PreviewKey",
-          tableName: "PreviewItemView",
-          replacementKey: "previewKey"
-        )
         .padding(.trailing, Popup.horizontalPadding)
       }
       .opacity(appState.searchVisible ? 1 : 0)

@@ -5,6 +5,7 @@ import SwiftUI
 // https://stackoverflow.com/questions/46023769/how-to-show-a-window-without-stealing-focus-on-macos
 class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   var isPresented: Bool = false
+  var isDragging: Bool = false
   var statusBarButton: NSStatusBarButton?
   let onClose: () -> Void
 
@@ -41,7 +42,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     collectionBehavior = [.auxiliary, .stationary, .moveToActiveSpace, .fullScreenAuxiliary]
     titleVisibility = .hidden
     titlebarAppearsTransparent = true
-    isMovableByWindowBackground = true
+    isMovableByWindowBackground = false
     hidesOnDeactivate = false
     backgroundColor = .clear
     titlebarSeparatorStyle = .none
@@ -53,12 +54,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
 
     contentView = NSHostingView(
       rootView: view()
-        // The safe area is ignored because the title bar still interferes with the geometry
         .ignoresSafeArea()
-        .gesture(DragGesture()
-          .onEnded { _ in
-            self.saveWindowPosition()
-        })
     )
     contentView?.layer?.cornerRadius = Popup.cornerRadius + Popup.horizontalPadding
   }
@@ -193,7 +189,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   override func resignKey() {
     super.resignKey()
     // Don't hide if confirmation is shown.
-    if NSApp.alertWindow == nil {
+    if NSApp.alertWindow == nil && !isDragging {
       close()
     }
   }
