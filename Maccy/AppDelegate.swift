@@ -6,18 +6,38 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
   var panel: FloatingPanel<ContentView>!
   lazy var previewPopup = PreviewPopupPanel()
+  private var previewShowWork: DispatchWorkItem?
 
-  // Show the hover preview for `item`, positioned just below the shelf.
+  // Delay before the preview first appears on hover (seconds).
+  private let previewHoverDelay: TimeInterval = 0.8
+
+  // Show the hover preview for `item`, positioned just below the shelf. The first
+  // appearance waits `previewHoverDelay`; once visible, moving between cards switches
+  // content instantly.
   func showPreview(for item: HistoryItemDecorator) {
     guard panel.isPresented else { return }
-    previewPopup.show(item: item, below: panel.frame)
+    previewShowWork?.cancel()
+
+    if previewPopup.isVisible {
+      previewPopup.show(item: item, below: panel.frame)
+      return
+    }
+
+    let work = DispatchWorkItem { [weak self] in
+      guard let self, self.panel.isPresented else { return }
+      self.previewPopup.show(item: item, below: self.panel.frame)
+    }
+    previewShowWork = work
+    DispatchQueue.main.asyncAfter(deadline: .now() + previewHoverDelay, execute: work)
   }
 
   func hidePreviewSoon(for item: HistoryItemDecorator) {
+    previewShowWork?.cancel()
     previewPopup.scheduleHide(forItemId: item.id)
   }
 
   func hidePreviewNow() {
+    previewShowWork?.cancel()
     previewPopup.hideNow()
   }
 
@@ -110,6 +130,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     Defaults.reset(.windowSize)
     Defaults.reset(.popupPosition)
     Defaults.reset(.windowPosition)
+    // One-time rebrand away from the Maccy logo; leaves any other choice the user makes alone.
+    if Defaults[.menuIcon] == .maccy {
+      Defaults[.menuIcon] = .clipboard
+    }
     panel = FloatingPanel(
       contentRect: NSRect(origin: .zero, size: Defaults[.windowSize]),
       identifier: Bundle.main.bundleIdentifier ?? "org.p0deje.Maccy",
