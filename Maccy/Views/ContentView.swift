@@ -16,6 +16,12 @@ struct ContentView: View {
         VisualEffectView()
       }
 
+      // Neutral scrim: mutes whatever wallpaper colour the glass picks up so the panel
+      // reads as a consistent, crisp dark glass on any desktop (Route B).
+      Rectangle()
+        .fill(Color.black.opacity(0.18))
+        .allowsHitTesting(false)
+
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
         VStack(spacing: 0) {
           HeaderView(

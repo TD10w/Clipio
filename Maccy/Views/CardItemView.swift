@@ -11,6 +11,7 @@ struct CardItemView: View {
 
   static let cardWidth: CGFloat = 130
   static let cardHeight: CGFloat = 140
+  static let cardRadius: CGFloat = 18
   private static let footerHeight: CGFloat = 26
 
   private var timeString: String {
@@ -29,15 +30,8 @@ struct CardItemView: View {
       cardFooter
     }
     .frame(width: Self.cardWidth, height: Self.cardHeight)
-    .background(isHovered ? Color.white.opacity(0.18) : Color.white.opacity(0.08))
-    .clipShape(RoundedRectangle(cornerRadius: 10))
-    .overlay(
-      RoundedRectangle(cornerRadius: 10)
-        .stroke(
-          isHovered ? Color.white.opacity(0.4) : Color.white.opacity(0.14),
-          lineWidth: 0.5
-        )
-    )
+    .clipShape(RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous))
+    .modifier(GlassCardBackground(isHovered: isHovered))
     .overlay(alignment: .topLeading) {
       if let key = item.shortcuts.first?.description.last {
         Text(String(key))
@@ -119,7 +113,7 @@ struct CardItemView: View {
   private var textCard: some View {
     Text(item.text)
       .font(.system(size: 11))
-      .foregroundStyle(.white.opacity(0.85))
+      .foregroundStyle(.primary)
       .lineLimit(6)
       .multilineTextAlignment(.leading)
       .padding(.horizontal, 8)
@@ -133,13 +127,13 @@ struct CardItemView: View {
       AppImageView(appImage: item.applicationImage, size: NSSize(width: 13, height: 13))
       Text(timeString)
         .font(.system(size: 10))
-        .foregroundStyle(.white.opacity(0.5))
+        .foregroundStyle(.secondary)
         .lineLimit(1)
       Spacer()
     }
     .padding(.horizontal, 7)
     .frame(height: Self.footerHeight)
-    .background(.black.opacity(0.3))
+    .background(.ultraThinMaterial)
   }
 
   private func dragProvider() -> NSItemProvider {
@@ -193,5 +187,36 @@ struct CardItemView: View {
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
+  }
+}
+
+// Route B: a consistent frosted-glass tile that stays bright and readable on any
+// wallpaper (not wallpaper-adaptive), with a top-bright specular rim for the glass look.
+private struct GlassCardBackground: ViewModifier {
+  let isHovered: Bool
+
+  func body(content: Content) -> some View {
+    let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
+    content
+      .background(.regularMaterial, in: shape)
+      .overlay {
+        if isHovered {
+          shape.fill(Color.white.opacity(0.10))
+        }
+      }
+      .overlay {
+        shape.strokeBorder(
+          LinearGradient(
+            colors: [
+              .white.opacity(isHovered ? 0.85 : 0.55),
+              .white.opacity(0.10),
+              .white.opacity(0.22)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          ),
+          lineWidth: isHovered ? 1.5 : 1
+        )
+      }
   }
 }
