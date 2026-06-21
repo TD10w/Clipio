@@ -1,9 +1,9 @@
 "Title" = "Geavanceerd";
 "TurnOff" = "Zet uit";
 "TurnOffDescription" = "Negeer tijdelijk alle nieuwe kopieën.\nJe zult het waarschijnlijk programmatisch gebruiken en de apps uitschakelen tijdens het kopiëren van gevoelige gegevens.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# kopieer data\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# kopieer data\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "Je kunt ook op het menu-icoontje klikken terwijl je ⌥ ingedrukt houdt.\nOm alleen de volgende kopie te negeren, klik met ⌥⇧.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# kopieer data";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopieer data";
 "ClearHistoryOnQuit" = "Wis geschiedenis bij afsluiten";
 "ClearHistoryOnQuitTooltip" = "Verwijder automatisch alle niet vastgemaakte items voordat u de app afsluit.";
 "ClearSystemClipboard" = "Wis ook het systeemklembord";

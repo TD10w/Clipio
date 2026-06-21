@@ -1,9 +1,9 @@
 "Title" = "ขั้นสูง";
 "TurnOff" = "ปิด";
 "TurnOffDescription" = "ไม่สนใจการคัดลอกทั้งหมดชั่วคราว.\nดูเหมือนว่าคุณตั้งค่าปิดการทำงานแอปขณะคัดลอกข้อมูลสำคัญ";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# คัดลอกข้อมูล\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# คัดลอกข้อมูล\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "คุณยังสามารถคลิกไอคอนเมนูโดยกด ⌥\nหากต้องการละเว้นเฉพาะสำเนาถัดไป ให้คลิกด้วย ⌥⇧";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# คัดลอกข้อมูล";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# คัดลอกข้อมูล";
 "ClearHistoryOnQuit" = "ล้างประวัติเมื่อออก";
 "ClearHistoryOnQuitTooltip" = "ลบรายการที่เลิกปักหมุดทั้งหมดออกโดยอัตโนมัติก่อนออกจากแอปพลิเคชัน";
 "ClearSystemClipboard" = "ล้างคลิปบอร์ดของระบบด้วย";

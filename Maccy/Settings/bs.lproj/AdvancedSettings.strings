@@ -1,9 +1,9 @@
 "Title" = "Napredno";
 "TurnOff" = "Ugasi";
 "TurnOffDescription" = "Privremeno zanemari sve nove kopije.\nKoristi programski i onemogućiti aplikaciju dok kopirate osjetljive podatke.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# kopirati podatke\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# kopirati podatke\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "Takođe možeš kliknuti na ikonu menija sa pritisnutim ⌥.\nDa zanemariš samo sljedeću kopiju, kliknite sa ⌥⇧.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# kopirati podatke";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopirati podatke";
 "ClearHistoryOnQuit" = "Očisti historiju pri izlasku iz aplikacije";
 "ClearHistoryOnQuitTooltip" = "Automatski ukloni sve zakačene stavke prije zatvaranja aplikacije.";
 "ClearSystemClipboard" = "Očistite i sistemski međuspremnik";

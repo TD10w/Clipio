@@ -1,6 +1,6 @@
 import XCTest
 import Defaults
-@testable import Maccy
+@testable import Clipio
 
 class SearchTests: XCTestCase {
   let savedSearchMode = Defaults[.searchMode]

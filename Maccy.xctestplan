@@ -15,9 +15,9 @@
       }
     ],
     "targetForVariableExpansion" : {
-      "containerPath" : "container:Maccy.xcodeproj",
+      "containerPath" : "container:Clipio.xcodeproj",
       "identifier" : "DAEE38421E3DBEB100DD2966",
-      "name" : "Maccy"
+      "name" : "Clipio"
     },
     "testRepetitionMode" : "retryOnFailure"
   },
@@ -40,16 +40,16 @@
         "HistoryTests\/testRemoving()"
       ],
       "target" : {
-        "containerPath" : "container:Maccy.xcodeproj",
+        "containerPath" : "container:Clipio.xcodeproj",
         "identifier" : "DA360DAF1E3DF137005C6F6B",
-        "name" : "MaccyTests"
+        "name" : "ClipioTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Maccy.xcodeproj",
+        "containerPath" : "container:Clipio.xcodeproj",
         "identifier" : "DA0EE7B5204657830025FC60",
-        "name" : "MaccyUITests"
+        "name" : "ClipioUITests"
       }
     }
   ],

@@ -1,9 +1,9 @@
 "Title" = "מתקדם";
 "TurnOff" = "כיבוי";
 "TurnOffDescription" = "להתעלם זמנית מכל העותקים החדשים.\nכנראה שזה ישמש אותך במהלך פיתוח ולהשבית יישום במהלך העתקת נתונים רגישים.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# העתקת נתונים\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# העתקת נתונים\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "אפשר ללחוץ על סמל התפריט תוך הזחקה של ⌥.\nכדי להתעלם רק מהעותק הבא, יש ללחוץ עם העכבר תוך החזקה של ⌥⇧.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# העתקת נתונים";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# העתקת נתונים";
 "ClearHistoryOnQuit" = "פינוי היסטוריה עם היציאה";
 "ClearHistoryOnQuitTooltip" = "להסיר את כל הפריטים שאינם נעוצים בטרם יציאה מהיישום.";
 "ClearSystemClipboard" = "פינוי לוח הגזירים של המערכת בנוסף";

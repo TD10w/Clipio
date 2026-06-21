@@ -245,7 +245,7 @@
 		DA0D57832E424784005101AF /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/PinsSettings.strings; sourceTree = "<group>"; };
 		DA0D57842E424784005101AF /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/PreviewItemView.strings; sourceTree = "<group>"; };
 		DA0D57852E424784005101AF /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
-		DA0EE7B6204657830025FC60 /* Clip BarnUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Clip BarnUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA0EE7B6204657830025FC60 /* ClipioUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ClipioUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0EE7B8204657830025FC60 /* MaccyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaccyUITests.swift; sourceTree = "<group>"; };
 		DA0EF1871E444B2A00E58577 /* Clipboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
 		DA0FFA292C8D0FEC00A66C97 /* ModifierFlags+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModifierFlags+Description.swift"; sourceTree = "<group>"; };
@@ -282,7 +282,7 @@
 		DA2595DE2CBC44BE00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/PreviewItemView.strings; sourceTree = "<group>"; };
 		DA2595DF2CBC44BE00A0A7F2 /* lt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = lt; path = lt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DA2F1B0926F22DF4005D30BA /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		DA360DB01E3DF137005C6F6B /* Clip BarnTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Clip BarnTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA360DB01E3DF137005C6F6B /* ClipioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ClipioTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA360DB21E3DF137005C6F6B /* HistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = HistoryTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		DA360DB41E3DF137005C6F6B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA384E85232746D800603999 /* SearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTests.swift; sourceTree = "<group>"; };
@@ -541,7 +541,7 @@
 		CB0FACE100000000000000A1 /* PreviewPopupPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPopupPanel.swift; sourceTree = "<group>"; };
 		DAE2850123225BD90080E394 /* ColorImageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorImageTests.swift; sourceTree = "<group>"; };
 		DAE8F5D32C43262B00851CA9 /* Popup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Popup.swift; sourceTree = "<group>"; };
-		DAEE38431E3DBEB100DD2966 /* Clip Barn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Clip Barn.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DAEE38431E3DBEB100DD2966 /* Clipio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Clipio.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAEE38461E3DBEB100DD2966 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AppDelegate.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		DAEE384D1E3DBEB100DD2966 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DAF4741E27BB568000B53057 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -797,9 +797,9 @@
 		DAEE38441E3DBEB100DD2966 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DAEE38431E3DBEB100DD2966 /* Clip Barn.app */,
-				DA360DB01E3DF137005C6F6B /* Clip BarnTests.xctest */,
-				DA0EE7B6204657830025FC60 /* Clip BarnUITests.xctest */,
+				DAEE38431E3DBEB100DD2966 /* Clipio.app */,
+				DA360DB01E3DF137005C6F6B /* ClipioTests.xctest */,
+				DA0EE7B6204657830025FC60 /* ClipioUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -854,9 +854,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DA0EE7B5204657830025FC60 /* Clip BarnUITests */ = {
+		DA0EE7B5204657830025FC60 /* ClipioUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DA0EE7BF204657840025FC60 /* Build configuration list for PBXNativeTarget "Clip BarnUITests" */;
+			buildConfigurationList = DA0EE7BF204657840025FC60 /* Build configuration list for PBXNativeTarget "ClipioUITests" */;
 			buildPhases = (
 				DA0EE7B2204657830025FC60 /* Sources */,
 				DA0EE7B3204657830025FC60 /* Frameworks */,
@@ -867,14 +867,14 @@
 			dependencies = (
 				DA0EE7BC204657840025FC60 /* PBXTargetDependency */,
 			);
-			name = "Clip BarnUITests";
-			productName = MaccyUITests;
-			productReference = DA0EE7B6204657830025FC60 /* Clip BarnUITests.xctest */;
+			name = "ClipioUITests";
+			productName = ClipioUITests;
+			productReference = DA0EE7B6204657830025FC60 /* ClipioUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		DA360DAF1E3DF137005C6F6B /* Clip BarnTests */ = {
+		DA360DAF1E3DF137005C6F6B /* ClipioTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DA360DB71E3DF137005C6F6B /* Build configuration list for PBXNativeTarget "Clip BarnTests" */;
+			buildConfigurationList = DA360DB71E3DF137005C6F6B /* Build configuration list for PBXNativeTarget "ClipioTests" */;
 			buildPhases = (
 				DA360DAC1E3DF137005C6F6B /* Sources */,
 				DA360DAD1E3DF137005C6F6B /* Frameworks */,
@@ -885,14 +885,14 @@
 			dependencies = (
 				DA360DB61E3DF137005C6F6B /* PBXTargetDependency */,
 			);
-			name = "Clip BarnTests";
-			productName = MaccyTests;
-			productReference = DA360DB01E3DF137005C6F6B /* Clip BarnTests.xctest */;
+			name = "ClipioTests";
+			productName = ClipioTests;
+			productReference = DA360DB01E3DF137005C6F6B /* ClipioTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		DAEE38421E3DBEB100DD2966 /* Clip Barn */ = {
+		DAEE38421E3DBEB100DD2966 /* Clipio */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DAEE38501E3DBEB100DD2966 /* Build configuration list for PBXNativeTarget "Clip Barn" */;
+			buildConfigurationList = DAEE38501E3DBEB100DD2966 /* Build configuration list for PBXNativeTarget "Clipio" */;
 			buildPhases = (
 				DAEE383F1E3DBEB100DD2966 /* Sources */,
 				DAEE38401E3DBEB100DD2966 /* Frameworks */,
@@ -903,7 +903,7 @@
 			);
 			dependencies = (
 			);
-			name = "Clip Barn";
+			name = "Clipio";
 			packageProductDependencies = (
 				DA5154D72564102900C01004 /* Sauce */,
 				DA009946256414800030E697 /* SwiftHEXColors */,
@@ -915,8 +915,8 @@
 				DAC0CA3D2C88E7A4003BF498 /* Fuse */,
 				2F12271D2E5C932200A1592A /* Logging */,
 			);
-			productName = Maccy;
-			productReference = DAEE38431E3DBEB100DD2966 /* Clip Barn.app */;
+			productName = Clipio;
+			productReference = DAEE38431E3DBEB100DD2966 /* Clipio.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -950,7 +950,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DAEE383E1E3DBEB100DD2966 /* Build configuration list for PBXProject "Clip Barn" */;
+			buildConfigurationList = DAEE383E1E3DBEB100DD2966 /* Build configuration list for PBXProject "Clipio" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1003,9 +1003,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DAEE38421E3DBEB100DD2966 /* Clip Barn */,
-				DA360DAF1E3DF137005C6F6B /* Clip BarnTests */,
-				DA0EE7B5204657830025FC60 /* Clip BarnUITests */,
+				DAEE38421E3DBEB100DD2966 /* Clipio */,
+				DA360DAF1E3DF137005C6F6B /* ClipioTests */,
+				DA0EE7B5204657830025FC60 /* ClipioUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -1191,12 +1191,12 @@
 /* Begin PBXTargetDependency section */
 		DA0EE7BC204657840025FC60 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DAEE38421E3DBEB100DD2966 /* Clip Barn */;
+			target = DAEE38421E3DBEB100DD2966 /* Clipio */;
 			targetProxy = DA0EE7BB204657840025FC60 /* PBXContainerItemProxy */;
 		};
 		DA360DB61E3DF137005C6F6B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DAEE38421E3DBEB100DD2966 /* Clip Barn */;
+			target = DAEE38421E3DBEB100DD2966 /* Clipio */;
 			targetProxy = DA360DB51E3DF137005C6F6B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1528,11 +1528,11 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.MaccyUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipio.app.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Maccy;
+				TEST_TARGET_NAME = Clipio;
 			};
 			name = Debug;
 		};
@@ -1555,11 +1555,11 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.MaccyUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipio.app.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Maccy;
+				TEST_TARGET_NAME = Clipio;
 			};
 			name = Release;
 		};
@@ -1579,11 +1579,11 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.MaccyTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipio.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clip Barn.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Clip Barn";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clipio.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Clipio";
 			};
 			name = Debug;
 		};
@@ -1603,11 +1603,11 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.MaccyTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipio.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clip Barn.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Clip Barn";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clipio.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Clipio";
 			};
 			name = Release;
 		};
@@ -1757,7 +1757,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.6.1;
-				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.Maccy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipio.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1792,7 +1792,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.6.1;
-				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.Maccy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.clipio.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -1802,7 +1802,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DA0EE7BF204657840025FC60 /* Build configuration list for PBXNativeTarget "Clip BarnUITests" */ = {
+		DA0EE7BF204657840025FC60 /* Build configuration list for PBXNativeTarget "ClipioUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA0EE7BD204657840025FC60 /* Debug */,
@@ -1811,7 +1811,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		DA360DB71E3DF137005C6F6B /* Build configuration list for PBXNativeTarget "Clip BarnTests" */ = {
+		DA360DB71E3DF137005C6F6B /* Build configuration list for PBXNativeTarget "ClipioTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA360DB81E3DF137005C6F6B /* Debug */,
@@ -1820,7 +1820,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		DAEE383E1E3DBEB100DD2966 /* Build configuration list for PBXProject "Clip Barn" */ = {
+		DAEE383E1E3DBEB100DD2966 /* Build configuration list for PBXProject "Clipio" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DAEE384E1E3DBEB100DD2966 /* Debug */,
@@ -1829,7 +1829,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		DAEE38501E3DBEB100DD2966 /* Build configuration list for PBXNativeTarget "Clip Barn" */ = {
+		DAEE38501E3DBEB100DD2966 /* Build configuration list for PBXNativeTarget "Clipio" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DAEE38511E3DBEB100DD2966 /* Debug */,

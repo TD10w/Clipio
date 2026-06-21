@@ -1,9 +1,9 @@
 "Title" = "Дополнения";
 "TurnOff" = "Выключить";
 "TurnOffDescription" = "Временно игнорировать все новые копировния.\nВы можете использовать эту настройку программно и отключить приложение на время копирования конфиденциальных данных.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# копировать данные\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# копировать данные\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "Вы также можете кликнуть значок меню с нажатой клавишей ⌥.\nЧтобы игнорировать только следующую копию, кликните с ⌥⇧.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# копировать данные";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# копировать данные";
 "ClearHistoryOnQuit" = "Очищать историю при закрытии";
 "ClearHistoryOnQuitTooltip" = "Автоматически удалять все неприкрепленные записи перед закрытием приложения.";
 "ClearSystemClipboard" = "Также очищать системный буфер обмена";

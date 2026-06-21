@@ -1,9 +1,9 @@
 "Title" = "Avanzate";
 "TurnOff" = "Disattivare";
 "TurnOffDescription" = "Ignora temporaneamente tutte le nuove copie.\nÈ probabile che verrà utilizzato a livello di programmazione e disabiliti l'applicazione durante la copia di dati sensibili.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# copia dei dati\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# copia dei dati\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "Puoi anche fare clic sull'icona del menu premendo ⌥.\nPer ignorare solo la copia successiva, fare clic con ⌥⇧.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# copia dei dati";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copia dei dati";
 "ClearHistoryOnQuit" = "Elimina la cronologia e chiudi";
 "ClearHistoryOnQuitTooltip" = "Rimuovi automaticamente gli elementi non bloccati prima di chiudere l'applicazione.";
 "ClearSystemClipboard" = "Cancella anche gli appunti di sistema";

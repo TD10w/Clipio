@@ -1,9 +1,9 @@
 "Title" = "Advanced";
 "TurnOff" = "Turn off";
 "TurnOffDescription" = "Temporarily ignore all new copies.\nYou are likely to use it programmatically and disable application while copying sensitive data.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# copy data\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# copy data\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "You can also click the menu icon with ⌥ pressed.\nTo ignore only the next copy, click with ⌥⇧.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# copy data";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copy data";
 "ClearHistoryOnQuit" = "Clear history on quit";
 "ClearHistoryOnQuitTooltip" = "Automatically remove all unpinned items before quitting the application.";
 "ClearSystemClipboard" = "Clear the system clipboard too";

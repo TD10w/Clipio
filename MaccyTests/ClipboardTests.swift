@@ -1,6 +1,6 @@
 import XCTest
 import Defaults
-@testable import Maccy
+@testable import Clipio
 
 // swiftlint:disable type_body_length
 class ClipboardTests: XCTestCase {
@@ -137,7 +137,7 @@ class ClipboardTests: XCTestCase {
   }
 
   func testIgnoreApplication() {
-    Defaults[.ignoredApps] = ["com.apple.dt.Xcode", "com.apple.finder"] // Finder is on Bitrise
+    Defaults[.ignoredApps] = activeApplicationBundleIdentifiers
 
     let hookExpectation = expectation(description: "Hook is called")
     hookExpectation.isInverted = true
@@ -152,7 +152,7 @@ class ClipboardTests: XCTestCase {
 
   func testIgnoreAllApplicationsExcept() {
     Defaults[.ignoreAllAppsExceptListed] = true
-    Defaults[.ignoredApps] = ["com.apple.dt.Xcode", "com.apple.finder"] // Finder is on Bitrise
+    Defaults[.ignoredApps] = activeApplicationBundleIdentifiers
 
     let hookExpectation = expectation(description: "Hook is called")
     clipboard.onNewCopy({ (_: HistoryItem) in
@@ -162,6 +162,13 @@ class ClipboardTests: XCTestCase {
     pasteboard.declareTypes([.string], owner: nil)
     pasteboard.setString("bar", forType: .string)
     waitForExpectations(timeout: 2)
+  }
+
+  private var activeApplicationBundleIdentifiers: [String] {
+    [
+      Bundle.main.bundleIdentifier,
+      NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+    ].compactMap { $0 }
   }
 
   func testIgnoreTransientTypes() {

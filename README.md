@@ -1,12 +1,14 @@
 
-<img width="128px" src="https://maccy.app/img/maccy/Logo.png" alt="Logo" />
+# Clipio
 
-# [Maccy](https://maccy.app)
+Clipio is a lightweight, card-based clipboard manager for macOS. It is a personal
+customization fork of [Maccy](https://github.com/p0deje/Maccy), retaining Maccy's fast,
+private clipboard core while rebuilding the interface.
 
 [![Downloads](https://img.shields.io/github/downloads/p0deje/Maccy/total.svg)](https://github.com/p0deje/Maccy/releases/latest)
 [![Build Status](https://img.shields.io/bitrise/716921b669780314/master?token=3pMiCb5dpFzlO-7jTYtO3Q)](https://app.bitrise.io/app/716921b669780314)
 
-Maccy is a lightweight clipboard manager for macOS. It keeps the history of what you copy
+Clipio is a lightweight clipboard manager for macOS. It keeps the history of what you copy
 and lets you quickly navigate, search, and use previous clipboard contents.
 
 Maccy works on macOS Sonoma 14 or higher.
@@ -70,7 +72,7 @@ brew install maccy
 You can tell Maccy to ignore all copied items:
 
 ```sh
-defaults write org.p0deje.Maccy ignoreEvents true # default is false
+defaults write com.clipio.app ignoreEvents true # default is false
 ```
 
 This is useful if you have some workflow for copying sensitive data. You can set `ignoreEvents` to true, copy the data and set `ignoreEvents` back to false.
@@ -108,7 +110,7 @@ By default, Maccy checks clipboard every 500 ms, which should be enough for most
 to speed it up, you can change it with `defaults`:
 
 ```sh
-defaults write org.p0deje.Maccy clipboardCheckInterval 0.1 # 100 ms
+defaults write com.clipio.app clipboardCheckInterval 0.1 # 100 ms
 ```
 
 ## FAQ
@@ -116,14 +118,14 @@ defaults write org.p0deje.Maccy clipboardCheckInterval 0.1 # 100 ms
 ### Why doesn't it paste when I select an item in history?
 
 1. Make sure you have "Paste automatically" enabled in Preferences.
-2. Make sure "Maccy" is added to System Settings -> Privacy & Security -> Accessibility.
+2. Make sure "Clipio" is added to System Settings -> Privacy & Security -> Accessibility.
 
-### When assigning a hotkey to open Maccy, it says that this hotkey is already used in some system setting.
+### When assigning a hotkey to open Clipio, it says that this hotkey is already used in some system setting.
 
 1. Open System settings -> Keyboard -> Keyboard Shortcuts.
 2. Find where that hotkey is used. For example, "Convert text to simplified Chinese" is under Services -> Text.
 3. Disable that hotkey or remove assigned combination ([screenshot](https://github.com/p0deje/Maccy/assets/576152/446719e6-c3e5-4eb0-95fb-5a811066487f)).
-4. Restart Maccy.
+4. Restart Clipio.
 5. Assign hotkey in Maccy settings.
 
 ### How to restore hidden footer?
@@ -135,7 +137,7 @@ defaults write org.p0deje.Maccy clipboardCheckInterval 0.1 # 100 ms
 If for some reason it doesn't work, run the following command in Terminal.app:
 
 ```sh
-defaults write org.p0deje.Maccy showFooter 1
+defaults write com.clipio.app showFooter 1
 ```
 
 ### How to ignore copies from [Universal Clipboard](https://support.apple.com/en-us/102430)?

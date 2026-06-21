@@ -1,9 +1,9 @@
 "Title" = "Erweitert";
 "TurnOff" = "Deaktivieren";
 "TurnOffDescription" = "Vorrübergehend alle neue Einträge ignorieren. Zum Beispiel während dem Kopieren von sensiblen Daten.\nDies kann über das Terminal aktiviert und deaktiviert werden mit.";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# Einträge wieder kopieren\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# Einträge wieder kopieren\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "Um Maccy zu deaktivieren, klicke auf das Menüleistensymbol und halte dabei ⌥ gedrückt.\nUm nur die nächste Kopie zu ignorieren, klicke und halte ⌥⇧ gedrückt.";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# Einträge wieder kopieren";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# Einträge wieder kopieren";
 "ClearHistoryOnQuit" = "Verlauf beim Beenden löschen";
 "ClearHistoryOnQuitTooltip" = "Alle nicht angehefteten Elemente werden vor dem Beenden der Anwendung automatisch entfernt.";
 "ClearSystemClipboard" = "Löschen Sie auch die Zwischenablage des Systems";

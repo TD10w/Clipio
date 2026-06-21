@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DAEE38421E3DBEB100DD2966"
-               BuildableName = "Clip Barn.app"
-               BlueprintName = "Clip Barn"
-               ReferencedContainer = "container:Clip Barn.xcodeproj">
+               BuildableName = "Clipio.app"
+               BlueprintName = "Clipio"
+               ReferencedContainer = "container:Clipio.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -40,9 +40,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DA360DAF1E3DF137005C6F6B"
-               BuildableName = "Clip BarnTests.xctest"
-               BlueprintName = "Clip BarnTests"
-               ReferencedContainer = "container:Clip Barn.xcodeproj">
+               BuildableName = "ClipioTests.xctest"
+               BlueprintName = "ClipioTests"
+               ReferencedContainer = "container:Clipio.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -50,9 +50,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DA0EE7B5204657830025FC60"
-               BuildableName = "Clip BarnUITests.xctest"
-               BlueprintName = "Clip BarnUITests"
-               ReferencedContainer = "container:Clip Barn.xcodeproj">
+               BuildableName = "ClipioUITests.xctest"
+               BlueprintName = "ClipioUITests"
+               ReferencedContainer = "container:Clipio.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DAEE38421E3DBEB100DD2966"
-            BuildableName = "Clip Barn.app"
-            BlueprintName = "Clip Barn"
-            ReferencedContainer = "container:Clip Barn.xcodeproj">
+            BuildableName = "Clipio.app"
+            BlueprintName = "Clipio"
+            ReferencedContainer = "container:Clipio.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -89,9 +89,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DAEE38421E3DBEB100DD2966"
-            BuildableName = "Clip Barn.app"
-            BlueprintName = "Clip Barn"
-            ReferencedContainer = "container:Clip Barn.xcodeproj">
+            BuildableName = "Clipio.app"
+            BlueprintName = "Clipio"
+            ReferencedContainer = "container:Clipio.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

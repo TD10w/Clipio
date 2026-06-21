@@ -1,9 +1,9 @@
 "Title" = "詳細";
 "TurnOff" = "オフにする";
 "TurnOffDescription" = "このオプションを有効にすると、一時的に全ての新規コピーを無視します。\nまた、重要なデータをコピーする場合は、下記のコマンドを用いてMaccyを無効にすることもできます。";
-"TurnOffShellScript" = "defaults write org.p0deje.Maccy ignoreEvents true\n# データコピー\ndefaults write org.p0deje.Maccy ignoreEvents false";
+"TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# データコピー\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "⌥ を押したままメニュー アイコンをクリックすることもできます。\n次のコピーだけを無視するには、⌥⇧でクリックします。";
-"TurnOffNextShellScript" = "defaults write org.p0deje.Maccy ignoreOnlyNextEvent true\n# データコピー";
+"TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# データコピー";
 "ClearHistoryOnQuit" = "終了時、履歴をクリアする";
 "ClearHistoryOnQuitTooltip" = "アプリケーションを終了する前に、ピン留めされていない項目をすべて自動的に削除します。";
 "ClearSystemClipboard" = "システムのクリップボードもクリア";
