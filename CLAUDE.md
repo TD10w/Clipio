@@ -7,6 +7,25 @@ Licensed under MIT. This fork is a personal customization project.
 
 Rebuild the UI/UX while keeping Maccy's lightweight, fast core. Inspired by Supaste's card-based design.
 
+## Development Workflow (always follow)
+
+The owner has no coding background. Their job is product judgment ("does this look/feel right");
+the assistant's job is everything technical. Optimize for **fewest manual build-and-look cycles**.
+
+1. **Compile-check before every handoff.** After editing, run:
+   `xcodebuild -project "Clip Barn.xcodeproj" -scheme "Maccy" -configuration Debug build CODE_SIGNING_ALLOWED=NO`
+   Only hand off to the owner once it reports `BUILD SUCCEEDED`. Never make them discover a
+   syntax/type error with their own `Cmd+R`.
+2. **Decide before building.** For anything non-trivial, agree on what we're building (sketch/mockup
+   or a short spec) before writing code. Avoid changing direction mid-implementation.
+3. **Batch related changes.** Group several related edits into one build, instead of one-change-one-build.
+4. **Commit working checkpoints.** After each stable, verified state, `git commit` so experiments can
+   be reverted with one command. Tell the owner the short hash.
+5. **Ask for specific feedback.** Encourage "the image is too small" / "it didn't switch" over "it's wrong."
+6. The Xcode scheme is still named **`Maccy`**; the app/target/display name is **Clip Barn**.
+   New `.swift` files must be registered in `Clip Barn.xcodeproj/project.pbxproj` (manual groups,
+   not auto-synced) — the assistant can edit the pbxproj directly instead of asking the owner to add files.
+
 ## App Identity
 
 - **Name**: Clip Barns
@@ -32,14 +51,18 @@ Replace Maccy's vertical list with a **horizontal card shelf** that drops down f
 
 ## What We're Adding
 
-| Feature | Difficulty | Status |
-|---|---|---|
-| Horizontal card layout | Medium | Not started |
-| Wide+short window shape | Easy | Not started |
-| Color value → color swatch card | Medium | Not started |
-| Drag to reorder | Medium | Not started |
-| Rename to Clip Barns | Easy | Not started |
-| New app icon | Easy | Not started |
+| Feature | Status |
+|---|---|
+| Horizontal card layout (`CardItemView`, `HistoryListView`) | ✅ Done |
+| Wide+short shelf, drops from top-center of screen | ✅ Done |
+| Per-card shortcut number badge + pin indicator | ✅ Done |
+| Color value → color swatch card | ✅ Done |
+| Settings + quit icons in header | ✅ Done |
+| Drag card out to paste (text + image as PNG) | ✅ Done (image drag occasionally flaky) |
+| Hover preview popup (`PreviewPopupPanel`, below shelf) | ✅ Done; tuning size/layout |
+| Rename to Clip Barn + new app icon | ✅ Done |
+| Drag to reorder | ❌ Dropped (kept lightweight) |
+| Integrated slideout preview (original Maccy) | ❌ Removed; replaced by popup |
 
 ## Key Files to Edit
 

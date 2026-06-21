@@ -57,7 +57,14 @@ struct CardItemView: View {
           .padding(5)
       }
     }
-    .onHover { isHovered = $0 }
+    .onHover { hovering in
+      isHovered = hovering
+      if hovering {
+        AppState.shared.appDelegate?.showPreview(for: item)
+      } else {
+        AppState.shared.appDelegate?.hidePreviewSoon(for: item)
+      }
+    }
     .hoverSelectionId(item.id)
     .onTapGesture { onSelect() }
     .onDrag {

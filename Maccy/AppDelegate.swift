@@ -5,6 +5,21 @@ import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
   var panel: FloatingPanel<ContentView>!
+  lazy var previewPopup = PreviewPopupPanel()
+
+  // Show the hover preview for `item`, positioned just below the shelf.
+  func showPreview(for item: HistoryItemDecorator) {
+    guard panel.isPresented else { return }
+    previewPopup.show(item: item, below: panel.frame)
+  }
+
+  func hidePreviewSoon(for item: HistoryItemDecorator) {
+    previewPopup.scheduleHide(forItemId: item.id)
+  }
+
+  func hidePreviewNow() {
+    previewPopup.hideNow()
+  }
 
   @objc
   private lazy var statusItem: NSStatusItem = {
