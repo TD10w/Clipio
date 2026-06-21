@@ -12,11 +12,12 @@ struct ListHeaderView: View {
   @Default(.showTitle) private var showTitle
 
   var body: some View {
-    HStack {
+    HStack(spacing: 12) {
       if showTitle {
         Text("Clipio")
-          .foregroundStyle(.secondary)
-          .padding(.leading, 5)
+          .font(.system(size: 17, weight: .semibold, design: .rounded))
+          .foregroundStyle(.primary.opacity(0.92))
+          .padding(.leading, 2)
       }
 
       SearchFieldView(placeholder: "search_placeholder", query: $searchQuery)

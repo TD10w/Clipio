@@ -8,16 +8,14 @@ struct SearchFieldView: View {
 
   var body: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: Popup.cornerRadius, style: .continuous)
-        .fill(Color.secondary)
-        .opacity(0.1)
-        .frame(height: 23)
+      searchSurface
 
-      HStack {
+      HStack(spacing: 7) {
         Image(systemName: "magnifyingglass")
-          .frame(width: 11, height: 11)
-          .padding(.leading, 5)
-          .opacity(0.8)
+          .font(.system(size: 13, weight: .medium))
+          .frame(width: 14, height: 14)
+          .padding(.leading, 10)
+          .opacity(0.78)
 
         TextField(placeholder, text: $query)
           .disableAutocorrection(true)
@@ -32,13 +30,34 @@ struct SearchFieldView: View {
             query = ""
           } label: {
             Image(systemName: "xmark.circle.fill")
-              .frame(width: 11, height: 11)
-              .padding(.trailing, 5)
+              .frame(width: 13, height: 13)
+              .padding(.trailing, 9)
           }
           .buttonStyle(.plain)
           .opacity(0.9)
         }
       }
+    }
+    .frame(height: FloatingGlassStyle.searchHeight)
+  }
+
+  @ViewBuilder
+  private var searchSurface: some View {
+    let radius = FloatingGlassStyle.searchHeight / 2
+    let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+
+    if #available(macOS 26.0, *) {
+      Color.clear
+        .glassEffect(
+          .regular.tint(FloatingGlassStyle.cardTint.opacity(0.18)).interactive(),
+          in: .rect(cornerRadius: radius)
+        )
+        .overlay(shape.strokeBorder(Color.white.opacity(0.24), lineWidth: 0.8))
+    } else {
+      shape
+        .fill(.ultraThinMaterial)
+        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(0.18)))
+        .overlay(shape.strokeBorder(Color.white.opacity(0.28), lineWidth: 0.8))
     }
   }
 }

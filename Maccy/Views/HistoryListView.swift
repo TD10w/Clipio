@@ -17,7 +17,7 @@ struct HistoryListView: View {
 
   var body: some View {
     ScrollView(.horizontal, showsIndicators: false) {
-      LazyHStack(spacing: 8) {
+      LazyHStack(spacing: FloatingGlassStyle.cardSpacing) {
         ForEach(pinnedItems) { item in
           CardItemView(item: item) {
             Task { appState.history.select(item) }
@@ -30,8 +30,9 @@ struct HistoryListView: View {
           }
         }
       }
-      .padding(.horizontal, 10)
-      .padding(.vertical, 8)
+      .padding(.horizontal, 14)
+      .padding(.top, 10)
+      .padding(.bottom, 12)
     }
     .frame(maxWidth: .infinity)
     .onChange(of: scenePhase) {

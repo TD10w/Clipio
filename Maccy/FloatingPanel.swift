@@ -59,7 +59,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     // Keep the window at its set size; don't let the horizontal card row grow it wider.
     hostingView.sizingOptions = []
     contentView = hostingView
-    contentView?.layer?.cornerRadius = Popup.cornerRadius + Popup.horizontalPadding
+    contentView?.layer?.cornerRadius = FloatingGlassStyle.trayRadius
 
     // A drag may set `isDragging` to keep the panel open while in flight. Clear it the
     // moment the mouse is released (inside or outside the app) so clicking outside can

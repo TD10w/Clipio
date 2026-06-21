@@ -9,10 +9,10 @@ struct CardItemView: View {
 
   @State private var isHovered = false
 
-  static let cardWidth: CGFloat = 130
-  static let cardHeight: CGFloat = 140
-  static let cardRadius: CGFloat = 18
-  private static let footerHeight: CGFloat = 26
+  static let cardWidth = FloatingGlassStyle.cardWidth
+  static let cardHeight = FloatingGlassStyle.cardHeight
+  static let cardRadius = FloatingGlassStyle.cardRadius
+  private static let footerHeight: CGFloat = 28
 
   private var timeString: String {
     let formatter = RelativeDateTimeFormatter()
@@ -31,16 +31,17 @@ struct CardItemView: View {
     }
     .frame(width: Self.cardWidth, height: Self.cardHeight)
     .clipShape(RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous))
-    .modifier(GlassCardBackground(isHovered: isHovered))
+    .modifier(FloatingGlassCardBackground(isHovered: isHovered))
     .overlay(alignment: .topLeading) {
       if let key = item.shortcuts.first?.description.last {
         Text(String(key))
-          .font(.system(size: 10, weight: .medium, design: .rounded))
-          .foregroundStyle(.white.opacity(0.9))
-          .frame(width: 16, height: 16)
-          .background(Color.black.opacity(0.45))
-          .clipShape(RoundedRectangle(cornerRadius: 4))
-          .padding(5)
+          .font(.system(size: 10, weight: .semibold, design: .rounded))
+          .foregroundStyle(.white)
+          .frame(width: 20, height: 20)
+          .background(Color(red: 0.18, green: 0.35, blue: 0.72).opacity(0.92))
+          .clipShape(Circle())
+          .overlay(Circle().strokeBorder(Color.white.opacity(0.28), lineWidth: 0.7))
+          .padding(7)
       }
     }
     .overlay(alignment: .topTrailing) {
@@ -48,7 +49,7 @@ struct CardItemView: View {
         Image(systemName: "pin.fill")
           .font(.system(size: 9))
           .foregroundStyle(Color(red: 1, green: 0.83, blue: 0.47))
-          .padding(5)
+          .padding(8)
       }
     }
     .onHover { hovering in
@@ -69,6 +70,8 @@ struct CardItemView: View {
     .onAppear {
       item.ensureThumbnailImage()
     }
+    .offset(y: isHovered ? -2 : 0)
+    .animation(.easeOut(duration: 0.16), value: isHovered)
   }
 
   @ViewBuilder
@@ -98,13 +101,13 @@ struct CardItemView: View {
       Color(nsColor: color)
         .frame(height: Self.cardHeight - Self.footerHeight - 26)
       Text(item.title)
-        .font(.system(size: 10, weight: .medium, design: .monospaced))
+        .font(.system(size: 10, weight: .semibold, design: .monospaced))
         .foregroundStyle(.white.opacity(0.9))
         .lineLimit(1)
         .padding(.horizontal, 6)
         .frame(height: 26, alignment: .center)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.black.opacity(0.4))
+        .background(Color.black.opacity(0.26))
     }
     .frame(maxHeight: .infinity, alignment: .top)
   }
@@ -112,12 +115,12 @@ struct CardItemView: View {
   @ViewBuilder
   private var textCard: some View {
     Text(item.text)
-      .font(.system(size: 11))
+      .font(.system(size: 11.5))
       .foregroundStyle(.primary)
-      .lineLimit(6)
+      .lineLimit(5)
       .multilineTextAlignment(.leading)
-      .padding(.horizontal, 8)
-      .padding(.top, 8)
+      .padding(.horizontal, 11)
+      .padding(.top, FloatingGlassStyle.textCardTopPadding)
       .padding(.bottom, Self.footerHeight + 4)
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
   }
@@ -131,9 +134,14 @@ struct CardItemView: View {
         .lineLimit(1)
       Spacer()
     }
-    .padding(.horizontal, 7)
+    .padding(.horizontal, 9)
     .frame(height: Self.footerHeight)
-    .background(.ultraThinMaterial)
+    .background(Color.white.opacity(0.08))
+    .overlay(alignment: .top) {
+      Rectangle()
+        .fill(Color.white.opacity(0.16))
+        .frame(height: 0.5)
+    }
   }
 
   private func dragProvider() -> NSItemProvider {
@@ -190,33 +198,56 @@ struct CardItemView: View {
   }
 }
 
-// Route B: a consistent frosted-glass tile that stays bright and readable on any
-// wallpaper (not wallpaper-adaptive), with a top-bright specular rim for the glass look.
-private struct GlassCardBackground: ViewModifier {
+private struct FloatingGlassCardBackground: ViewModifier {
+  let isHovered: Bool
+
+  func body(content: Content) -> some View {
+    let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
+
+    if #available(macOS 26.0, *) {
+      content
+        .background(Color.white.opacity(isHovered ? 0.18 : 0.11), in: shape)
+        .glassEffect(
+          .regular
+            .tint(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.30 : 0.22))
+            .interactive(),
+          in: .rect(cornerRadius: CardItemView.cardRadius)
+        )
+        .modifier(FloatingGlassRim(isHovered: isHovered))
+    } else {
+      content
+        .background(.regularMaterial, in: shape)
+        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.27 : 0.20)))
+        .modifier(FloatingGlassRim(isHovered: isHovered))
+    }
+  }
+}
+
+private struct FloatingGlassRim: ViewModifier {
   let isHovered: Bool
 
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
     content
-      .background(.regularMaterial, in: shape)
-      .overlay {
-        if isHovered {
-          shape.fill(Color.white.opacity(0.10))
-        }
-      }
       .overlay {
         shape.strokeBorder(
           LinearGradient(
             colors: [
-              .white.opacity(isHovered ? 0.85 : 0.55),
-              .white.opacity(0.10),
-              .white.opacity(0.22)
+              .white.opacity(isHovered ? 0.92 : 0.68),
+              FloatingGlassStyle.rimTint.opacity(isHovered ? 0.72 : 0.42),
+              .white.opacity(0.18)
             ],
-            startPoint: .top,
-            endPoint: .bottom
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
           ),
           lineWidth: isHovered ? 1.5 : 1
         )
       }
+      .shadow(
+        color: Color(red: 0.03, green: 0.12, blue: 0.36).opacity(isHovered ? 0.34 : 0.24),
+        radius: isHovered ? 12 : 9,
+        x: 0,
+        y: isHovered ? 8 : 6
+      )
   }
 }

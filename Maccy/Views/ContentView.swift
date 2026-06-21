@@ -16,10 +16,17 @@ struct ContentView: View {
         VisualEffectView()
       }
 
-      // Neutral scrim: mutes whatever wallpaper colour the glass picks up so the panel
-      // reads as a consistent, crisp dark glass on any desktop (Route B).
-      Rectangle()
-        .fill(Color.black.opacity(0.18))
+      // A light ambient wash lets the desktop colour travel through the tray while
+      // keeping the floating cards readable on both bright and dark wallpapers.
+      LinearGradient(
+        colors: [
+          Color.white.opacity(FloatingGlassStyle.trayScrimOpacity + 0.03),
+          FloatingGlassStyle.cardTint.opacity(FloatingGlassStyle.trayScrimOpacity),
+          Color.blue.opacity(FloatingGlassStyle.trayScrimOpacity * 0.65)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
         .allowsHitTesting(false)
 
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {

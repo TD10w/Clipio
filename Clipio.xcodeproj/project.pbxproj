@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB0F10000000000000000004 /* FloatingGlassStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0F10000000000000000003 /* FloatingGlassStyle.swift */; };
+		CB0F10000000000000000002 /* FloatingGlassStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0F10000000000000000001 /* FloatingGlassStyleTests.swift */; };
 		0ABDD5122BB47F1E0054963B /* NSWorkspace+ApplicationName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABDD5112BB47F1E0054963B /* NSWorkspace+ApplicationName.swift */; };
 		176E8E742FE6733E00302852 /* CardItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176E8E732FE6733E00302852 /* CardItemView.swift */; };
 		2F0EC7792E7727E3003E2EA9 /* HeightReaderModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0EC7782E7727E3003E2EA9 /* HeightReaderModifier.swift */; };
@@ -180,6 +182,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CB0F10000000000000000003 /* FloatingGlassStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingGlassStyle.swift; sourceTree = "<group>"; };
+		CB0F10000000000000000001 /* FloatingGlassStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingGlassStyleTests.swift; sourceTree = "<group>"; };
 		088F4DA628BECBC40003AD19 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0ABDD5112BB47F1E0054963B /* NSWorkspace+ApplicationName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWorkspace+ApplicationName.swift"; sourceTree = "<group>"; };
 		1180C7372826B6140086870C /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -673,6 +677,7 @@
 			isa = PBXGroup;
 			children = (
 				176E8E732FE6733E00302852 /* CardItemView.swift */,
+				CB0F10000000000000000003 /* FloatingGlassStyle.swift */,
 				2F1091D62F2B6E8100F5C454 /* AsyncView.swift */,
 				2FF2E94F2E7808420093D72C /* AppImageView.swift */,
 				DAA072DE2C41C63C006DDFD2 /* ConfirmationView.swift */,
@@ -720,6 +725,7 @@
 			isa = PBXGroup;
 			children = (
 				DA48AE852A5F0077006D4894 /* Fixtures */,
+				CB0F10000000000000000001 /* FloatingGlassStyleTests.swift */,
 				DA3CE7FF1E44A62500B3AA98 /* ClipboardTests.swift */,
 				DAE2850123225BD90080E394 /* ColorImageTests.swift */,
 				DA360DB21E3DF137005C6F6B /* HistoryTests.swift */,
@@ -1062,6 +1068,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB0F10000000000000000002 /* FloatingGlassStyleTests.swift in Sources */,
 				DAFE2DE9268A9B1B00990986 /* HistoryItemTests.swift in Sources */,
 				DA3CE8001E44A62500B3AA98 /* ClipboardTests.swift in Sources */,
 				DA1EDE432045B35300479723 /* HistoryDecoratorTests.swift in Sources */,
@@ -1076,6 +1083,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB0F10000000000000000004 /* FloatingGlassStyle.swift in Sources */,
 				DA19691C2C3F3EAC00258481 /* Collection+Surrounding.swift in Sources */,
 				DA1969142C3F11D600258481 /* PreviewItemView.swift in Sources */,
 				2FF2E9502E7808470093D72C /* AppImageView.swift in Sources */,
