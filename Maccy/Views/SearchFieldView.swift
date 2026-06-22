@@ -49,15 +49,15 @@ struct SearchFieldView: View {
     if #available(macOS 26.0, *) {
       Color.clear
         .glassEffect(
-          .regular.tint(FloatingGlassStyle.cardTint.opacity(0.18)).interactive(),
+          .regular.tint(FloatingGlassStyle.cardTint.opacity(FloatingGlassStyle.cardTintOpacity)).interactive(),
           in: .rect(cornerRadius: radius)
         )
-        .overlay(shape.strokeBorder(Color.white.opacity(0.24), lineWidth: 0.8))
+        .overlay(shape.strokeBorder(Color.white.opacity(0.32), lineWidth: 0.8))
     } else {
       shape
         .fill(.ultraThinMaterial)
-        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(0.18)))
-        .overlay(shape.strokeBorder(Color.white.opacity(0.28), lineWidth: 0.8))
+        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(0.12)))
+        .overlay(shape.strokeBorder(Color.white.opacity(0.32), lineWidth: 0.8))
     }
   }
 }
