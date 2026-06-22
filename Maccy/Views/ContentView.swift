@@ -16,13 +16,14 @@ struct ContentView: View {
         VisualEffectView()
       }
 
-      // A light ambient wash lets the desktop colour travel through the tray while
-      // keeping the floating cards readable on both bright and dark wallpapers.
+      // The Crystal Lens tray stays nearly clear so the native glass can sample the
+      // desktop colour directly; only a whisper of cool/spectral wash keeps the
+      // floating cards readable on both bright and dark wallpapers.
       LinearGradient(
         colors: [
-          Color.white.opacity(FloatingGlassStyle.trayScrimOpacity + 0.03),
+          Color.white.opacity(FloatingGlassStyle.trayScrimOpacity + 0.02),
           FloatingGlassStyle.cardTint.opacity(FloatingGlassStyle.trayScrimOpacity),
-          Color.blue.opacity(FloatingGlassStyle.trayScrimOpacity * 0.65)
+          FloatingGlassStyle.spectralTint.opacity(0.018)
         ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
@@ -30,29 +31,30 @@ struct ContentView: View {
         .allowsHitTesting(false)
 
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
-        VStack(spacing: 0) {
-          HeaderView(
-            controller: appState.preview,
-            searchFocused: $searchFocused
-          )
-
-          HistoryListView(
-            searchQuery: $appState.history.searchQuery,
-            searchFocused: $searchFocused
-          )
-        }
-        .onAppear {
-          searchFocused = true
-        }
-        .onMouseMove {
-          appState.navigator.isKeyboardNavigating = false
-        }
+        shelfContent
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .task {
         try? await appState.history.load()
       }
     }
+    // A single restrained perimeter reads the tray as one continuous lens of glass.
+    .overlay(
+      RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
+        .strokeBorder(
+          LinearGradient(
+            colors: [
+              Color.white.opacity(0.30),
+              FloatingGlassStyle.rimTint.opacity(0.22),
+              FloatingGlassStyle.spectralTint.opacity(0.14)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+          ),
+          lineWidth: 1
+        )
+        .allowsHitTesting(false)
+    )
     .animation(.easeInOut(duration: 0.2), value: appState.searchVisible)
     .environment(appState)
     .environment(modifierFlags)
@@ -71,6 +73,39 @@ struct ContentView: View {
          window.identifier == NSUserInterfaceItemIdentifier(bundleIdentifier) {
         scenePhase = .background
       }
+    }
+  }
+
+  // The header + card row. On macOS 26 they share one GlassEffectContainer so the
+  // search field, controls, and cards sample a single coherent glass field.
+  @ViewBuilder
+  private var shelfContent: some View {
+    if #available(macOS 26.0, *) {
+      GlassEffectContainer(spacing: FloatingGlassStyle.cardSpacing) {
+        shelfStack
+      }
+    } else {
+      shelfStack
+    }
+  }
+
+  private var shelfStack: some View {
+    VStack(spacing: 0) {
+      HeaderView(
+        controller: appState.preview,
+        searchFocused: $searchFocused
+      )
+
+      HistoryListView(
+        searchQuery: $appState.history.searchQuery,
+        searchFocused: $searchFocused
+      )
+    }
+    .onAppear {
+      searchFocused = true
+    }
+    .onMouseMove {
+      appState.navigator.isKeyboardNavigating = false
     }
   }
 }
