@@ -497,11 +497,13 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     let visibleUnpinnedItems = unpinnedItems.filter(\.isVisible)
     for item in visibleUnpinnedItems {
       item.shortcuts = []
+      item.numericShortcut = nil
     }
 
     var index = 1
     for item in visibleUnpinnedItems.prefix(9) {
       item.shortcuts = KeyShortcut.create(character: String(index))
+      item.numericShortcut = index
       index += 1
     }
   }

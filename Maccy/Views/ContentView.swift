@@ -10,24 +10,7 @@ struct ContentView: View {
 
   var body: some View {
     ZStack {
-      if #available(macOS 26.0, *) {
-        GlassEffectView()
-      } else {
-        VisualEffectView()
-      }
-
-      // Only a faint specular highlight on the tray — no ambient colour wash — so the
-      // native glass refracts the desktop instead of looking like a frosted slab.
-      LinearGradient(
-        colors: [
-          Color.white.opacity(0.04),
-          Color.clear,
-          FloatingGlassStyle.spectralTint.opacity(0.012)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-      )
-        .allowsHitTesting(false)
+      trayGlass
 
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
         shelfContent
@@ -72,6 +55,21 @@ struct ContentView: View {
          window.identifier == NSUserInterfaceItemIdentifier(bundleIdentifier) {
         scenePhase = .background
       }
+    }
+  }
+
+  // The tray itself is one native Liquid Glass lozenge that refracts the desktop.
+  // Using SwiftUI glass (not the AppKit NSGlassEffectView slab) keeps it in the same
+  // glass system as the cards so the whole shelf reads as clear layered glass.
+  @ViewBuilder
+  private var trayGlass: some View {
+    let shape = RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
+    if #available(macOS 26.0, *) {
+      Color.clear
+        .glassEffect(.regular, in: shape)
+    } else {
+      VisualEffectView()
+        .clipShape(shape)
     }
   }
 

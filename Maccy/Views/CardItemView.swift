@@ -40,8 +40,8 @@ struct CardItemView: View {
       }
     }
     .overlay(alignment: .topLeading) {
-      if let key = item.shortcuts.first?.description.last {
-        Text(String(key))
+      if let number = item.numericShortcut {
+        Text("\(number)")
           .font(.system(size: 12, weight: .bold, design: .rounded))
           .foregroundStyle(.white)
           .frame(width: 24, height: 24)

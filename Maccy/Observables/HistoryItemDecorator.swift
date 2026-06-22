@@ -19,6 +19,8 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   var attributedTitle: AttributedString?
 
   var isVisible: Bool = true
+  // The 1–9 quick-paste number shown on the card badge, set when shortcuts are assigned.
+  var numericShortcut: Int?
   var selectionIndex: Int = -1
   var isSelected: Bool {
     return selectionIndex != -1

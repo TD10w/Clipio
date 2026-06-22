@@ -46,6 +46,9 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     hidesOnDeactivate = false
     backgroundColor = .clear
     titlebarSeparatorStyle = .none
+    // The Crystal Lens look is designed around bright Liquid Glass. Force a light
+    // appearance so the glass stays airy even when the system is in dark mode.
+    appearance = NSAppearance(named: .aqua)
 
     // Hide all traffic light buttons
     standardWindowButton(.closeButton)?.isHidden = true
