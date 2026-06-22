@@ -66,7 +66,7 @@ struct ContentView: View {
     let shape = RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
     if #available(macOS 26.0, *) {
       Color.clear
-        .glassEffect(.regular, in: shape)
+        .glassEffect(.clear, in: shape)
     } else {
       VisualEffectView()
         .clipShape(shape)

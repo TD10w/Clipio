@@ -21,6 +21,9 @@ struct SearchFieldView: View {
           .disableAutocorrection(true)
           .lineLimit(1)
           .textFieldStyle(.plain)
+          .font(.system(size: 13))
+          .foregroundStyle(.primary)
+          .tint(.primary)
           .onSubmit {
             appState.select()
           }
@@ -48,10 +51,7 @@ struct SearchFieldView: View {
 
     if #available(macOS 26.0, *) {
       Color.clear
-        .glassEffect(
-          .regular.tint(FloatingGlassStyle.cardTint.opacity(FloatingGlassStyle.cardTintOpacity)).interactive(),
-          in: .rect(cornerRadius: radius)
-        )
+        .glassEffect(.clear, in: .rect(cornerRadius: radius))
         .overlay(shape.strokeBorder(Color.white.opacity(0.32), lineWidth: 0.8))
     } else {
       shape
