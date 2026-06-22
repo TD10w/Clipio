@@ -73,17 +73,11 @@ struct ContentView: View {
     }
   }
 
-  // The header + card row. On macOS 26 they share one GlassEffectContainer so the
-  // search field, controls, and cards sample a single coherent glass field.
-  @ViewBuilder
+  // The header + card row. Cards and controls are solid material now (not glass),
+  // so there is no GlassEffectContainer — that keeps text/badges crisp and the
+  // shelf lightweight, with the tray as the single glass surface.
   private var shelfContent: some View {
-    if #available(macOS 26.0, *) {
-      GlassEffectContainer(spacing: FloatingGlassStyle.cardSpacing) {
-        shelfStack
-      }
-    } else {
-      shelfStack
-    }
+    shelfStack
   }
 
   private var shelfStack: some View {

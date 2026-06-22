@@ -46,9 +46,8 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     hidesOnDeactivate = false
     backgroundColor = .clear
     titlebarSeparatorStyle = .none
-    // The Crystal Lens look is designed around bright Liquid Glass. Force a light
-    // appearance so the glass stays airy even when the system is in dark mode.
-    appearance = NSAppearance(named: .aqua)
+    // Follow the user's Light/Dark/Auto choice rather than forcing one appearance.
+    appearance = Defaults[.appearanceMode].nsAppearance
 
     // Hide all traffic light buttons
     standardWindowButton(.closeButton)?.isHidden = true
@@ -88,6 +87,8 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
+    // Pick up any Light/Dark/Auto change made in Settings since the last open.
+    appearance = Defaults[.appearanceMode].nsAppearance
     let size = Defaults[.windowSize]
     // Shelf layout has a fixed default height; fall back to it when no dynamic height is set.
     let targetHeight = height > 0 ? min(height, size.height) : size.height

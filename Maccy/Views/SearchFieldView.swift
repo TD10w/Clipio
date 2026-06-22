@@ -44,23 +44,15 @@ struct SearchFieldView: View {
     .frame(height: FloatingGlassStyle.searchHeight)
   }
 
-  @ViewBuilder
   private var searchSurface: some View {
     let radius = FloatingGlassStyle.searchHeight / 2
     let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
 
-    if #available(macOS 26.0, *) {
-      // A light frosted fill (not fully clear) gives the typed text something to
-      // sit on so the glyphs stay crisp instead of washing into the glass.
-      Color.white.opacity(0.12)
-        .glassEffect(.regular, in: .rect(cornerRadius: radius))
-        .overlay(shape.strokeBorder(Color.white.opacity(0.35), lineWidth: 0.8))
-    } else {
-      shape
-        .fill(.ultraThinMaterial)
-        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(0.12)))
-        .overlay(shape.strokeBorder(Color.white.opacity(0.32), lineWidth: 0.8))
-    }
+    // Solid material (not glass) so the typed text stays crisp and it adapts to
+    // light/dark on its own.
+    return shape
+      .fill(.regularMaterial)
+      .overlay(shape.strokeBorder(Color.primary.opacity(0.14), lineWidth: 0.8))
   }
 }
 

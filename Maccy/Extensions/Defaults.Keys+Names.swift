@@ -1,6 +1,31 @@
 import AppKit
 import Defaults
 
+// Lets the shelf follow the system appearance or be pinned to a light/dark style.
+enum AppearanceMode: String, CaseIterable, Identifiable, Defaults.Serializable {
+  case system
+  case light
+  case dark
+
+  var id: Self { self }
+
+  var description: String {
+    switch self {
+    case .system: return "Auto"
+    case .light: return "Light"
+    case .dark: return "Dark"
+    }
+  }
+
+  var nsAppearance: NSAppearance? {
+    switch self {
+    case .system: return nil
+    case .light: return NSAppearance(named: .aqua)
+    case .dark: return NSAppearance(named: .darkAqua)
+    }
+  }
+}
+
 struct StorageType {
   static let files = StorageType(types: [.fileURL])
   static let images = StorageType(types: [.png, .tiff])
@@ -11,6 +36,7 @@ struct StorageType {
 }
 
 extension Defaults.Keys {
+  static let appearanceMode = Key<AppearanceMode>("appearanceMode", default: .system)
   static let clearOnQuit = Key<Bool>("clearOnQuit", default: false)
   static let clearSystemClipboard = Key<Bool>("clearSystemClipboard", default: false)
   static let clipboardCheckInterval = Key<Double>("clipboardCheckInterval", default: 0.5)

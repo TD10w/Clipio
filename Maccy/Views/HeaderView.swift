@@ -119,15 +119,10 @@ private struct HeaderGlassControl: ViewModifier {
   func body(content: Content) -> some View {
     let size = FloatingGlassStyle.toolbarControlSize
 
-    if #available(macOS 26.0, *) {
-      content
-        .frame(width: size, height: size)
-        .glassEffect(.regular, in: .circle)
-    } else {
-      content
-        .frame(width: size, height: size)
-        .background(.ultraThinMaterial, in: Circle())
-        .overlay(Circle().strokeBorder(Color.white.opacity(0.26), lineWidth: 0.8))
-    }
+    // Solid material circles (not glass) — lighter to render and legible in both modes.
+    content
+      .frame(width: size, height: size)
+      .background(.regularMaterial, in: Circle())
+      .overlay(Circle().strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.8))
   }
 }

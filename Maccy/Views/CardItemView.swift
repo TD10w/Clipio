@@ -219,28 +219,12 @@ private struct FloatingGlassCardBackground: ViewModifier {
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
 
-    if #available(macOS 26.0, *) {
-      content
-        // A light frosted fill gives the card enough body to read as a distinct tile
-        // over the clear tray. Dropping .interactive() keeps the open fast.
-        .background(
-          Color.white.opacity(isHovered ? 0.20 : 0.13),
-          in: shape
-        )
-        .glassEffect(
-          .clear
-            .tint(FloatingGlassStyle.cardTint.opacity(
-              isHovered ? 0.14 : 0.09
-            )),
-          in: .rect(cornerRadius: CardItemView.cardRadius)
-        )
-        .modifier(FloatingGlassRim(isHovered: isHovered))
-    } else {
-      content
-        .background(.regularMaterial, in: shape)
-        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.17 : 0.12)))
-        .modifier(FloatingGlassRim(isHovered: isHovered))
-    }
+    // Solid frosted material (not glass): adapts to light/dark, renders fast, and
+    // gives text + badges an opaque surface to stay crisp against.
+    content
+      .background(.regularMaterial, in: shape)
+      .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.14 : 0.07)))
+      .modifier(FloatingGlassRim(isHovered: isHovered))
   }
 }
 
