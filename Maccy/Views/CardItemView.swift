@@ -14,10 +14,14 @@ struct CardItemView: View {
   static let cardRadius = FloatingGlassStyle.cardRadius
   private static let footerHeight: CGFloat = 28
 
-  private var timeString: String {
+  private static let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
     let formatter = RelativeDateTimeFormatter()
     formatter.unitsStyle = .abbreviated
-    return formatter.localizedString(for: item.item.lastCopiedAt, relativeTo: Date())
+    return formatter
+  }()
+
+  private var timeString: String {
+    Self.relativeDateTimeFormatter.localizedString(for: item.item.lastCopiedAt, relativeTo: Date())
   }
 
   private var detectedColor: NSColor? {
@@ -77,6 +81,7 @@ struct CardItemView: View {
       dragPreview()
     }
     .onAppear {
+      AppState.shared.appDelegate?.panel.finishPrewarming()
       item.ensureThumbnailImage()
     }
     // No hover lift: shifting the card with .offset moves the visual but not the

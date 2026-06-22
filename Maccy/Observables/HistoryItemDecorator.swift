@@ -41,7 +41,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     return url.deletingPathExtension().lastPathComponent
   }
 
-  var hasImage: Bool { item.image != nil }
+  var hasImage: Bool { item.hasImage }
 
   var previewImageGenerationTask: Task<(), Error>?
   var thumbnailImageGenerationTask: Task<(), Error>?
@@ -76,7 +76,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   @MainActor
   func ensureThumbnailImage() {
-    guard item.image != nil else {
+    guard item.hasImage else {
       return
     }
     guard thumbnailImage == nil else {
@@ -85,14 +85,23 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     guard thumbnailImageGenerationTask == nil else {
       return
     }
-    thumbnailImageGenerationTask = Task { [weak self] in
-      self?.generateThumbnailImage()
+    guard let data = item.imageData else {
+      return
+    }
+    let size = Self.thumbnailImageSize
+    thumbnailImageGenerationTask = Task.detached(priority: .userInitiated) { [weak self] in
+      guard let image = NSImage(data: data) else { return }
+      let resized = image.resized(to: size)
+      _ = resized.cgImage(forProposedRect: nil, context: nil, hints: nil)
+      await MainActor.run { [weak self] in
+        self?.thumbnailImage = resized
+      }
     }
   }
 
   @MainActor
   func ensurePreviewImage() {
-    guard item.image != nil else {
+    guard item.hasImage else {
       return
     }
     guard previewImage == nil else {
@@ -101,8 +110,17 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     guard previewImageGenerationTask == nil else {
       return
     }
-    previewImageGenerationTask = Task { [weak self] in
-      self?.generatePreviewImage()
+    guard let data = item.imageData else {
+      return
+    }
+    let size = Self.previewImageSize
+    previewImageGenerationTask = Task.detached(priority: .userInitiated) { [weak self] in
+      guard let image = NSImage(data: data) else { return }
+      let resized = image.resized(to: size)
+      _ = resized.cgImage(forProposedRect: nil, context: nil, hints: nil)
+      await MainActor.run { [weak self] in
+        self?.previewImage = resized
+      }
     }
   }
 
@@ -128,7 +146,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   @MainActor
   private func generateThumbnailImage() {
-    guard let image = item.image else {
+    guard item.hasImage else {
+      return
+    }
+    guard let data = item.imageData else {
+      return
+    }
+    guard let image = NSImage(data: data) else {
       return
     }
     thumbnailImage = image.resized(to: HistoryItemDecorator.thumbnailImageSize)
@@ -136,7 +160,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   @MainActor
   private func generatePreviewImage() {
-    guard let image = item.image else {
+    guard item.hasImage else {
+      return
+    }
+    guard let data = item.imageData else {
+      return
+    }
+    guard let image = NSImage(data: data) else {
       return
     }
     previewImage = image.resized(to: HistoryItemDecorator.previewImageSize)

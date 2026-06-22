@@ -86,7 +86,7 @@ class HistoryItem {
   }
 
   func generateTitle() -> String {
-    guard image == nil else {
+    guard !hasImage else {
       Task {
         self.performTextRecognition()
       }
@@ -155,6 +155,15 @@ class HistoryItem {
     }
 
     return data
+  }
+
+  var hasImage: Bool {
+    let hasImageContent = contents.contains { content in
+      let pbType = NSPasteboard.PasteboardType(content.type)
+      return pbType == .tiff || pbType == .png || pbType == .jpeg || pbType == .heic
+    }
+    if hasImageContent { return true }
+    return universalClipboardImage && !fileURLs.isEmpty
   }
 
   var image: NSImage? {
