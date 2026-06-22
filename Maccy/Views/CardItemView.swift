@@ -149,7 +149,7 @@ struct CardItemView: View {
     }
     .padding(.horizontal, 9)
     .frame(height: Self.footerHeight)
-    .background(Color.white.opacity(0.08))
+    .background(Color.white.opacity(0.045))
     .overlay(alignment: .top) {
       Rectangle()
         .fill(Color.white.opacity(0.16))
@@ -219,10 +219,15 @@ private struct FloatingGlassCardBackground: ViewModifier {
 
     if #available(macOS 26.0, *) {
       content
-        .background(Color.white.opacity(isHovered ? 0.18 : 0.11), in: shape)
+        .background(
+          Color.white.opacity(isHovered ? 0.09 : FloatingGlassStyle.cardFillOpacity),
+          in: shape
+        )
         .glassEffect(
           .regular
-            .tint(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.30 : 0.22))
+            .tint(FloatingGlassStyle.cardTint.opacity(
+              isHovered ? 0.16 : FloatingGlassStyle.cardTintOpacity
+            ))
             .interactive(),
           in: .rect(cornerRadius: CardItemView.cardRadius)
         )
@@ -230,7 +235,7 @@ private struct FloatingGlassCardBackground: ViewModifier {
     } else {
       content
         .background(.regularMaterial, in: shape)
-        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.27 : 0.20)))
+        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.17 : 0.12)))
         .modifier(FloatingGlassRim(isHovered: isHovered))
     }
   }
@@ -248,6 +253,7 @@ private struct FloatingGlassRim: ViewModifier {
             colors: [
               .white.opacity(isHovered ? 0.92 : 0.68),
               FloatingGlassStyle.rimTint.opacity(isHovered ? 0.72 : 0.42),
+              FloatingGlassStyle.spectralTint.opacity(isHovered ? 0.32 : 0.18),
               .white.opacity(0.18)
             ],
             startPoint: .topLeading,
@@ -257,7 +263,7 @@ private struct FloatingGlassRim: ViewModifier {
         )
       }
       .shadow(
-        color: Color(red: 0.03, green: 0.12, blue: 0.36).opacity(isHovered ? 0.34 : 0.24),
+        color: Color(red: 0.05, green: 0.07, blue: 0.10).opacity(isHovered ? 0.26 : 0.18),
         radius: isHovered ? 12 : 9,
         x: 0,
         y: isHovered ? 8 : 6
