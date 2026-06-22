@@ -42,12 +42,13 @@ struct CardItemView: View {
     .overlay(alignment: .topLeading) {
       if let key = item.shortcuts.first?.description.last {
         Text(String(key))
-          .font(.system(size: 10, weight: .semibold, design: .rounded))
+          .font(.system(size: 12, weight: .bold, design: .rounded))
           .foregroundStyle(.white)
-          .frame(width: 20, height: 20)
-          .background(Color(red: 0.18, green: 0.35, blue: 0.72).opacity(0.92))
+          .frame(width: 24, height: 24)
+          .background(Color(red: 0.16, green: 0.44, blue: 0.95))
           .clipShape(Circle())
-          .overlay(Circle().strokeBorder(Color.white.opacity(0.28), lineWidth: 0.7))
+          .overlay(Circle().strokeBorder(Color.white.opacity(0.55), lineWidth: 1))
+          .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1)
           .padding(7)
       }
     }
@@ -219,14 +220,16 @@ private struct FloatingGlassCardBackground: ViewModifier {
 
     if #available(macOS 26.0, *) {
       content
+        // Keep a near-invisible fill so macOS 26 still registers hover/hit-testing,
+        // but let the native glass — not an opaque wash — define the card surface.
         .background(
-          Color.white.opacity(isHovered ? 0.09 : FloatingGlassStyle.cardFillOpacity),
+          Color.white.opacity(isHovered ? 0.04 : 0.001),
           in: shape
         )
         .glassEffect(
-          .regular
+          .clear
             .tint(FloatingGlassStyle.cardTint.opacity(
-              isHovered ? 0.16 : FloatingGlassStyle.cardTintOpacity
+              isHovered ? 0.10 : 0.05
             ))
             .interactive(),
           in: .rect(cornerRadius: CardItemView.cardRadius)

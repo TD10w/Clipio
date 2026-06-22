@@ -16,14 +16,13 @@ struct ContentView: View {
         VisualEffectView()
       }
 
-      // The Crystal Lens tray stays nearly clear so the native glass can sample the
-      // desktop colour directly; only a whisper of cool/spectral wash keeps the
-      // floating cards readable on both bright and dark wallpapers.
+      // Only a faint specular highlight on the tray — no ambient colour wash — so the
+      // native glass refracts the desktop instead of looking like a frosted slab.
       LinearGradient(
         colors: [
-          Color.white.opacity(FloatingGlassStyle.trayScrimOpacity + 0.02),
-          FloatingGlassStyle.cardTint.opacity(FloatingGlassStyle.trayScrimOpacity),
-          FloatingGlassStyle.spectralTint.opacity(0.018)
+          Color.white.opacity(0.04),
+          Color.clear,
+          FloatingGlassStyle.spectralTint.opacity(0.012)
         ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
