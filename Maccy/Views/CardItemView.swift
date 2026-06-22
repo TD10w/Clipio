@@ -41,14 +41,15 @@ struct CardItemView: View {
     }
     .overlay(alignment: .topLeading) {
       if let number = item.numericShortcut {
-        Text("\(number)")
+        Text("⌘\(number)")
           .font(.system(size: 12, weight: .bold, design: .rounded))
           .foregroundStyle(.white)
-          .frame(width: 24, height: 24)
-          .background(Color(red: 0.16, green: 0.44, blue: 0.95))
-          .clipShape(Circle())
-          .overlay(Circle().strokeBorder(Color.white.opacity(0.55), lineWidth: 1))
-          .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1)
+          .frame(width: 38, height: 22)
+          // Solid, opaque pill so the glyphs stay crisp instead of washing into the glass.
+          .background(Color(red: 0.13, green: 0.42, blue: 0.96))
+          .clipShape(Capsule())
+          .overlay(Capsule().strokeBorder(Color.white.opacity(0.5), lineWidth: 0.75))
+          .shadow(color: Color.black.opacity(0.22), radius: 1, x: 0, y: 0.5)
           .padding(7)
       }
     }
@@ -220,18 +221,17 @@ private struct FloatingGlassCardBackground: ViewModifier {
 
     if #available(macOS 26.0, *) {
       content
-        // Keep a near-invisible fill so macOS 26 still registers hover/hit-testing,
-        // but let the native glass — not an opaque wash — define the card surface.
+        // A light frosted fill gives the card enough body to read as a distinct tile
+        // over the clear tray. Dropping .interactive() keeps the open fast.
         .background(
-          Color.white.opacity(isHovered ? 0.04 : 0.001),
+          Color.white.opacity(isHovered ? 0.20 : 0.13),
           in: shape
         )
         .glassEffect(
           .clear
             .tint(FloatingGlassStyle.cardTint.opacity(
-              isHovered ? 0.10 : 0.05
-            ))
-            .interactive(),
+              isHovered ? 0.14 : 0.09
+            )),
           in: .rect(cornerRadius: CardItemView.cardRadius)
         )
         .modifier(FloatingGlassRim(isHovered: isHovered))
@@ -265,11 +265,17 @@ private struct FloatingGlassRim: ViewModifier {
           lineWidth: isHovered ? 1.5 : 1
         )
       }
+      // Soft neutral drop shadow lifts the card off the tray...
       .shadow(
         color: Color(red: 0.05, green: 0.07, blue: 0.10).opacity(isHovered ? 0.26 : 0.18),
         radius: isHovered ? 12 : 9,
         x: 0,
         y: isHovered ? 8 : 6
+      )
+      // ...plus a cool luminous glow that blooms on hover, like the reference edges.
+      .shadow(
+        color: FloatingGlassStyle.rimTint.opacity(isHovered ? 0.5 : 0.22),
+        radius: isHovered ? 10 : 5
       )
   }
 }

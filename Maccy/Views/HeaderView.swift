@@ -122,7 +122,7 @@ private struct HeaderGlassControl: ViewModifier {
     if #available(macOS 26.0, *) {
       content
         .frame(width: size, height: size)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .glassEffect(.regular, in: .circle)
     } else {
       content
         .frame(width: size, height: size)

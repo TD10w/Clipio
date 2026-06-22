@@ -50,9 +50,11 @@ struct SearchFieldView: View {
     let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
 
     if #available(macOS 26.0, *) {
-      Color.clear
-        .glassEffect(.clear, in: .rect(cornerRadius: radius))
-        .overlay(shape.strokeBorder(Color.white.opacity(0.32), lineWidth: 0.8))
+      // A light frosted fill (not fully clear) gives the typed text something to
+      // sit on so the glyphs stay crisp instead of washing into the glass.
+      Color.white.opacity(0.12)
+        .glassEffect(.regular, in: .rect(cornerRadius: radius))
+        .overlay(shape.strokeBorder(Color.white.opacity(0.35), lineWidth: 0.8))
     } else {
       shape
         .fill(.ultraThinMaterial)

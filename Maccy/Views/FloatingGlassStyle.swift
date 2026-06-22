@@ -3,12 +3,12 @@ import SwiftUI
 enum FloatingGlassStyle {
   static let cardWidth: CGFloat = 138
   static let cardHeight: CGFloat = 150
-  static let cardRadius: CGFloat = 22
+  static let cardRadius: CGFloat = 26
   static let cardSpacing: CGFloat = 12
   static let trayScrimOpacity = 0.06
   static let cardFillOpacity = 0.055
   static let cardTintOpacity = 0.10
-  static let trayRadius: CGFloat = 28
+  static let trayRadius: CGFloat = 30
   static let searchHeight: CGFloat = 32
   static let toolbarControlSize: CGFloat = 28
   static let textCardTopPadding: CGFloat = 32
