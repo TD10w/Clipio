@@ -32,6 +32,13 @@ struct CardItemView: View {
     .frame(width: Self.cardWidth, height: Self.cardHeight)
     .clipShape(RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous))
     .modifier(FloatingGlassCardBackground(isHovered: isHovered))
+    .overlay {
+      if item.isSelected {
+        RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous)
+          .strokeBorder(Color.accentColor.opacity(0.95), lineWidth: 2.5)
+          .shadow(color: Color.accentColor.opacity(0.45), radius: 5)
+      }
+    }
     .overlay(alignment: .topLeading) {
       if let key = item.shortcuts.first?.description.last {
         Text(String(key))
@@ -72,6 +79,12 @@ struct CardItemView: View {
     }
     .offset(y: isHovered ? -2 : 0)
     .animation(.easeOut(duration: 0.16), value: isHovered)
+    .accessibilityElement(children: .ignore)
+    .accessibilityIdentifier("copy-history-item")
+    .accessibilityLabel(Text(item.title.isEmpty ? "Image" : item.title))
+    .accessibilityValue(Text(item.text))
+    .accessibilityAddTraits(.isButton)
+    .accessibilityAction { onSelect() }
   }
 
   @ViewBuilder

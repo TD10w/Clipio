@@ -4,6 +4,7 @@ import SwiftUI
 @Observable
 class Footer: ItemsContainer {
   var items: [FooterItem] = []
+  var isRendered = true
 
   var selectedItem: FooterItem? {
     willSet {
@@ -21,7 +22,7 @@ class Footer: ItemsContainer {
     return Defaults[.showFooter]
   }
   var containerVisible: Bool {
-    return showFooter
+    return showFooter && isRendered
   }
 
   init() { // swiftlint:disable:this function_body_length

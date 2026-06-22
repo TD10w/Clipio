@@ -30,18 +30,13 @@ class MaccyUITests: XCTestCase {
   let html1 = "<a href='#'>foo</a>".data(using: .utf8)
   let html2 = "<a href='#'>bar</a>".data(using: .utf8)
 
-  let imageType = NSPredicate(
-    format: "elementType == %lu",
-    argumentArray: [XCUIElement.ElementType.image.rawValue]
-  )
-
   var items: XCUIElementQuery {
     app.descendants(matching: .any).matching(identifier: "copy-history-item")
   }
 
   var itemTitles: [String] {
     items.allElementsBoundByIndex
-      .sorted(by: { $0.frame.origin.y < $1.frame.origin.y })
+      .sorted(by: { $0.frame.origin.x < $1.frame.origin.x })
       .compactMap { $0.value as? String }
   }
 
@@ -140,7 +135,7 @@ class MaccyUITests: XCTestCase {
     copyToClipboard(image2)
     copyToClipboard(image1)
     popUpWithMouse()
-    items.matching(imageType).allElementsBoundByIndex[1].click()
+    items.allElementsBoundByIndex[1].click()
     assertPasteboardDataCountEquals(image2.tiffRepresentation!.count, forType: .tiff)
   }
 
@@ -232,7 +227,7 @@ class MaccyUITests: XCTestCase {
   func testClear() {
     popUpWithMouse()
     pin(copy2)
-    app.staticTexts["Clear"].click()
+    app.buttons["clear-history"].click()
     confirmClear()
     popUpWithMouse()
     assertNotExists(items[copy1])
@@ -242,7 +237,7 @@ class MaccyUITests: XCTestCase {
   func testClearDuringSearch() {
     popUpWithMouse()
     search(copy2)
-    app.staticTexts["Clear"].click()
+    app.buttons["clear-history"].click()
     confirmClear()
     popUpWithMouse()
     assertNotExists(items[copy1])
@@ -253,7 +248,7 @@ class MaccyUITests: XCTestCase {
     popUpWithMouse()
     pin(copy2)
     XCUIElement.perform(withKeyModifiers: [.shift]) {
-      app.staticTexts["Clear all"].click()
+      app.buttons["clear-history"].click()
     }
     confirmClear()
     popUpWithMouse()

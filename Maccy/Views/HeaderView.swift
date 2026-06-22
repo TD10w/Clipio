@@ -20,6 +20,12 @@ struct HeaderView: View {
         )
         .padding(.horizontal, Popup.horizontalPadding)
 
+        HeaderClearButton(
+          clearItem: appState.footer.items[0],
+          clearAllItem: appState.footer.items[1]
+        )
+        .padding(.trailing, 5)
+
         ToolbarButton {
           Task { @MainActor in
             AppState.shared.openPreferences()
@@ -49,6 +55,63 @@ struct HeaderView: View {
     .background(.clear)
     .frame(maxHeight: !appState.searchVisible ? 0 : nil, alignment: .top)
     .readHeight(appState, into: \.popup.headerHeight)
+  }
+}
+
+private struct HeaderClearButton: View {
+  @Bindable var clearItem: FooterItem
+  @Bindable var clearAllItem: FooterItem
+
+  @Environment(ModifierFlags.self) private var modifierFlags
+
+  private var isClearAll: Bool {
+    modifierFlags.flags.contains(.shift)
+  }
+
+  var body: some View {
+    ToolbarButton {
+      requestClear(isClearAll ? clearAllItem : clearItem)
+    } label: {
+      Image(systemName: isClearAll ? "trash.slash" : "trash")
+        .font(.system(size: 13, weight: .medium))
+    }
+    .modifier(HeaderGlassControl())
+    .accessibilityIdentifier("clear-history")
+    .accessibilityLabel(Text(isClearAll ? "clear_all" : "clear"))
+    .help(Text(isClearAll ? "clear_all_tooltip" : "clear_tooltip"))
+    .confirmationDialog(
+      clearItem.confirmation?.message ?? "clear_alert_message",
+      isPresented: $clearItem.showConfirmation
+    ) {
+      clearConfirmationButtons(for: clearItem)
+    }
+    .dialogSuppressionToggle(isSuppressed: clearItem.suppressConfirmation ?? .constant(false))
+    .confirmationDialog(
+      clearAllItem.confirmation?.message ?? "clear_alert_message",
+      isPresented: $clearAllItem.showConfirmation
+    ) {
+      clearConfirmationButtons(for: clearAllItem)
+    }
+    .dialogSuppressionToggle(isSuppressed: clearAllItem.suppressConfirmation ?? .constant(false))
+  }
+
+  @ViewBuilder
+  private func clearConfirmationButtons(for item: FooterItem) -> some View {
+    if let confirmation = item.confirmation {
+      Text(confirmation.comment)
+      Button(confirmation.confirm, role: .destructive) {
+        item.action()
+      }
+      Button(confirmation.cancel, role: .cancel) {}
+    }
+  }
+
+  private func requestClear(_ item: FooterItem) {
+    if item.suppressConfirmation?.wrappedValue == true {
+      item.action()
+    } else {
+      item.showConfirmation = true
+    }
   }
 }
 

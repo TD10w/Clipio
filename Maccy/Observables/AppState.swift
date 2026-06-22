@@ -38,6 +38,7 @@ class AppState: Sendable {
   init(history: History, footer: Footer) {
     self.history = history
     self.footer = footer
+    footer.isRendered = false
     popup = Popup()
     navigator = NavigationManager(history: history, footer: footer)
     preview = SlideoutController(
