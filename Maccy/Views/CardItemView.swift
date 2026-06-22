@@ -79,7 +79,9 @@ struct CardItemView: View {
     .onAppear {
       item.ensureThumbnailImage()
     }
-    .offset(y: isHovered ? -2 : 0)
+    // No hover lift: shifting the card with .offset moves the visual but not the
+    // hit area, so the hover/click would land on the wrong spot. Hover feedback
+    // comes from the rim/glow/shadow instead.
     .animation(.easeOut(duration: 0.16), value: isHovered)
     .accessibilityElement(children: .ignore)
     .accessibilityIdentifier("copy-history-item")

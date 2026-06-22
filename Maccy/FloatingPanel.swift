@@ -87,8 +87,12 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
-    // Pick up any Light/Dark/Auto change made in Settings since the last open.
-    appearance = Defaults[.appearanceMode].nsAppearance
+    // Pick up a Light/Dark/Auto change made in Settings, but only re-assign when it
+    // actually changed — assigning NSWindow.appearance forces a full re-render.
+    let desired = Defaults[.appearanceMode].nsAppearance
+    if appearance?.name != desired?.name {
+      appearance = desired
+    }
     let size = Defaults[.windowSize]
     // Shelf layout has a fixed default height; fall back to it when no dynamic height is set.
     let targetHeight = height > 0 ? min(height, size.height) : size.height

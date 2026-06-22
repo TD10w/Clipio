@@ -142,14 +142,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     ) {
       ContentView()
     }
-
-    // Pre-warm the SwiftUI Liquid Glass render off-screen so the first real open is
-    // instant — otherwise the first toggle pays for shader compilation and layout.
-    panel.setFrameOrigin(NSPoint(x: -30000, y: -30000))
-    panel.orderFrontRegardless()
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak panel] in
-      panel?.orderOut(nil)
-    }
   }
 
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
