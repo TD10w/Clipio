@@ -59,6 +59,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var statusItemVisibilityObserver: NSKeyValueObservation?
 
   func applicationWillFinishLaunching(_ notification: Notification) { // swiftlint:disable:this function_body_length
+    // A clipboard manager must be a single instance: multiple copies race on the
+    // shared SwiftData store and can crash with a silent abort. Terminate any other
+    // running copies (e.g. a launch-at-login build alongside an Xcode run) before we
+    // touch the store below, so the newest instance owns it alone.
+    if let bundleID = Bundle.main.bundleIdentifier {
+      let myPID = ProcessInfo.processInfo.processIdentifier
+      for other in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+      where other.processIdentifier != myPID {
+        other.forceTerminate()
+      }
+    }
+
     #if DEBUG
     if CommandLine.arguments.contains("enable-testing") {
       SPUUpdater(hostBundle: Bundle.main,
