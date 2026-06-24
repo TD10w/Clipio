@@ -8,6 +8,33 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   var isDragging: Bool = false
   var statusBarButton: NSStatusBarButton?
   let onClose: () -> Void
+  private var isPrewarming = false
+
+  // SwiftUI does its first card/glass composition only after the panel is placed
+  // onscreen. Briefly show an almost-transparent, noninteractive panel at launch so
+  // the user's first shortcut can reuse the prepared backing store.
+  func prewarm() {
+    guard !isPresented, !isPrewarming else { return }
+    isPrewarming = true
+    if let screen = NSScreen.main {
+      let visible = screen.visibleFrame
+      setFrameOrigin(NSPoint(
+        x: visible.minX + (visible.width - frame.width) / 2,
+        y: visible.maxY - frame.height
+      ))
+    }
+    alphaValue = 0.01
+    ignoresMouseEvents = true
+    orderFrontRegardless()
+  }
+
+  func finishPrewarming() {
+    guard isPrewarming else { return }
+    isPrewarming = false
+    orderOut(nil)
+    alphaValue = 1
+    ignoresMouseEvents = false
+  }
 
   override var isMovable: Bool {
     get { Defaults[.popupPosition] != .statusItem }
@@ -87,6 +114,9 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
+    isPrewarming = false
+    alphaValue = 1
+    ignoresMouseEvents = false
     // Pick up a Light/Dark/Auto change made in Settings, but only re-assign when it
     // actually changed — assigning NSWindow.appearance forces a full re-render.
     let desired = Defaults[.appearanceMode].nsAppearance

@@ -154,6 +154,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     ) {
       ContentView()
     }
+
+    // Populate the shelf while Clipio is sitting quietly in the menu bar, rather
+    // than making the first shortcut press pay for the SwiftData fetch and view setup.
+    Task { @MainActor in
+      try? await AppState.shared.history.load()
+      panel.prewarm()
+    }
   }
 
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

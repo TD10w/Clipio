@@ -16,9 +16,6 @@ struct ContentView: View {
         shelfContent
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .task {
-        try? await appState.history.load()
-      }
     }
     // A single restrained perimeter reads the tray as one continuous lens of glass.
     .overlay(
@@ -59,8 +56,7 @@ struct ContentView: View {
   }
 
   // The tray itself is one native Liquid Glass lozenge that refracts the desktop.
-  // Using SwiftUI glass (not the AppKit NSGlassEffectView slab) keeps it in the same
-  // glass system as the cards so the whole shelf reads as clear layered glass.
+  // SwiftUI glass keeps the tray in the native Liquid Glass rendering system.
   @ViewBuilder
   private var trayGlass: some View {
     let shape = RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
