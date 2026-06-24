@@ -21,7 +21,6 @@ class Popup {
   static let horizontalSeparatorPadding = 6.0
   static let verticalPadding: CGFloat = 5
   static let horizontalPadding: CGFloat = 5
-  static let minimumPreviewHeight: CGFloat = 150
 
   // Radius used for items inset by the padding. Ensures they visually have the same curvature
   // as the menu.
@@ -92,12 +91,7 @@ class Popup {
   func preferredHeight(for newHeight: CGFloat) -> CGFloat {
     var height = newHeight
 
-    var minimumHeight = 0.0
-    // If the preview is non-empty make sure the window accomodates for it to be visible.
-    if AppState.shared.preview.state.isOpen && AppState.shared.navigator.leadSelection != nil {
-      minimumHeight += Self.minimumPreviewHeight
-    }
-    minimumHeight = max(headerHeight + Self.verticalPadding, minimumHeight)
+    let minimumHeight = headerHeight + Self.verticalPadding
 
     height = max(height, minimumHeight)
     height = min(height, Defaults[.windowSize].height)

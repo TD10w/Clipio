@@ -134,8 +134,7 @@ struct KeyHandlingView<Content: View>: View {
           appState.popup.close()
           return .handled
         case .togglePreview:
-          appState.preview.togglePreview()
-          return .handled
+          return .ignored
         default:
           ()
         }

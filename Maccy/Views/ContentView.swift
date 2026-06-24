@@ -79,7 +79,6 @@ struct ContentView: View {
   private var shelfStack: some View {
     VStack(spacing: 0) {
       HeaderView(
-        controller: appState.preview,
         searchFocused: $searchFocused
       )
 

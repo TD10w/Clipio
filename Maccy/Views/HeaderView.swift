@@ -4,12 +4,7 @@ import SwiftUI
 struct HeaderView: View {
   @State private var appState = AppState.shared
 
-  let controller: SlideoutController
   @FocusState.Binding var searchFocused: Bool
-
-  var previewPlacement: SlideoutPlacement {
-    return controller.placement
-  }
 
   var body: some View {
     HStack(alignment: .top, spacing: 0) {

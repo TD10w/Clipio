@@ -80,10 +80,11 @@ deleted (commit removing the dead UI island), so don't go looking for `ListItemV
 - `Clipio.xcodeproj` — app target, bundle ID, and icon configuration
 - New `.swift` files must be registered manually in `Clipio.xcodeproj/project.pbxproj`
 
-Known leftover (not yet cleaned): the paste-stack data layer (`PasteStack.swift` +
-hooks in `History`/`NavigationManager`/`AppState`) is unreachable (`multiSelectionEnabled`
-is hardcoded `false`), and `FloatingPanel` still carries vestigial slideout-resize
-machinery. Both are slated for a careful follow-up pass.
+The old slideout-preview controller (`SlideoutController`) and the window-resize
+machinery it drove have been removed; the shelf is fixed-size (no `.resizable`),
+and the only preview is the hover popup (`PreviewPopupPanel`). The dormant
+multi-select infra in `NavigationManager` (the `extend*` selection methods) is the
+last known leftover, kept for a future pass.
 
 ## What We Decided NOT to Do
 

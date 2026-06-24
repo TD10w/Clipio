@@ -13,7 +13,6 @@ class AppState: Sendable {
   var history: History
   var footer: Footer
   var navigator: NavigationManager
-  var preview: SlideoutController
 
   var searchVisible: Bool {
     if !Defaults[.showSearch] { return false }
@@ -39,15 +38,6 @@ class AppState: Sendable {
     footer.isRendered = false
     popup = Popup()
     navigator = NavigationManager(history: history, footer: footer)
-    preview = SlideoutController(
-      onContentResize: { contentWidth in
-        Defaults[.windowSize].width = contentWidth
-      },
-      onSlideoutResize: { previewWidth in
-        Defaults[.previewWidth] = previewWidth
-      })
-    preview.contentWidth = Defaults[.windowSize].width
-    preview.slideoutWidth = Defaults[.previewWidth]
   }
 
   @MainActor

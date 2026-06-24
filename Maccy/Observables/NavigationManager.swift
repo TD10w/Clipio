@@ -28,19 +28,7 @@ class NavigationManager { // swiftlint:disable:this type_body_length
     }
     return nil
   }
-  private(set) var leadHistoryItem: HistoryItemDecorator? {
-    didSet {
-      guard oldValue?.id != leadHistoryItem?.id else { return }
-
-      let preview = AppState.shared.preview
-      if leadHistoryItem != nil {
-        preview.resetAutoOpenSuppression()
-        preview.startAutoOpen()
-      } else {
-        preview.cancelAutoOpen()
-      }
-    }
-  }
+  private(set) var leadHistoryItem: HistoryItemDecorator?
 
   var isManualMultiSelect: Bool = false
   var isMultiSelectInProgress: Bool {
