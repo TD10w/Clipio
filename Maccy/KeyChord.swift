@@ -112,6 +112,16 @@ enum KeyChord: CaseIterable {
          (.p, [.control, .option]),
          (.pageUp, []):
       self = .moveToFirst
+    // The shelf is horizontal, so Right/Left are the natural next/previous keys
+    // (Up/Down still work). Cmd/Option jumps to the last/first card.
+    case (.rightArrow, []):
+      self = .moveToNext
+    case (.rightArrow, _) where modifierFlags.contains(.command) || modifierFlags.contains(.option):
+      self = .moveToLast
+    case (.leftArrow, []):
+      self = .moveToPrevious
+    case (.leftArrow, _) where modifierFlags.contains(.command) || modifierFlags.contains(.option):
+      self = .moveToFirst
     case (KeyChord.pinKey, KeyChord.pinModifiers):
       self = .pinOrUnpin
     case (.comma, [.command]):
