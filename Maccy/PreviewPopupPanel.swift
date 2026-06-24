@@ -72,8 +72,10 @@ final class PreviewPopupPanel: NSPanel {
     hideWorkItem?.cancel()
     let work = DispatchWorkItem { [weak self] in
       guard let self, self.model.item?.id == id else { return }
+      let hidden = self.model.item
       self.orderOut(nil)
       self.model.item = nil
+      hidden?.releasePreviewImage()
     }
     hideWorkItem = work
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
@@ -81,8 +83,10 @@ final class PreviewPopupPanel: NSPanel {
 
   func hideNow() {
     hideWorkItem?.cancel()
+    let hidden = model.item
     orderOut(nil)
     model.item = nil
+    hidden?.releasePreviewImage()
   }
 }
 

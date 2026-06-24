@@ -10,7 +10,10 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     return lhs.id == rhs.id
   }
 
-  static var previewImageSize: NSSize { NSScreen.forPopup?.visibleFrame.size ?? NSSize(width: 2048, height: 1536) }
+  // Bounding box for the hover-popup image. The popup is ~620x540pt, so ~2x that is
+  // crisp on Retina; sizing to the full screen (the old behavior) kept near-full-res
+  // copies of every hovered screenshot in memory for no visible benefit.
+  static let previewImageSize = NSSize(width: 1280, height: 1120)
   static var thumbnailImageSize: NSSize { NSSize(width: 340, height: Defaults[.imageMaxHeight]) }
 
   let id = UUID()
@@ -143,6 +146,17 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     ensurePreviewImage()
     _ = await previewImageGenerationTask?.result
     return previewImage
+  }
+
+  // Free just the large preview image while keeping the small thumbnail the card
+  // still shows. Called when the hover popup hides, so screen-scale previews don't
+  // pile up in memory as the user hovers across many image clips. Runs on the main
+  // thread (invoked from the popup's hide handlers).
+  func releasePreviewImage() {
+    previewImageGenerationTask?.cancel()
+    previewImageGenerationTask = nil
+    previewImage?.recache()
+    previewImage = nil
   }
 
   @MainActor
