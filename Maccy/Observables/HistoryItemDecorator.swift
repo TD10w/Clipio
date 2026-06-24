@@ -49,8 +49,19 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   var thumbnailImage: NSImage?
   var applicationImage: ApplicationImage
 
-  // 10k characters seems to be more than enough on large displays
-  var text: String { item.previewableText.shortened(to: 10_000) }
+  // 10k characters seems to be more than enough on large displays.
+  // Cached: previewableText can parse HTML/RTF via NSAttributedString, which is an
+  // expensive main-thread XPC call. The item's content is immutable once stored, so
+  // resolve it at most once per decorator instead of on every SwiftUI body access
+  // (recomputing it per render/hover was blocking the main thread → beachball).
+  // @ObservationIgnored so writing the cache from the getter can't perturb a render pass.
+  @ObservationIgnored private var cachedText: String?
+  var text: String {
+    if let cachedText { return cachedText }
+    let resolved = item.previewableText.shortened(to: 10_000)
+    cachedText = resolved
+    return resolved
+  }
 
   var isPinned: Bool { item.pin != nil }
   var isUnpinned: Bool { item.pin == nil }
