@@ -264,9 +264,12 @@ private struct FloatingGlassRim: ViewModifier {
         y: isHovered ? 8 : 6
       )
       // ...plus a cool luminous glow that blooms on hover, like the reference edges.
+      // Resting glow is off (radius/opacity 0): a second blurred shadow on every
+      // card was recomposited each scroll frame for little visible gain. The glow
+      // still blooms on the single hovered card, which costs nothing while scrolling.
       .shadow(
-        color: FloatingGlassStyle.rimTint.opacity(isHovered ? 0.5 : 0.22),
-        radius: isHovered ? 10 : 5
+        color: FloatingGlassStyle.rimTint.opacity(isHovered ? 0.5 : 0),
+        radius: isHovered ? 10 : 0
       )
   }
 }
