@@ -122,11 +122,39 @@ class HistoryItem {
       text
     } else if let rtf = rtf, !rtf.string.isEmpty {
       rtf.string
-    } else if let html = html, !html.string.isEmpty {
-      html.string
+    } else if let html = htmlPlainText, !html.isEmpty {
+      html
     } else {
       title
     }
+  }
+
+  // Cheap plain text from HTML for previews. `html` (NSAttributedString(html:)) renders
+  // markup via a synchronous WebKit XPC call — far too heavy to run per card while
+  // scrolling. previewableText is display-only (paste always uses the original data),
+  // so a tag strip + minimal entity decode is plenty and stays on-CPU.
+  private var htmlPlainText: String? {
+    guard let data = htmlData, let raw = String(data: data, encoding: .utf8) else {
+      return nil
+    }
+    var text = raw
+    // Drop <script>/<style> blocks wholesale so their contents don't leak into the preview.
+    text = text.replacingOccurrences(
+      of: "(?is)<(script|style)[^>]*>.*?</\\1>", with: " ", options: .regularExpression
+    )
+    // Strip remaining tags.
+    text = text.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression)
+    // Decode the handful of entities common in copied rich text.
+    let entities = [
+      "&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">",
+      "&quot;": "\"", "&#39;": "'", "&apos;": "'"
+    ]
+    for (key, value) in entities {
+      text = text.replacingOccurrences(of: key, with: value)
+    }
+    // Collapse runs of whitespace introduced by the stripping.
+    text = text.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    return text.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
   var fileURLs: [URL] {
