@@ -45,25 +45,20 @@ struct CardItemView: View {
     }
     .overlay(alignment: .topLeading) {
       if let number = item.numericShortcut {
+        // Quiet monochrome chip: a constant hint for the ⌘N quick-paste shortcut that
+        // doesn't compete with the card content the way the old bright-blue pill did.
         Text("⌘\(number)")
-          .font(.system(size: 12, weight: .bold, design: .rounded))
-          .foregroundStyle(.white)
-          .frame(width: 38, height: 22)
-          // Solid, opaque pill so the glyphs stay crisp instead of washing into the glass.
-          .background(Color(red: 0.13, green: 0.42, blue: 0.96))
-          .clipShape(Capsule())
-          .overlay(Capsule().strokeBorder(Color.white.opacity(0.5), lineWidth: 0.75))
-          .shadow(color: Color.black.opacity(0.22), radius: 1, x: 0, y: 0.5)
-          .padding(7)
+          .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+          .foregroundStyle(.white.opacity(0.9))
+          .padding(.horizontal, 6)
+          .padding(.vertical, 2)
+          .background(Color.black.opacity(0.4), in: Capsule())
+          .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 0.5))
+          .padding(6)
       }
     }
     .overlay(alignment: .topTrailing) {
-      if item.isPinned {
-        Image(systemName: "pin.fill")
-          .font(.system(size: 9))
-          .foregroundStyle(Color(red: 1, green: 0.83, blue: 0.47))
-          .padding(8)
-      }
+      pinControl
     }
     .onHover { hovering in
       isHovered = hovering
@@ -94,6 +89,46 @@ struct CardItemView: View {
     .accessibilityValue(Text(item.text))
     .accessibilityAddTraits(.isButton)
     .accessibilityAction { onSelect() }
+  }
+
+  // Pin affordance in the top-right. Pinned cards show the gold pin (click to unpin).
+  // Hovering an unpinned card reveals a "pin ⌥P" pill — both a clickable button and a
+  // visible hint for the Option-P shortcut.
+  @ViewBuilder
+  private var pinControl: some View {
+    if item.isPinned {
+      Button {
+        Task { @MainActor in item.togglePin() }
+      } label: {
+        Image(systemName: "pin.fill")
+          .font(.system(size: 9, weight: .semibold))
+          .foregroundStyle(Color(red: 1, green: 0.83, blue: 0.47))
+          .frame(width: 22, height: 22)
+          .background(isHovered ? Color.black.opacity(0.28) : .clear, in: Circle())
+      }
+      .buttonStyle(.plain)
+      .help("Unpin (⌥P)")
+      .padding(6)
+    } else if isHovered {
+      Button {
+        Task { @MainActor in item.togglePin() }
+      } label: {
+        HStack(spacing: 3) {
+          Image(systemName: "pin")
+            .font(.system(size: 9, weight: .semibold))
+          Text("⌥P")
+            .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+        }
+        .foregroundStyle(.white.opacity(0.9))
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(Color.black.opacity(0.4), in: Capsule())
+        .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 0.5))
+      }
+      .buttonStyle(.plain)
+      .help("Pin (⌥P)")
+      .padding(6)
+    }
   }
 
   @ViewBuilder
