@@ -64,12 +64,26 @@ Replace Maccy's vertical list with a **horizontal card shelf** that drops down f
 | Drag to reorder | ❌ Dropped (kept lightweight) |
 | Integrated slideout preview (original Maccy) | ❌ Removed; replaced by popup |
 
-## Key Files to Edit
+## Key Files (the live card-shelf tree)
 
-- `Maccy/Views/HistoryListView.swift` — change from vertical List to horizontal ScrollView + cards
-- `Maccy/FloatingPanel.swift` — adjust window size/shape
-- `Maccy/Views/ListItemView.swift` — redesign individual item as a card
+The panel content is `ContentView → HeaderView → HistoryListView → CardItemView`,
+plus a separate hover preview window. The old Maccy vertical-list views have been
+deleted (commit removing the dead UI island), so don't go looking for `ListItemView`,
+`HistoryItemView`, `SlideoutView`, etc. — they're gone.
+
+- `Maccy/Views/CardItemView.swift` — the individual clipboard card (image / text / color)
+- `Maccy/Views/HistoryListView.swift` — the horizontal card shelf (LazyHStack in a ScrollView)
+- `Maccy/Views/HeaderView.swift` — search field + clear/settings/quit controls
+- `Maccy/Views/FloatingGlassStyle.swift` — shared sizes, radii, tints for the shelf/cards
+- `Maccy/PreviewPopupPanel.swift` / `Maccy/Views/PreviewItemView.swift` — hover preview below the shelf
+- `Maccy/FloatingPanel.swift` — the shelf window (size/position; drops from top-center)
 - `Clipio.xcodeproj` — app target, bundle ID, and icon configuration
+- New `.swift` files must be registered manually in `Clipio.xcodeproj/project.pbxproj`
+
+Known leftover (not yet cleaned): the paste-stack data layer (`PasteStack.swift` +
+hooks in `History`/`NavigationManager`/`AppState`) is unreachable (`multiSelectionEnabled`
+is hardcoded `false`), and `FloatingPanel` still carries vestigial slideout-resize
+machinery. Both are slated for a careful follow-up pass.
 
 ## What We Decided NOT to Do
 
