@@ -137,17 +137,9 @@ class Popup {
         return nil
       }
 
-      if state == .opening {
-        state = .cycle
-        // Next 'if' will highlight next item and then return nil
-      }
-
-      if state == .cycle {
-        AppState.shared.navigator.highlightNext(allowCycle: true)
-        return nil
-      }
-
-      if state == .toggle && isHotKeyModifiers(event.modifierFlags) {
+      // Plain toggle: pressing the popup hotkey (with its modifiers) while the shelf
+      // is open closes it. Bare key presses (e.g. typing "c" in search) fall through.
+      if isHotKeyModifiers(event.modifierFlags) {
         close()
         return nil
       }
