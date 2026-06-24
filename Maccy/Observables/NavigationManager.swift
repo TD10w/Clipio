@@ -26,7 +26,7 @@ class NavigationManager { // swiftlint:disable:this type_body_length
     if let footerItem = footer.selectedItem {
       return footerItem.id
     }
-    return history.pasteStack?.id
+    return nil
   }
   private(set) var leadHistoryItem: HistoryItemDecorator? {
     didSet {
@@ -40,10 +40,6 @@ class NavigationManager { // swiftlint:disable:this type_body_length
         preview.cancelAutoOpen()
       }
     }
-  }
-
-  var pasteStackSelected: Bool {
-    return leadSelection != nil && leadSelection == history.pasteStack?.id
   }
 
   var isManualMultiSelect: Bool = false
@@ -134,10 +130,7 @@ class NavigationManager { // swiftlint:disable:this type_body_length
   }
 
   func selectWithoutScrolling(id: UUID) {
-    if let stack = history.pasteStack,
-       stack.id == id {
-      selectWithoutScrolling(item: nil, footerItem: nil)
-    } else if let item = history.items.first(where: { $0.id == id }) {
+    if let item = history.items.first(where: { $0.id == id }) {
       if !isMultiSelectInProgress {
         selectWithoutScrolling(item: item, footerItem: nil)
       }
@@ -209,8 +202,6 @@ class NavigationManager { // swiftlint:disable:this type_body_length
     if let historyItem = history.firstVisibleItem(where: { $0.id == lead }) {
       if let nextItem = history.visibleItem(before: historyItem) {
         selectFromKeyboardNavigation(item: nextItem)
-      } else if history.pasteStack != nil {
-        selectWithoutScrolling(item: nil)
       } else {
         highlightFirst()
       }
@@ -225,11 +216,6 @@ class NavigationManager { // swiftlint:disable:this type_body_length
 
   func highlightNext(allowCycle: Bool = false) {
     guard let lead = leadSelection else { return }
-
-    if leadSelection == history.pasteStack?.id {
-      highlightFirst()
-      return
-    }
 
     if let historyItem = history.firstVisibleItem(where: { $0.id == lead }) {
       if let nextItem = history.visibleItem(after: historyItem) {

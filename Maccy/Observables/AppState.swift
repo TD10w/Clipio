@@ -8,8 +8,6 @@ import SwiftUI
 class AppState: Sendable {
   static let shared = AppState(history: History.shared, footer: Footer())
 
-  let multiSelectionEnabled = false
-
   var appDelegate: AppDelegate?
   var popup: Popup
   var history: History
@@ -55,12 +53,7 @@ class AppState: Sendable {
   @MainActor
   func select() {
     if !navigator.selection.isEmpty {
-      if navigator.isMultiSelectInProgress {
-        navigator.isManualMultiSelect = false
-        history.startPasteStack(selection: &navigator.selection)
-      } else {
-        history.select(navigator.selection.first)
-      }
+      history.select(navigator.selection.first)
     } else if let item = footer.selectedItem {
       // TODO: Use item.suppressConfirmation, but it's not updated!
       if item.confirmation != nil, Defaults[.suppressClearAlert] == false {
@@ -81,12 +74,6 @@ class AppState: Sendable {
         history.togglePin(item)
       }
     }
-  }
-
-  @MainActor
-  func removePasteStack() {
-    history.interruptPasteStack()
-    navigator.highlightFirst()
   }
 
   @MainActor

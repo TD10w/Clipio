@@ -14,7 +14,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   let logger = Logger(label: "com.clipio.app")
 
   var items: [HistoryItemDecorator] = []
-  var pasteStack: PasteStack?
 
   var pinnedItems: [HistoryItemDecorator] { items.filter(\.isPinned) }
   var unpinnedItems: [HistoryItemDecorator] { items.filter(\.isUnpinned) }
@@ -331,94 +330,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     Task {
       searchQuery = ""
     }
-  }
-
-  @MainActor
-  func startPasteStack(selection: inout Selection<HistoryItemDecorator>) {
-    guard AppState.shared.multiSelectionEnabled else { return }
-    guard let item = selection.first else { return }
-    PasteStack.initializeIfNeeded()
-
-    let modifierFlags = currentModifierFlags()
-
-    let stack = PasteStack(items: selection.items, modifierFlags: modifierFlags)
-    pasteStack = stack
-
-    logger.info("Initialising PasteStack with \(stack.items.count) items")
-    logger.info("Copying \(item.item.title) from PasteStack")
-
-    if modifierFlags.isEmpty {
-      AppState.shared.popup.close()
-      Clipboard.shared.copy(item.item, removeFormatting: Defaults[.removeFormattingByDefault])
-    } else {
-      switch HistoryItemAction(modifierFlags) {
-      case .copy:
-        AppState.shared.popup.close()
-        Clipboard.shared.copy(item.item)
-      case .paste:
-        AppState.shared.popup.close()
-        Clipboard.shared.copy(item.item)
-      case .pasteWithoutFormatting:
-        AppState.shared.popup.close()
-        Clipboard.shared.copy(item.item, removeFormatting: true)
-        Clipboard.shared.paste()
-      case .unknown:
-        return
-      }
-    }
-
-    Task {
-      searchQuery = ""
-    }
-  }
-
-  func handlePasteStack() {
-    guard let stack = pasteStack else {
-      return
-    }
-
-    guard let pasted = stack.items.first else {
-      pasteStack = nil
-      logger.info("PasteStack is empty")
-      return
-    }
-
-    logger.info("PasteStack pasted \(pasted.item.title)")
-
-    stack.items.removeFirst()
-
-    guard let item = stack.items.first else {
-      pasteStack = nil
-      logger.info("PasteStack is empty")
-      return
-    }
-
-    logger.info("Copying \(item.item.title) from PasteStack. \(stack.items.count) items remaining in stack.")
-
-    Task {
-      if stack.modifierFlags.isEmpty {
-        await Clipboard.shared.copy(item.item, removeFormatting: Defaults[.removeFormattingByDefault])
-      } else {
-        switch HistoryItemAction(stack.modifierFlags) {
-        case .copy:
-          await Clipboard.shared.copy(item.item)
-        case .paste:
-          await Clipboard.shared.copy(item.item)
-        case .pasteWithoutFormatting:
-          await Clipboard.shared.copy(item.item, removeFormatting: true)
-        case .unknown:
-          return
-        }
-      }
-    }
-  }
-
-  func interruptPasteStack() {
-    guard pasteStack != nil else {
-      return
-    }
-    logger.info("Interrupting PasteStack")
-    pasteStack = nil
   }
 
   @MainActor

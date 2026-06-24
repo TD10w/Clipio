@@ -57,11 +57,7 @@ struct KeyHandlingView<Content: View>: View {
           searchQuery = ""
           return .handled
         case .deleteCurrentItem:
-          if appState.navigator.pasteStackSelected {
-            appState.removePasteStack()
-          } else {
-            appState.deleteSelection()
-          }
+          appState.deleteSelection()
           return .handled
         case .deleteOneCharFromSearch:
           searchFocused = true
@@ -109,38 +105,22 @@ struct KeyHandlingView<Content: View>: View {
           guard NSApp.characterPickerWindow == nil else {
             return .ignored
           }
-          guard AppState.shared.multiSelectionEnabled else {
-            return .ignored
-          }
-          appState.navigator.extendHighlightToNext()
-          return .handled
+          return .ignored
         case .extendToLast:
           guard NSApp.characterPickerWindow == nil else {
             return .ignored
           }
-          guard AppState.shared.multiSelectionEnabled else {
-            return .ignored
-          }
-          appState.navigator.extendHighlightToLast()
-          return .handled
+          return .ignored
         case .extendToPrevious:
           guard NSApp.characterPickerWindow == nil else {
             return .ignored
           }
-          guard AppState.shared.multiSelectionEnabled else {
-            return .ignored
-          }
-          appState.navigator.extendHighlightToPrevious()
-          return .handled
+          return .ignored
         case .extendToFirst:
           guard NSApp.characterPickerWindow == nil else {
             return .ignored
           }
-          guard AppState.shared.multiSelectionEnabled else {
-            return .ignored
-          }
-          appState.navigator.extendHighlightToFirst()
-          return .handled
+          return .ignored
         case .openPreferences:
           appState.openPreferences()
           return .handled
