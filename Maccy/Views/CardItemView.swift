@@ -8,7 +8,7 @@ struct CardItemView: View {
   let onSelect: () -> Void
 
   @State private var isHovered = false
-  @State private var selectionPopPhase = false
+  @State private var selectionPopEpoch = 0
 
   static let cardWidth = FloatingGlassStyle.cardWidth
   static let cardHeight = FloatingGlassStyle.cardHeight
@@ -84,7 +84,7 @@ struct CardItemView: View {
     // hit area, so the hover/click would land on the wrong spot. Hover feedback
     // comes from the rim/glow/shadow instead.
     .animation(.easeOut(duration: 0.16), value: isHovered)
-    .keyframeAnimator(initialValue: CGFloat(1.0), trigger: selectionPopPhase) { content, scale in
+    .keyframeAnimator(initialValue: CGFloat(1.0), trigger: selectionPopEpoch) { content, scale in
       content.scaleEffect(scale, anchor: .center)
     } keyframes: { _ in
       LinearKeyframe(1.06, duration: 0.07)
@@ -92,7 +92,7 @@ struct CardItemView: View {
     }
     .onChange(of: item.isSelected) { _, isSelected in
       guard isSelected else { return }
-      selectionPopPhase.toggle()
+      selectionPopEpoch += 1
     }
     .accessibilityElement(children: .ignore)
     .accessibilityIdentifier("copy-history-item")
