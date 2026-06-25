@@ -129,6 +129,11 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     // Cancel any in-progress close animation so we start clean.
     isAnimatingClose = false
     contentView?.layer?.removeAllAnimations()
+    // Snap window alpha to cancel any in-flight close animator.
+    NSAnimationContext.beginGrouping()
+    NSAnimationContext.current.duration = 0
+    animator().alphaValue = 0
+    NSAnimationContext.endGrouping()
 
     isPrewarming = false
     ignoresMouseEvents = false
@@ -201,6 +206,10 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   override func close() {
+    guard isPresented else {
+      super.close()
+      return
+    }
     guard !isAnimatingClose else { return }
     isAnimatingClose = true
 
@@ -221,14 +230,16 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
       ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
       animator().alphaValue = 0
     }, completionHandler: { [weak self] in
-      guard let self else { return }
-      self.isAnimatingClose = false
-      // Reset layer to identity so the next open starts clean.
-      self.contentView?.layer?.removeAllAnimations()
-      self.contentView?.layer?.transform = CATransform3DIdentity
-      self.alphaValue = 1
-      self.commitClose()   // calls super.close() — orders out the window
-      self.onClose()
+      DispatchQueue.main.async {
+        guard let self else { return }
+        self.isAnimatingClose = false
+        // Reset layer to identity so the next open starts clean.
+        self.contentView?.layer?.removeAllAnimations()
+        self.contentView?.layer?.transform = CATransform3DIdentity
+        self.alphaValue = 1
+        self.commitClose()   // calls super.close() — orders out the window
+        self.onClose()
+      }
     })
   }
 
