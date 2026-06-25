@@ -5,7 +5,6 @@ import SwiftUI
 private enum FloatingPanelAnim {
   static let openDuration: TimeInterval = 0.14
   static let closeDuration: TimeInterval = 0.10
-  static let openFromScale: CGFloat = 0.96
 }
 
 // An NSPanel subclass that implements floating panel traits.
@@ -128,7 +127,6 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
     // Cancel any in-progress close animation so we start clean.
     isAnimatingClose = false
-    contentView?.layer?.removeAllAnimations()
     // Snap window alpha to cancel any in-flight close animator.
     NSAnimationContext.beginGrouping()
     NSAnimationContext.current.duration = 0
@@ -153,29 +151,18 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
       setFrameOrigin(popupPosition.origin(size: frame.size, statusBarButton: statusBarButton))
     }
 
-    // Start invisible + scaled down, then pop into view.
+    // Fade in from invisible.
     alphaValue = 0
-    contentView?.wantsLayer = true
-    // Set model at final (identity) so animation removal snaps to full-size correctly.
-    contentView?.layer?.transform = CATransform3DIdentity
 
     orderFrontRegardless()
     makeKey()
     isPresented = true
 
-    // Fade alpha via NSAnimationContext (implicit NSWindow animation).
     NSAnimationContext.runAnimationGroup { ctx in
       ctx.duration = FloatingPanelAnim.openDuration
       ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
       animator().alphaValue = 1
     }
-
-    // Scale via explicit CABasicAnimation; fromValue starts at 0.96, model already at 1.0.
-    let scaleAnim = CABasicAnimation(keyPath: "transform.scale")
-    scaleAnim.fromValue = FloatingPanelAnim.openFromScale
-    scaleAnim.duration = FloatingPanelAnim.openDuration
-    scaleAnim.timingFunction = CAMediaTimingFunction(name: .easeOut)
-    contentView?.layer?.add(scaleAnim, forKey: "popOpen")
 
     if popupPosition == .statusItem {
       DispatchQueue.main.async {
@@ -217,14 +204,6 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     isPresented = false
     statusBarButton?.isHighlighted = false
 
-    // Set model at final (scaled-down) so removal snaps correctly; fromValue = 1.0.
-    contentView?.layer?.transform = CATransform3DMakeScale(FloatingPanelAnim.openFromScale, FloatingPanelAnim.openFromScale, 1)
-    let scaleAnim = CABasicAnimation(keyPath: "transform.scale")
-    scaleAnim.fromValue = 1.0
-    scaleAnim.duration = FloatingPanelAnim.closeDuration
-    scaleAnim.timingFunction = CAMediaTimingFunction(name: .easeIn)
-    contentView?.layer?.add(scaleAnim, forKey: "popClose")
-
     NSAnimationContext.runAnimationGroup({ ctx in
       ctx.duration = FloatingPanelAnim.closeDuration
       ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
@@ -233,9 +212,6 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
       DispatchQueue.main.async {
         guard let self else { return }
         self.isAnimatingClose = false
-        // Reset layer to identity so the next open starts clean.
-        self.contentView?.layer?.removeAllAnimations()
-        self.contentView?.layer?.transform = CATransform3DIdentity
         self.alphaValue = 1
         self.commitClose()   // calls super.close() — orders out the window
         self.onClose()
