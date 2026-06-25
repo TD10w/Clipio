@@ -1,6 +1,13 @@
 import Defaults
 import SwiftUI
 
+// Animation tunables for FloatingPanel — one-line changes to dial in the feel.
+private enum FloatingPanelAnim {
+  static let openDuration: TimeInterval = 0.14
+  static let closeDuration: TimeInterval = 0.10
+  static let openFromScale: CGFloat = 0.96
+}
+
 // An NSPanel subclass that implements floating panel traits.
 // https://stackoverflow.com/questions/46023769/how-to-show-a-window-without-stealing-focus-on-macos
 class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
@@ -9,6 +16,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   var statusBarButton: NSStatusBarButton?
   let onClose: () -> Void
   private var isPrewarming = false
+  private var isAnimatingClose = false
 
   // SwiftUI does its first card/glass composition only after the panel is placed
   // onscreen. Briefly show an almost-transparent, noninteractive panel at launch so
@@ -39,6 +47,10 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   override var isMovable: Bool {
     get { Defaults[.popupPosition] != .statusItem }
     set {}
+  }
+
+  private func commitClose() {
+    super.close()
   }
 
   init(
@@ -114,20 +126,19 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
+    // Cancel any in-progress close animation so we start clean.
+    isAnimatingClose = false
+    contentView?.layer?.removeAllAnimations()
+
     isPrewarming = false
-    alphaValue = 1
     ignoresMouseEvents = false
-    // Pick up a Light/Dark/Auto change made in Settings, but only re-assign when it
-    // actually changed — assigning NSWindow.appearance forces a full re-render.
     let desired = Defaults[.appearanceMode].nsAppearance
     if appearance?.name != desired?.name {
       appearance = desired
     }
     let size = Defaults[.windowSize]
-    // Shelf layout has a fixed default height; fall back to it when no dynamic height is set.
     let targetHeight = height > 0 ? min(height, size.height) : size.height
     setContentSize(NSSize(width: min(frame.width, size.width), height: targetHeight))
-    // Shelf drops down from the top-center of the screen, just under the menu bar.
     if let screen = NSScreen.main {
       let visible = screen.visibleFrame
       let originX = visible.minX + (visible.width - frame.width) / 2
@@ -136,9 +147,30 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     } else {
       setFrameOrigin(popupPosition.origin(size: frame.size, statusBarButton: statusBarButton))
     }
+
+    // Start invisible + scaled down, then pop into view.
+    alphaValue = 0
+    contentView?.wantsLayer = true
+    // Set model at final (identity) so animation removal snaps to full-size correctly.
+    contentView?.layer?.transform = CATransform3DIdentity
+
     orderFrontRegardless()
     makeKey()
     isPresented = true
+
+    // Fade alpha via NSAnimationContext (implicit NSWindow animation).
+    NSAnimationContext.runAnimationGroup { ctx in
+      ctx.duration = FloatingPanelAnim.openDuration
+      ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+      animator().alphaValue = 1
+    }
+
+    // Scale via explicit CABasicAnimation; fromValue starts at 0.96, model already at 1.0.
+    let scaleAnim = CABasicAnimation(keyPath: "transform.scale")
+    scaleAnim.fromValue = FloatingPanelAnim.openFromScale
+    scaleAnim.duration = FloatingPanelAnim.openDuration
+    scaleAnim.timingFunction = CAMediaTimingFunction(name: .easeOut)
+    contentView?.layer?.add(scaleAnim, forKey: "popOpen")
 
     if popupPosition == .statusItem {
       DispatchQueue.main.async {
@@ -169,11 +201,35 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   override func close() {
-    super.close()
+    guard !isAnimatingClose else { return }
+    isAnimatingClose = true
+
     AppState.shared.appDelegate?.hidePreviewNow()
     isPresented = false
     statusBarButton?.isHighlighted = false
-    onClose()
+
+    // Set model at final (scaled-down) so removal snaps correctly; fromValue = 1.0.
+    contentView?.layer?.transform = CATransform3DMakeScale(FloatingPanelAnim.openFromScale, FloatingPanelAnim.openFromScale, 1)
+    let scaleAnim = CABasicAnimation(keyPath: "transform.scale")
+    scaleAnim.fromValue = 1.0
+    scaleAnim.duration = FloatingPanelAnim.closeDuration
+    scaleAnim.timingFunction = CAMediaTimingFunction(name: .easeIn)
+    contentView?.layer?.add(scaleAnim, forKey: "popClose")
+
+    NSAnimationContext.runAnimationGroup({ ctx in
+      ctx.duration = FloatingPanelAnim.closeDuration
+      ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+      animator().alphaValue = 0
+    }, completionHandler: { [weak self] in
+      guard let self else { return }
+      self.isAnimatingClose = false
+      // Reset layer to identity so the next open starts clean.
+      self.contentView?.layer?.removeAllAnimations()
+      self.contentView?.layer?.transform = CATransform3DIdentity
+      self.alphaValue = 1
+      self.commitClose()   // calls super.close() — orders out the window
+      self.onClose()
+    })
   }
 
   // Allow text inputs inside the panel can receive focus
