@@ -218,7 +218,11 @@ struct CardItemView: View {
     AppState.shared.appDelegate?.panel.isDragging = true
 
     // File item: hand the real file URL to the OS so Finder / other apps accept a file drop.
+    // Only drag as a file if the file actually exists at the stored URL and it's not an image
+    // item (Universal Clipboard images have both fileURLs and hasImage = true; prefer PNG drag).
     if let url = item.item.fileURLs.first,
+       !item.hasImage,
+       (try? url.checkResourceIsReachable()) == true,
        let provider = NSItemProvider(contentsOf: url) {
       return provider
     }
@@ -254,9 +258,9 @@ struct CardItemView: View {
 
   @ViewBuilder
   private func dragPreview() -> some View {
-    if let url = item.item.fileURLs.first {
+    if let url = item.item.fileURLs.first, !item.hasImage {
       HStack(spacing: 8) {
-        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path(percentEncoded: false)))
           .resizable()
           .frame(width: 28, height: 28)
         Text(url.lastPathComponent)
