@@ -217,6 +217,12 @@ struct CardItemView: View {
     // and cancels the drag. FloatingPanel clears this on the next mouse-up.
     AppState.shared.appDelegate?.panel.isDragging = true
 
+    // File item: hand the real file URL to the OS so Finder / other apps accept a file drop.
+    if let url = item.item.fileURLs.first,
+       let provider = NSItemProvider(contentsOf: url) {
+      return provider
+    }
+
     let provider = NSItemProvider()
 
     // Image item: hand over normalized PNG data so other apps accept the drop.
@@ -248,7 +254,20 @@ struct CardItemView: View {
 
   @ViewBuilder
   private func dragPreview() -> some View {
-    if let image = item.thumbnailImage {
+    if let url = item.item.fileURLs.first {
+      HStack(spacing: 8) {
+        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+          .resizable()
+          .frame(width: 28, height: 28)
+        Text(url.lastPathComponent)
+          .font(.system(size: 12))
+          .lineLimit(2)
+      }
+      .padding(10)
+      .frame(maxWidth: 220, alignment: .leading)
+      .background(.regularMaterial)
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+    } else if let image = item.thumbnailImage {
       Image(nsImage: image)
         .resizable()
         .scaledToFit()
