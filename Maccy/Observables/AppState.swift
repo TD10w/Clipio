@@ -14,6 +14,10 @@ class AppState: Sendable {
   var footer: Footer
   var navigator: NavigationManager
 
+  // Drives the pop-out "unfold" animation. FloatingPanel sets this true on open (the shelf
+  // unfolds from a chip) and false on close (it collapses). ContentView animates off it.
+  var shelfExpanded = false
+
   var searchVisible: Bool {
     if !Defaults[.showSearch] { return false }
     switch Defaults[.searchVisibility] {
