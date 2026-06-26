@@ -4,7 +4,7 @@ import SwiftUI
 // Animation tunables for FloatingPanel — one-line changes to dial in the feel.
 private enum FloatingPanelAnim {
   static let openDuration: TimeInterval = 0.14
-  static let closeDuration: TimeInterval = 0.10
+  static let closeDuration: TimeInterval = 0.16
 }
 
 // An NSPanel subclass that implements floating panel traits.
@@ -158,6 +158,12 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     makeKey()
     isPresented = true
 
+    // Trigger the SwiftUI "unfold". Set on the next runloop so the collapsed seed state
+    // renders for one frame first, giving the spring something to animate from.
+    DispatchQueue.main.async {
+      AppState.shared.shelfExpanded = true
+    }
+
     NSAnimationContext.runAnimationGroup { ctx in
       ctx.duration = FloatingPanelAnim.openDuration
       ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
@@ -203,6 +209,8 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     AppState.shared.appDelegate?.hidePreviewNow()
     isPresented = false
     statusBarButton?.isHighlighted = false
+    // Collapse the shelf back toward the chip while the window fades out.
+    AppState.shared.shelfExpanded = false
 
     NSAnimationContext.runAnimationGroup({ ctx in
       ctx.duration = FloatingPanelAnim.closeDuration
