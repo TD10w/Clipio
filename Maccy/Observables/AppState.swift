@@ -5,7 +5,7 @@ import Settings
 import SwiftUI
 
 @Observable
-class AppState: Sendable {
+final class AppState {
   static let shared = AppState(history: History.shared, footer: Footer())
 
   var appDelegate: AppDelegate?

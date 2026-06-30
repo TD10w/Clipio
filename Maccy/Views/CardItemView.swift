@@ -15,6 +15,11 @@ struct CardItemView: View {
   static let cardRadius = FloatingGlassStyle.cardRadius
   private static let footerHeight: CGFloat = 28
 
+  @MainActor
+  static func togglePin(_ item: HistoryItemDecorator, in history: History) {
+    history.togglePin(item)
+  }
+
   private static let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
     let formatter = RelativeDateTimeFormatter()
     formatter.unitsStyle = .abbreviated
@@ -109,7 +114,9 @@ struct CardItemView: View {
   private var pinControl: some View {
     if item.isPinned {
       Button {
-        Task { @MainActor in item.togglePin() }
+        Task { @MainActor in
+          Self.togglePin(item, in: AppState.shared.history)
+        }
       } label: {
         Image(systemName: "pin.fill")
           .font(.system(size: 9, weight: .semibold))
@@ -122,7 +129,9 @@ struct CardItemView: View {
       .padding(6)
     } else if isHovered {
       Button {
-        Task { @MainActor in item.togglePin() }
+        Task { @MainActor in
+          Self.togglePin(item, in: AppState.shared.history)
+        }
       } label: {
         HStack(spacing: 3) {
           Image(systemName: "pin")

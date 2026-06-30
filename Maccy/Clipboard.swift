@@ -10,7 +10,7 @@ class Clipboard {
   private var onNewCopyHooks: [OnNewCopyHook] = []
   var changeCount: Int
 
-  private let pasteboard = NSPasteboard.general
+  private let pasteboard: NSPasteboard
 
   private var timer: Timer?
 
@@ -35,7 +35,8 @@ class Clipboard {
 
   private var sourceApp: NSRunningApplication? { NSWorkspace.shared.frontmostApplication }
 
-  init() {
+  init(pasteboard: NSPasteboard = .general) {
+    self.pasteboard = pasteboard
     changeCount = pasteboard.changeCount
   }
 

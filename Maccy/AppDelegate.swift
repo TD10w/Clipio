@@ -58,21 +58,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   private var statusItemVisibilityObserver: NSKeyValueObservation?
 
+  private func terminateOtherRunningCopies() {
+    guard let bundleID = Bundle.main.bundleIdentifier else { return }
+
+    let myPID = ProcessInfo.processInfo.processIdentifier
+    for other in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+    where other.processIdentifier != myPID {
+      other.forceTerminate()
+    }
+  }
+
   func applicationWillFinishLaunching(_ notification: Notification) { // swiftlint:disable:this function_body_length
     // A clipboard manager must be a single instance: multiple copies race on the
     // shared SwiftData store and can crash with a silent abort. Terminate any other
     // running copies (e.g. a launch-at-login build alongside an Xcode run) before we
     // touch the store below, so the newest instance owns it alone.
-    if let bundleID = Bundle.main.bundleIdentifier {
-      let myPID = ProcessInfo.processInfo.processIdentifier
-      for other in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
-      where other.processIdentifier != myPID {
-        other.forceTerminate()
-      }
+    if !RuntimeEnvironment.isTesting {
+      terminateOtherRunningCopies()
     }
 
     #if DEBUG
-    if CommandLine.arguments.contains("enable-testing") {
+    if RuntimeEnvironment.isTesting {
       SPUUpdater(hostBundle: Bundle.main,
                  applicationBundle: Bundle.main,
                  userDriver: SPUStandardUserDriver(hostBundle: Bundle.main, delegate: nil),
@@ -80,6 +86,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       .automaticallyChecksForUpdates = false
     }
     #endif
+
+    guard !RuntimeEnvironment.isTesting else { return }
 
     // Bridge FloatingPanel via AppDelegate.
     AppState.shared.appDelegate = self
@@ -136,6 +144,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   func applicationDidFinishLaunching(_ aNotification: Notification) {
+    guard !RuntimeEnvironment.isTesting else { return }
+
     migrateUserDefaults()
     disableUnusedGlobalHotkeys()
 

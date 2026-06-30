@@ -2,6 +2,10 @@ import XCTest
 @testable import Clipio
 
 final class FloatingGlassStyleTests: XCTestCase {
+  func testTestRunUsesIsolatedRuntimeEnvironment() {
+    XCTAssertTrue(RuntimeEnvironment.isTesting)
+  }
+
   func testSelectedDirectionUsesCrystalLensMetrics() {
     XCTAssertEqual(FloatingGlassStyle.cardWidth, 138)
     XCTAssertEqual(FloatingGlassStyle.cardHeight, 150)
@@ -15,10 +19,36 @@ final class FloatingGlassStyleTests: XCTestCase {
     XCTAssertEqual(FloatingGlassStyle.toolbarControlSize, 28)
     XCTAssertEqual(FloatingGlassStyle.textCardTopPadding, 32)
   }
+
+  func testReopenInvalidatesPendingCloseCompletion() {
+    var state = FloatingPanelAnimationState()
+    let closeToken = state.beginClose()
+
+    state.didOpen()
+
+    XCTAssertFalse(state.canFinishClose(closeToken))
+  }
 }
 
 @MainActor
 final class ShelfBehaviorTests: XCTestCase {
+  func testCardPinActionUsesHistoryOwner() {
+    final class RecordingHistory: History {
+      var toggledItem: HistoryItemDecorator?
+
+      override func togglePin(_ item: HistoryItemDecorator?) {
+        toggledItem = item
+      }
+    }
+
+    let history = RecordingHistory()
+    let item = HistoryItemDecorator(HistoryItem())
+
+    CardItemView.togglePin(item, in: history)
+
+    XCTAssertIdentical(history.toggledItem, item)
+  }
+
   func testPinnedItemsCanAppearAtTopOrBottom() {
     XCTAssertEqual(
       HistoryListView.orderedItems(pinned: [1, 2], unpinned: [3, 4], pinTo: .top),

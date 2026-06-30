@@ -7,6 +7,23 @@ private enum FloatingPanelAnim {
   static let closeDuration: TimeInterval = 0.16
 }
 
+struct FloatingPanelAnimationState {
+  private var generation = 0
+
+  mutating func didOpen() {
+    generation += 1
+  }
+
+  mutating func beginClose() -> Int {
+    generation += 1
+    return generation
+  }
+
+  func canFinishClose(_ token: Int) -> Bool {
+    token == generation
+  }
+}
+
 // An NSPanel subclass that implements floating panel traits.
 // https://stackoverflow.com/questions/46023769/how-to-show-a-window-without-stealing-focus-on-macos
 class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
@@ -16,6 +33,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   let onClose: () -> Void
   private var isPrewarming = false
   private var isAnimatingClose = false
+  private var animationState = FloatingPanelAnimationState()
 
   // SwiftUI does its first card/glass composition only after the panel is placed
   // onscreen. Briefly show an almost-transparent, noninteractive panel at launch so
@@ -125,6 +143,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
+    animationState.didOpen()
     // Cancel any in-progress close animation so we start clean.
     isAnimatingClose = false
     // Snap window alpha to cancel any in-flight close animator.
@@ -205,6 +224,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     }
     guard !isAnimatingClose else { return }
     isAnimatingClose = true
+    let closeToken = animationState.beginClose()
 
     AppState.shared.appDelegate?.hidePreviewNow()
     isPresented = false
@@ -219,6 +239,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     }, completionHandler: { [weak self] in
       DispatchQueue.main.async {
         guard let self else { return }
+        guard self.animationState.canFinishClose(closeToken), !self.isPresented else { return }
         self.isAnimatingClose = false
         self.alphaValue = 1
         self.commitClose()   // calls super.close() — orders out the window

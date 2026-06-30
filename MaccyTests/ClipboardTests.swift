@@ -4,8 +4,8 @@ import Defaults
 
 // swiftlint:disable type_body_length
 class ClipboardTests: XCTestCase {
-  let clipboard = Clipboard.shared
-  let pasteboard = NSPasteboard.general
+  let pasteboard = NSPasteboard(name: .init("com.clipio.tests.\(UUID().uuidString)"))
+  lazy var clipboard = Clipboard(pasteboard: pasteboard)
   let image = NSImage(named: "NSInfo")!
   let coloredString = NSAttributedString(string: "foo",
                                          attributes: [.foregroundColor: NSColor.red])
@@ -41,6 +41,16 @@ class ClipboardTests: XCTestCase {
     Defaults[.ignoredApps] = savedIgnoredApps
     Defaults[.ignoredPasteboardTypes] = savedIgnoredPasteboardTypes
     clipboard.clearHooks()
+  }
+
+  @MainActor
+  func testUsesInjectedPasteboardWithoutChangingSystemPasteboard() {
+    let systemChangeCount = NSPasteboard.general.changeCount
+
+    clipboard.copy("isolated")
+
+    XCTAssertEqual(pasteboard.string(forType: .string), "isolated")
+    XCTAssertEqual(NSPasteboard.general.changeCount, systemChangeCount)
   }
 
   func testChangesListenerAndAddHooks() {
