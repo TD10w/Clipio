@@ -52,7 +52,7 @@ struct SearchFieldView: View {
     // light/dark on its own.
     return shape
       .fill(.regularMaterial)
-      .overlay(shape.strokeBorder(Color.primary.opacity(0.14), lineWidth: 0.8))
+      .overlay(shape.strokeBorder(Color.primary.opacity(0.20), lineWidth: 0.8))
   }
 }
 

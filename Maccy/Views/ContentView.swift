@@ -6,11 +6,19 @@ struct ContentView: View {
   @State private var modifierFlags = ModifierFlags()
   @State private var scenePhase: ScenePhase = .background
 
+  @Environment(\.colorScheme) private var colorScheme
   @FocusState private var searchFocused: Bool
 
   var body: some View {
     ZStack {
       trayGlass
+
+      // In light mode the "clear" glass has no visual body — the desktop shows straight
+      // through, leaving cards floating on nothing. A white scrim gives the shelf mass.
+      if colorScheme == .light {
+        RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
+          .fill(Color.white.opacity(0.55))
+      }
 
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
         shelfContent
@@ -25,14 +33,15 @@ struct ContentView: View {
       )
     }
     // A single restrained perimeter reads the tray as one continuous lens of glass.
+    // Color.primary adapts: white in dark mode (gloss), near-black in light mode (visible edge).
     .overlay(
       RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
         .strokeBorder(
           LinearGradient(
             colors: [
-              Color.white.opacity(0.30),
-              FloatingGlassStyle.rimTint.opacity(0.22),
-              FloatingGlassStyle.spectralTint.opacity(0.14)
+              Color.primary.opacity(0.22),
+              FloatingGlassStyle.rimTint.opacity(0.26),
+              FloatingGlassStyle.spectralTint.opacity(0.16)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing

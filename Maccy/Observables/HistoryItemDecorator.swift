@@ -245,9 +245,6 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
       item.pin
     } onChange: {
       DispatchQueue.main.async {
-        if let pin = self.item.pin {
-          self.shortcuts = KeyShortcut.create(character: pin)
-        }
         self.synchronizeItemPin()
       }
     }

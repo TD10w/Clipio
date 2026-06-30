@@ -41,7 +41,10 @@ class NavigationManager { // swiftlint:disable:this type_body_length
       if !isKeyboardNavigating && !isMultiSelectInProgress,
          let hoverSelection = hoverSelectionWhileKeyboardNavigating {
         hoverSelectionWhileKeyboardNavigating = nil
-        select(id: hoverSelection)
+        // Handing off from keyboard to mouse: select the card under the cursor
+        // WITHOUT scrolling. The scrolling variant re-centered the shelf, shifting
+        // cards sideways so a different card slid under the cursor and got selected.
+        selectWithoutScrolling(id: hoverSelection)
       }
     }
   }

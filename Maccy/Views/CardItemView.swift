@@ -34,6 +34,16 @@ struct CardItemView: View {
     NSColor(hexString: item.title)
   }
 
+  private var shortcutBadgeLabel: String? {
+    if let pin = item.item.pin {
+      return "⌘\(pin.uppercased())"
+    }
+    if let number = item.numericShortcut {
+      return "⌘\(number)"
+    }
+    return nil
+  }
+
   var body: some View {
     ZStack(alignment: .bottom) {
       cardContent
@@ -50,10 +60,8 @@ struct CardItemView: View {
       }
     }
     .overlay(alignment: .topLeading) {
-      if let number = item.numericShortcut {
-        // Quiet monochrome chip: a constant hint for the ⌘N quick-paste shortcut that
-        // doesn't compete with the card content the way the old bright-blue pill did.
-        Text("⌘\(number)")
+      if let label = shortcutBadgeLabel {
+        Text(label)
           .font(.system(size: 10.5, weight: .semibold, design: .rounded))
           .foregroundStyle(.white.opacity(0.9))
           .padding(.horizontal, 6)
@@ -213,10 +221,10 @@ struct CardItemView: View {
     }
     .padding(.horizontal, 9)
     .frame(height: Self.footerHeight)
-    .background(Color.white.opacity(0.045))
+    .background(Color.primary.opacity(0.04))
     .overlay(alignment: .top) {
       Rectangle()
-        .fill(Color.white.opacity(0.16))
+        .fill(Color.primary.opacity(0.10))
         .frame(height: 0.5)
     }
   }
@@ -316,17 +324,24 @@ private struct FloatingGlassCardBackground: ViewModifier {
 private struct FloatingGlassRim: ViewModifier {
   let isHovered: Bool
 
+  @Environment(\.colorScheme) private var colorScheme
+
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
+    // In dark mode: white gloss highlights read as glass. In light mode: use lower-opacity
+    // primary (near-black) so the rim is actually visible against a light frosted card.
+    let isDark = colorScheme == .dark
+    let leadOpacity: Double = isDark ? (isHovered ? 0.92 : 0.68) : (isHovered ? 0.28 : 0.18)
+    let trailOpacity: Double = isDark ? 0.18 : 0.10
     content
       .overlay {
         shape.strokeBorder(
           LinearGradient(
             colors: [
-              .white.opacity(isHovered ? 0.92 : 0.68),
+              Color.primary.opacity(leadOpacity),
               FloatingGlassStyle.rimTint.opacity(isHovered ? 0.72 : 0.42),
               FloatingGlassStyle.spectralTint.opacity(isHovered ? 0.32 : 0.18),
-              .white.opacity(0.18)
+              Color.primary.opacity(trailOpacity)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing

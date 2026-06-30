@@ -393,29 +393,33 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       if let pin = item.item.pin {
         item.shortcuts = KeyShortcut.create(character: pin)
       }
+      item.numericShortcut = nil
+    }
+    updateUnpinnedShortcuts()
+  }
+
+  private func updateUnpinnedShortcuts() {
+    for item in pinnedItems {
+      item.numericShortcut = nil
     }
 
-    updateUnpinnedShortcuts()
+    let visibleUnpinned = unpinnedItems.filter(\.isVisible)
+    for item in visibleUnpinned {
+      item.shortcuts = []
+      item.numericShortcut = nil
+    }
+
+    var index = 1
+    for item in visibleUnpinned.prefix(9) {
+      item.shortcuts = KeyShortcut.create(character: String(index))
+      item.numericShortcut = index
+      index += 1
+    }
   }
 
   @MainActor
   private func updateTitle(item: HistoryItemDecorator, title: String) {
     item.title = title
     item.item.title = title
-  }
-
-  private func updateUnpinnedShortcuts() {
-    let visibleUnpinnedItems = unpinnedItems.filter(\.isVisible)
-    for item in visibleUnpinnedItems {
-      item.shortcuts = []
-      item.numericShortcut = nil
-    }
-
-    var index = 1
-    for item in visibleUnpinnedItems.prefix(9) {
-      item.shortcuts = KeyShortcut.create(character: String(index))
-      item.numericShortcut = index
-      index += 1
-    }
   }
 }
