@@ -20,6 +20,11 @@ final class FloatingGlassStyleTests: XCTestCase {
     XCTAssertEqual(FloatingGlassStyle.textCardTopPadding, 32)
   }
 
+  func testShelfAnimationDoesNotScaleInteractiveGeometry() {
+    XCTAssertEqual(FloatingGlassStyle.seedScaleX, 1)
+    XCTAssertEqual(FloatingGlassStyle.seedScaleY, 1)
+  }
+
   func testReopenInvalidatesPendingCloseCompletion() {
     var state = FloatingPanelAnimationState()
     let closeToken = state.beginClose()
