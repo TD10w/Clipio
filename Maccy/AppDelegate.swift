@@ -44,6 +44,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @objc
   private lazy var statusItem: NSStatusItem = {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    // Give AppKit a stable identity for this item so a Command-dragged menu bar
+    // position survives relaunches. This is especially important on crowded menu
+    // bars, where a newly inserted item can otherwise start outside the visible area.
+    statusItem.autosaveName = "ClipioStatusItem"
     // Visibility is controlled explicitly by Clipio's Appearance setting. Allowing
     // macOS to remove the item creates a second source of truth: the system can keep
     // reporting the item as hidden and immediately undo a user's attempt to show it.
