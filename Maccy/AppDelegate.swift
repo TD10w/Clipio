@@ -100,26 +100,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     Clipboard.shared.onNewCopy { History.shared.add($0) }
     Clipboard.shared.start()
 
+    // Materialize the status item synchronously while AppKit is still on its main
+    // launch path. Creating it lazily from an async defaults stream can leave the
+    // preference enabled without ever attaching a visible button to the menu bar.
+    statusItem.isVisible = Defaults[.showInStatusBar]
+
     Task {
       for await _ in Defaults.updates(.clipboardCheckInterval, initial: false) {
         Clipboard.shared.restart()
       }
     }
 
-    Task {
+    Task { @MainActor in
       for await value in Defaults.updates(.showInStatusBar) {
         statusItem.isVisible = value
       }
     }
 
-    Task {
+    Task { @MainActor in
       for await value in Defaults.updates(.menuIcon, initial: false) {
         statusItem.button?.image = value.image
       }
     }
 
     synchronizeMenuIconText()
-    Task {
+    Task { @MainActor in
       for await value in Defaults.updates(.showRecentCopyInMenuBar) {
         if value {
           statusItem.button?.title = AppState.shared.menuIconText
@@ -129,13 +134,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       }
     }
 
-    Task {
+    Task { @MainActor in
       for await _ in Defaults.updates(.ignoreEvents) {
         statusItem.button?.appearsDisabled = isStatusItemDisabled
       }
     }
 
-    Task {
+    Task { @MainActor in
       for await _ in Defaults.updates(.enabledPasteboardTypes) {
         statusItem.button?.appearsDisabled = isStatusItemDisabled
       }
