@@ -44,7 +44,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @objc
   private lazy var statusItem: NSStatusItem = {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    statusItem.behavior = .removalAllowed
+    // Visibility is controlled explicitly by Clipio's Appearance setting. Allowing
+    // macOS to remove the item creates a second source of truth: the system can keep
+    // reporting the item as hidden and immediately undo a user's attempt to show it.
+    statusItem.behavior = []
     statusItem.button?.action = #selector(performStatusItemClick)
     statusItem.button?.image = Defaults[.menuIcon].image
     statusItem.button?.imagePosition = .imageLeft
@@ -55,8 +58,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var isStatusItemDisabled: Bool {
     Defaults[.ignoreEvents] || Defaults[.enabledPasteboardTypes].isEmpty
   }
-
-  private var statusItemVisibilityObserver: NSKeyValueObservation?
 
   private func terminateOtherRunningCopies() {
     guard let bundleID = Bundle.main.bundleIdentifier else { return }
@@ -98,12 +99,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     Task {
       for await _ in Defaults.updates(.clipboardCheckInterval, initial: false) {
         Clipboard.shared.restart()
-      }
-    }
-
-    statusItemVisibilityObserver = observe(\.statusItem.isVisible, options: .new) { _, change in
-      if let newValue = change.newValue, Defaults[.showInStatusBar] != newValue {
-        Defaults[.showInStatusBar] = newValue
       }
     }
 
