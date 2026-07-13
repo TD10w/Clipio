@@ -30,6 +30,18 @@ final class FloatingGlassStyleTests: XCTestCase {
   }
 }
 
+final class MenuIconPresentationTests: XCTestCase {
+  func testImageIconsKeepImageLeftStatusItemPosition() {
+    for icon in [MenuIcon.maccy, .clipboard, .paperclip] {
+      XCTAssertEqual(icon.statusItemImagePosition, .imageLeft)
+    }
+  }
+
+  func testTextGlyphIconDoesNotReserveImageSpace() {
+    XCTAssertEqual(MenuIcon.scissors.statusItemImagePosition, .noImage)
+  }
+}
+
 @MainActor
 final class ShelfBehaviorTests: XCTestCase {
   func testCardPinActionUsesHistoryOwner() {

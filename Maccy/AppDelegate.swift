@@ -44,10 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @objc
   private lazy var statusItem: NSStatusItem = {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    // Visibility is controlled explicitly by Clipio's Appearance setting. Allowing
-    // macOS to remove the item creates a second source of truth: the system can keep
-    // reporting the item as hidden and immediately undo a user's attempt to show it.
-    statusItem.behavior = []
+    statusItem.behavior = .removalAllowed
     statusItem.button?.action = #selector(performStatusItemClick)
     statusItem.button?.image = Defaults[.menuIcon].image
     statusItem.button?.imagePosition = .imageLeft
@@ -58,6 +55,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var isStatusItemDisabled: Bool {
     Defaults[.ignoreEvents] || Defaults[.enabledPasteboardTypes].isEmpty
   }
+
+  private var statusItemVisibilityObserver: NSKeyValueObservation?
 
   private func terminateOtherRunningCopies() {
     guard let bundleID = Bundle.main.bundleIdentifier else { return }
@@ -99,6 +98,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     Task {
       for await _ in Defaults.updates(.clipboardCheckInterval, initial: false) {
         Clipboard.shared.restart()
+      }
+    }
+
+    // macOS can remove a status item independently (for example via Command-drag).
+    // Keep Clipio's checkbox aligned with the real AppKit visibility state so the
+    // setting never claims the icon is shown when the system has removed it.
+    statusItemVisibilityObserver = observe(\.statusItem.isVisible, options: .new) { _, change in
+      if let newValue = change.newValue, Defaults[.showInStatusBar] != newValue {
+        Defaults[.showInStatusBar] = newValue
       }
     }
 
@@ -237,20 +245,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     button.setAccessibilityLabel("Clipio")
     let showRecentCopy = Defaults[.showRecentCopyInMenuBar]
+    let menuIcon = Defaults[.menuIcon]
 
-    if Defaults[.menuIcon] == .scissors {
+    if menuIcon == .scissors {
       // On recent macOS versions an image-only custom asset can occupy a status
       // item slot without drawing. A text glyph follows the reliable title path.
       button.image = nil
       button.title = showRecentCopy
         ? "✂︎ \(AppState.shared.menuIconText)"
         : "✂︎"
-      button.imagePosition = .noImage
     } else {
-      button.image = Defaults[.menuIcon].image
+      button.image = menuIcon.image
       button.title = showRecentCopy ? AppState.shared.menuIconText : ""
-      button.imagePosition = showRecentCopy ? .imageLeft : .imageOnly
     }
+    button.imagePosition = menuIcon.statusItemImagePosition
   }
 
   private func disableUnusedGlobalHotkeys() {

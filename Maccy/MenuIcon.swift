@@ -9,6 +9,10 @@ enum MenuIcon: String, CaseIterable, Identifiable, Defaults.Serializable {
 
   var id: Self { self }
 
+  var statusItemImagePosition: NSControl.ImagePosition {
+    self == .scissors ? .noImage : .imageLeft
+  }
+
   var image: NSImage {
     switch self {
     case .maccy:
