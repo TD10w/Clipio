@@ -33,6 +33,8 @@ class HistoryTests: XCTestCase {
 
   func testAddingSame() {
     let first = historyItem("foo")
+    first.firstCopiedAt = .distantPast
+    first.lastCopiedAt = .distantPast
     first.title = "xyz"
     first.application = "iTerm.app"
     let firstDecorator = history.add(first)
@@ -42,10 +44,10 @@ class HistoryTests: XCTestCase {
 
     let third = historyItem("foo")
     third.application = "Xcode.app"
-    history.add(third)
+    let thirdDecorator = history.add(third)
 
     XCTAssertEqual(history.items, [firstDecorator, secondDecorator])
-    XCTAssertTrue(history.items[0].item.lastCopiedAt > history.items[0].item.firstCopiedAt)
+    XCTAssertTrue(thirdDecorator.item.lastCopiedAt > thirdDecorator.item.firstCopiedAt)
     // TODO: This works in reality but fails in tests?!
     // XCTAssertEqual(history.items[0].item.numberOfCopies, 2)
     XCTAssertEqual(history.items[0].item.pin, "f")

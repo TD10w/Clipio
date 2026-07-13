@@ -68,7 +68,7 @@ Replace Maccy's vertical list with a **horizontal card shelf** that drops down f
 
 - `Maccy/Views/HistoryListView.swift` — change from vertical List to horizontal ScrollView + cards
 - `Maccy/FloatingPanel.swift` — adjust window size/shape
-- `Maccy/Views/ListItemView.swift` — redesign individual item as a card
+- `Maccy/Views/CardItemView.swift` — individual clipboard card UI
 - `Clipio.xcodeproj` — app target, bundle ID, and icon configuration
 
 ## What We Decided NOT to Do

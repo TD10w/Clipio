@@ -44,15 +44,12 @@ Maccy works on macOS Sonoma 14 or higher.
 
 ## Install
 
-Download the latest version from the [releases](https://github.com/p0deje/Maccy/releases/latest) page, or use [Homebrew](https://brew.sh/):
-
-```sh
-brew install maccy
-```
+Clipio is currently a personal fork. Build `Clipio.xcodeproj` with the `Maccy`
+scheme, or install a locally produced Release build of `Clipio.app`.
 
 ## Usage
 
-1. <kbd>SHIFT (⇧)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>C</kbd> to popup Maccy or click on its icon in the menu bar.
+1. <kbd>SHIFT (⇧)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>C</kbd> to open Clipio or click its menu bar icon.
 2. Type what you want to find.
 3. To select the history item you wish to copy, press <kbd>ENTER</kbd>, or click the item, or use <kbd>COMMAND (⌘)</kbd> + `n` shortcut.
 4. To choose the history item and paste, press <kbd>OPTION (⌥)</kbd> + <kbd>ENTER</kbd>, or <kbd>OPTION (⌥)</kbd> + <kbd>CLICK</kbd> the item, or use <kbd>OPTION (⌥)</kbd> + `n` shortcut.

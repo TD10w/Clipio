@@ -13,6 +13,7 @@ class Clipboard {
   private let pasteboard: NSPasteboard
 
   private var timer: Timer?
+  private let enabledPasteboardTypesOverride: Set<NSPasteboard.PasteboardType>?
 
   private let dynamicTypePrefix = "dyn."
   private let microsoftSourcePrefix = "com.microsoft.ole.source."
@@ -30,13 +31,19 @@ class Clipboard {
     .transient
   ]
 
-  private var enabledTypes: Set<NSPasteboard.PasteboardType> { Defaults[.enabledPasteboardTypes] }
+  private var enabledTypes: Set<NSPasteboard.PasteboardType> {
+    enabledPasteboardTypesOverride ?? Defaults[.enabledPasteboardTypes]
+  }
   private var disabledTypes: Set<NSPasteboard.PasteboardType> { supportedTypes.subtracting(enabledTypes) }
 
   private var sourceApp: NSRunningApplication? { NSWorkspace.shared.frontmostApplication }
 
-  init(pasteboard: NSPasteboard = .general) {
+  init(
+    pasteboard: NSPasteboard = .general,
+    enabledPasteboardTypes: Set<NSPasteboard.PasteboardType>? = nil
+  ) {
     self.pasteboard = pasteboard
+    self.enabledPasteboardTypesOverride = enabledPasteboardTypes
     changeCount = pasteboard.changeCount
   }
 
@@ -61,6 +68,11 @@ class Clipboard {
   func restart() {
     timer?.invalidate()
     start()
+  }
+
+  func stop() {
+    timer?.invalidate()
+    timer = nil
   }
 
   @MainActor

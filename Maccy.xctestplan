@@ -18,11 +18,11 @@
       "containerPath" : "container:Clipio.xcodeproj",
       "identifier" : "DAEE38421E3DBEB100DD2966",
       "name" : "Clipio"
-    },
-    "testRepetitionMode" : "retryOnFailure"
-    },
+    }
+  },
   "testTargets" : [
     {
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:Clipio.xcodeproj",
         "identifier" : "DA360DAF1E3DF137005C6F6B",
@@ -30,6 +30,7 @@
       }
     },
     {
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:Clipio.xcodeproj",
         "identifier" : "DA0EE7B5204657830025FC60",

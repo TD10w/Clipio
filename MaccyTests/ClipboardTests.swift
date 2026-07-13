@@ -34,6 +34,7 @@ class ClipboardTests: XCTestCase {
 
   override func tearDown() {
     super.tearDown()
+    clipboard.stop()
     Defaults[.enabledPasteboardTypes] = savedEnabledTypes
     Defaults[.ignoreEvents] = savedIgnoreEvents
     Defaults[.ignoreOnlyNextEvent] = false
@@ -296,7 +297,10 @@ class ClipboardTests: XCTestCase {
   }
 
   func testRemovesDisabledTypes() {
-    Defaults[.enabledPasteboardTypes] = [.fileURL]
+    let clipboard = Clipboard(
+      pasteboard: pasteboard,
+      enabledPasteboardTypes: [.fileURL]
+    )
 
     let hookExpectation = expectation(description: "Hook is called")
     clipboard.onNewCopy({ (item: HistoryItem) in
@@ -314,6 +318,7 @@ class ClipboardTests: XCTestCase {
     pasteboard.writeObjects([item])
 
     waitForExpectations(timeout: 2)
+    clipboard.stop()
   }
 
   func testRemovesDynamicTypes() {
