@@ -102,26 +102,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       }
     }
 
+    updateStatusItemAppearance()
+
     Task {
       for await value in Defaults.updates(.showInStatusBar) {
         statusItem.isVisible = value
       }
     }
 
-    Task {
-      for await value in Defaults.updates(.menuIcon, initial: false) {
-        statusItem.button?.image = value.image
+    Task { @MainActor in
+      for await _ in Defaults.updates(.menuIcon, initial: false) {
+        updateStatusItemAppearance()
       }
     }
 
     synchronizeMenuIconText()
-    Task {
-      for await value in Defaults.updates(.showRecentCopyInMenuBar) {
-        if value {
-          statusItem.button?.title = AppState.shared.menuIconText
-        } else {
-          statusItem.button?.title = ""
-        }
+    Task { @MainActor in
+      for await _ in Defaults.updates(.showRecentCopyInMenuBar) {
+        updateStatusItemAppearance()
       }
     }
 
@@ -228,11 +226,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       AppState.shared.menuIconText
     } onChange: {
       DispatchQueue.main.async {
-        if Defaults[.showRecentCopyInMenuBar] {
-          self.statusItem.button?.title = AppState.shared.menuIconText
-        }
+        self.updateStatusItemAppearance()
         self.synchronizeMenuIconText()
       }
+    }
+  }
+
+  private func updateStatusItemAppearance() {
+    guard let button = statusItem.button else { return }
+
+    button.setAccessibilityLabel("Clipio")
+    let showRecentCopy = Defaults[.showRecentCopyInMenuBar]
+
+    if Defaults[.menuIcon] == .scissors {
+      // On recent macOS versions an image-only custom asset can occupy a status
+      // item slot without drawing. A text glyph follows the reliable title path.
+      button.image = nil
+      button.title = showRecentCopy
+        ? "✂︎ \(AppState.shared.menuIconText)"
+        : "✂︎"
+      button.imagePosition = .noImage
+    } else {
+      button.image = Defaults[.menuIcon].image
+      button.title = showRecentCopy ? AppState.shared.menuIconText : ""
+      button.imagePosition = showRecentCopy ? .imageLeft : .imageOnly
     }
   }
 
