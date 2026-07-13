@@ -4,6 +4,7 @@ import SwiftUI
 struct HistoryListView: View {
   @Binding var searchQuery: String
   @FocusState.Binding var searchFocused: Bool
+  @State private var cardFrames: [UUID: CGRect] = [:]
 
   @Environment(AppState.self) private var appState
   @Environment(\.scenePhase) private var scenePhase
@@ -29,6 +30,10 @@ struct HistoryListView: View {
     Self.orderedItems(pinned: pinnedItems, unpinned: unpinnedItems, pinTo: pinTo)
   }
 
+  static func hoveredItemID(at point: CGPoint, frames: [UUID: CGRect]) -> UUID? {
+    frames.first { $0.value.contains(point) }?.key
+  }
+
   var body: some View {
     ScrollView(.horizontal, showsIndicators: false) {
       ScrollViewReader { proxy in
@@ -38,6 +43,13 @@ struct HistoryListView: View {
               Task { appState.history.select(item) }
             }
             .id(item.id)
+            .onGeometryChange(for: CGRect.self) { proxy in
+              proxy.frame(in: .global)
+            } action: { frame in
+              if cardFrames[item.id] != frame {
+                cardFrames[item.id] = frame
+              }
+            }
           }
         }
         .padding(.horizontal, 14)
@@ -55,6 +67,19 @@ struct HistoryListView: View {
       }
     }
     .frame(maxWidth: .infinity)
+    .onContinuousHover(coordinateSpace: .global) { phase in
+      guard case .active(let point) = phase,
+            let id = Self.hoveredItemID(at: point, frames: cardFrames) else { return }
+      let navigator = appState.navigator
+      if !navigator.isKeyboardNavigating && !navigator.isMultiSelectInProgress {
+        navigator.selectWithoutScrolling(id: id)
+      } else {
+        navigator.hoverSelectionWhileKeyboardNavigating = id
+      }
+    }
+    .onChange(of: orderedItems.map(\.id)) { _, visibleIDs in
+      cardFrames = cardFrames.filter { visibleIDs.contains($0.key) }
+    }
     .onChange(of: scenePhase) {
       if scenePhase == .active {
         searchFocused = true

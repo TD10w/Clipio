@@ -50,8 +50,9 @@ struct ContentView: View {
         )
         .allowsHitTesting(false)
     )
-    // Pointer tracking must stay in the same geometry as the rendered shelf. These
-    // values intentionally remain at identity; opening motion comes from opacity.
+    // The glass body unfolds from a small chip at the top-center into the full shelf.
+    // scaleEffect is a GPU transform (no relayout) and settles to identity, so it can't
+    // shift AppKit hit-testing the way the removed window-layer scale did.
     .scaleEffect(
       x: appState.shelfExpanded ? 1 : FloatingGlassStyle.seedScaleX,
       y: appState.shelfExpanded ? 1 : FloatingGlassStyle.seedScaleY,

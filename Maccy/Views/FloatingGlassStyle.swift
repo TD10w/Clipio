@@ -17,12 +17,11 @@ enum FloatingGlassStyle {
   static let rimTint = Color(red: 0.72, green: 0.95, blue: 1.0)
   static let spectralTint = Color(red: 1.0, green: 0.72, blue: 0.92)
 
-  // Keep the interactive shelf at identity scale. A visual scale transform makes the
-  // rendered cards diverge from AppKit's unscaled tracking areas, so hover/click targets
-  // drift farther out of alignment toward the right edge. Opening still uses the content
-  // fade below; geometry must remain fixed for pointer accuracy.
-  static let seedScaleX: CGFloat = 1
-  static let seedScaleY: CGFloat = 1
+  // Pop-out "unfold" animation tunables — one-line changes to dial in the feel.
+  // The shelf scales up from this seed (anchored top-center) into full size. Because the
+  // whole view scales, the 30pt tray radius scales with it, giving the chip its pill shape.
+  static let seedScaleX: CGFloat = 0.12
+  static let seedScaleY: CGFloat = 0.10
   static let unfoldResponse: Double = 0.34
   static let unfoldDamping: Double = 0.78
   static let contentFadeDelay: Double = 0.16

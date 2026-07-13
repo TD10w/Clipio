@@ -52,6 +52,17 @@ struct CardItemView: View {
     .frame(width: Self.cardWidth, height: Self.cardHeight)
     .clipShape(RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous))
     .modifier(FloatingGlassCardBackground(isHovered: isHovered))
+    // Scale only the visual layer, applied before the hover/tap/drag modifiers below,
+    // so the card's hit-test frame stays fixed at cardWidth/cardHeight even while the
+    // pop animation is scaling the rendered content up to 6%. Otherwise the growing
+    // hit area bulges into neighboring cards and steals their hover/click. See 3c6242e
+    // for the same bug previously fixed at the window level.
+    .keyframeAnimator(initialValue: CGFloat(1.0), trigger: selectionPopEpoch) { content, scale in
+      content.scaleEffect(scale, anchor: .center)
+    } keyframes: { _ in
+      LinearKeyframe(1.06, duration: 0.07)
+      SpringKeyframe(1.0, duration: 0.22, spring: .bouncy(duration: 0.22, extraBounce: 0.05))
+    }
     .overlay {
       if item.isSelected {
         RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous)
@@ -74,6 +85,11 @@ struct CardItemView: View {
     .overlay(alignment: .topTrailing) {
       pinControl
     }
+    // A single onHover drives both the preview popup and the selection highlight.
+    // Two stacked onHover modifiers over the same frame each install their own
+    // AppKit tracking area; under fast pointer movement or list reordering they
+    // can fall out of sync with each other, leaving the highlight on a different
+    // card than the preview (or the hover state itself).
     .onHover { hovering in
       isHovered = hovering
       if hovering {
@@ -82,7 +98,6 @@ struct CardItemView: View {
         AppState.shared.appDelegate?.hidePreviewSoon(for: item)
       }
     }
-    .hoverSelectionId(item.id)
     .onTapGesture { onSelect() }
     .onDrag {
       dragProvider()
@@ -97,12 +112,6 @@ struct CardItemView: View {
     // hit area, so the hover/click would land on the wrong spot. Hover feedback
     // comes from the rim/glow/shadow instead.
     .animation(.easeOut(duration: 0.16), value: isHovered)
-    .keyframeAnimator(initialValue: CGFloat(1.0), trigger: selectionPopEpoch) { content, scale in
-      content.scaleEffect(scale, anchor: .center)
-    } keyframes: { _ in
-      LinearKeyframe(1.06, duration: 0.07)
-      SpringKeyframe(1.0, duration: 0.22, spring: .bouncy(duration: 0.22, extraBounce: 0.05))
-    }
     .onChange(of: item.isSelected) { _, isSelected in
       guard isSelected else { return }
       selectionPopEpoch += 1

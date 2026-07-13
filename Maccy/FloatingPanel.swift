@@ -70,6 +70,33 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     super.close()
   }
 
+  // Card order changes (new clipboard item inserted, pin toggled, item deleted) shift
+  // every card's frame, but AppKit only redelivers onHover to a NSTrackingArea on an
+  // actual mouse move. With a stationary cursor, the previously-hovered card's stale
+  // hover stays "selected" even though a different card is now under the pointer.
+  // Synthesizing a mouseMoved event at the current cursor location forces tracking
+  // areas to re-evaluate against the post-layout frames.
+  func resyncHoverAfterLayoutChange() {
+    guard isVisible else { return }
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      let event = NSEvent.mouseEvent(
+        with: .mouseMoved,
+        location: self.mouseLocationOutsideOfEventStream,
+        modifierFlags: [],
+        timestamp: ProcessInfo.processInfo.systemUptime,
+        windowNumber: self.windowNumber,
+        context: nil,
+        eventNumber: 0,
+        clickCount: 0,
+        pressure: 0
+      )
+      if let event {
+        self.sendEvent(event)
+      }
+    }
+  }
+
   init(
     contentRect: NSRect,
     identifier: String = "",

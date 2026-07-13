@@ -13,7 +13,15 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   static let shared = History()
   let logger = Logger(label: "com.clipio.app")
 
-  var items: [HistoryItemDecorator] = []
+  // Any reorder here shifts card frames without a real mouse move, which leaves
+  // AppKit's hover tracking pointed at the wrong card. Resync it whenever the
+  // displayed order actually changes (see FloatingPanel.resyncHoverAfterLayoutChange).
+  var items: [HistoryItemDecorator] = [] {
+    didSet {
+      guard oldValue != items else { return }
+      AppState.shared.appDelegate?.panel.resyncHoverAfterLayoutChange()
+    }
+  }
 
   var pinnedItems: [HistoryItemDecorator] { items.filter(\.isPinned) }
   var unpinnedItems: [HistoryItemDecorator] { items.filter(\.isUnpinned) }

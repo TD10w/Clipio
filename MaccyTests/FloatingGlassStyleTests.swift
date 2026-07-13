@@ -20,11 +20,6 @@ final class FloatingGlassStyleTests: XCTestCase {
     XCTAssertEqual(FloatingGlassStyle.textCardTopPadding, 32)
   }
 
-  func testShelfAnimationDoesNotScaleInteractiveGeometry() {
-    XCTAssertEqual(FloatingGlassStyle.seedScaleX, 1)
-    XCTAssertEqual(FloatingGlassStyle.seedScaleY, 1)
-  }
-
   func testReopenInvalidatesPendingCloseCompletion() {
     var state = FloatingPanelAnimationState()
     let closeToken = state.beginClose()
@@ -62,6 +57,24 @@ final class ShelfBehaviorTests: XCTestCase {
     XCTAssertEqual(
       HistoryListView.orderedItems(pinned: [1, 2], unpinned: [3, 4], pinTo: .bottom),
       [3, 4, 1, 2]
+    )
+  }
+
+  func testShelfHoverSelectionUsesMeasuredCardFrames() {
+    let first = UUID()
+    let second = UUID()
+    let frames = [
+      first: CGRect(x: 14, y: 10, width: 138, height: 150),
+      second: CGRect(x: 164, y: 10, width: 138, height: 150)
+    ]
+
+    XCTAssertEqual(
+      HistoryListView.hoveredItemID(at: CGPoint(x: 151, y: 80), frames: frames),
+      first
+    )
+    XCTAssertEqual(
+      HistoryListView.hoveredItemID(at: CGPoint(x: 164, y: 80), frames: frames),
+      second
     )
   }
 
