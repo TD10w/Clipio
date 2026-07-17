@@ -1,6 +1,34 @@
 import XCTest
 import Defaults
+import Logging
 @testable import Clipio
+
+private final class LogRecorder {
+  var messages: [String] = []
+}
+
+private struct RecordingLogHandler: LogHandler {
+  let recorder: LogRecorder
+  var logLevel: Logger.Level = .trace
+  var metadata: Logger.Metadata = [:]
+
+  subscript(metadataKey key: String) -> Logger.Metadata.Value? {
+    get { metadata[key] }
+    set { metadata[key] = newValue }
+  }
+
+  func log(
+    level: Logger.Level,
+    message: Logger.Message,
+    metadata: Logger.Metadata?,
+    source: String,
+    file: String,
+    function: String,
+    line: UInt
+  ) {
+    recorder.messages.append(message.description)
+  }
+}
 
 @MainActor
 class HistoryTests: XCTestCase {
@@ -29,6 +57,21 @@ class HistoryTests: XCTestCase {
     let first = history.add(historyItem("foo"))
     let second = history.add(historyItem("bar"))
     XCTAssertEqual(history.items, [second, first])
+  }
+
+  func testHistoryLogsNeverContainClipboardTitle() {
+    let marker = "private-clipboard-marker-\(UUID().uuidString)"
+    let recorder = LogRecorder()
+    var logger = Logger(label: "com.clipio.tests") { _ in
+      RecordingLogHandler(recorder: recorder)
+    }
+    logger.logLevel = .trace
+    let isolatedHistory = History(logger: logger)
+
+    isolatedHistory.add(historyItem(marker))
+    isolatedHistory.add(historyItem(marker))
+
+    XCTAssertFalse(recorder.messages.contains(where: { $0.contains(marker) }))
   }
 
   func testAddingSame() {

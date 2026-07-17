@@ -54,6 +54,18 @@ class ClipboardTests: XCTestCase {
     XCTAssertEqual(NSPasteboard.general.changeCount, systemChangeCount)
   }
 
+  func testCopyFeedbackPlaysSoundWithoutClipboardContent() {
+    let sound = NSSound(named: .init("ClipioTestsSound")) ?? NSSound()
+    var playedSound: NSSound?
+
+    Notifier.play(sound: sound) { receivedSound in
+      playedSound = receivedSound
+      return true
+    }
+
+    XCTAssertTrue(playedSound === sound)
+  }
+
   func testChangesListenerAndAddHooks() {
     let hookExpectation = expectation(description: "Hook is called")
     clipboard.onNewCopy({ (_: HistoryItem) in

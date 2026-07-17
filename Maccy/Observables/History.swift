@@ -11,7 +11,7 @@ import SwiftData
 @Observable
 class History: ItemsContainer { // swiftlint:disable:this type_body_length
   static let shared = History()
-  let logger = Logger(label: "com.clipio.app")
+  let logger: Logger
 
   // Any reorder here shifts card frames without a real mouse move, which leaves
   // AppKit's hover tracking pointed at the wrong card. Resync it whenever the
@@ -72,7 +72,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   @ObservationIgnored
   var all: [HistoryItemDecorator] = []
 
-  init() {
+  init(logger: Logger = Logger(label: "com.clipio.app")) {
+    self.logger = logger
+
     Task {
       for await _ in Defaults.updates(.pasteByDefault, initial: false) {
         updateShortcuts()
@@ -134,7 +136,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   @MainActor
   func insertIntoStorage(_ item: HistoryItem) throws {
-    logger.info("Inserting item with id '\(item.title)'")
+    logger.info("Inserting clipboard item")
     Storage.shared.context.insert(item)
     Storage.shared.context.processPendingChanges()
     try? Storage.shared.context.save()
@@ -144,7 +146,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   @MainActor
   func add(_ item: HistoryItem) -> HistoryItemDecorator {
     if #available(macOS 15.0, *) {
-      try? History.shared.insertIntoStorage(item)
+      try? insertIntoStorage(item)
     } else {
       // On macOS 14 the history item needs to be inserted into storage directly after creating it.
       // It was already inserted after creation in Clipboard.swift
@@ -162,7 +164,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       if !item.fromMaccy {
         item.application = existingHistoryItem.application
       }
-      logger.info("Removing duplicate item '\(item.title)'")
+      logger.info("Removing duplicate clipboard item")
       Storage.shared.context.delete(existingHistoryItem)
       removedItemIndex = all.firstIndex(where: { $0.item == existingHistoryItem })
       if let removedItemIndex {
@@ -170,7 +172,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       }
     } else {
       Task {
-        Notifier.notify(body: item.title, sound: .write)
+        Notifier.play(sound: .write)
       }
     }
 
