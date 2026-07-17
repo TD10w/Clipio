@@ -11,6 +11,9 @@ class Clipboard {
   var changeCount: Int
 
   private let pasteboard: NSPasteboard
+  private let accessibilityAllowed: () -> Bool
+  private let permissionDenied: () -> Void
+  private let pasteEventPoster: () -> Void
 
   private var timer: Timer?
   private let enabledPasteboardTypesOverride: Set<NSPasteboard.PasteboardType>?
@@ -40,10 +43,16 @@ class Clipboard {
 
   init(
     pasteboard: NSPasteboard = .general,
-    enabledPasteboardTypes: Set<NSPasteboard.PasteboardType>? = nil
+    enabledPasteboardTypes: Set<NSPasteboard.PasteboardType>? = nil,
+    accessibilityAllowed: @escaping () -> Bool = { Accessibility.requestTrust() },
+    permissionDenied: @escaping () -> Void = { Accessibility.explainMissingPermission() },
+    pasteEventPoster: @escaping () -> Void = { Clipboard.postPasteEvent() }
   ) {
     self.pasteboard = pasteboard
     self.enabledPasteboardTypesOverride = enabledPasteboardTypes
+    self.accessibilityAllowed = accessibilityAllowed
+    self.permissionDenied = permissionDenied
+    self.pasteEventPoster = pasteEventPoster
     changeCount = pasteboard.changeCount
   }
 
@@ -122,9 +131,18 @@ class Clipboard {
   }
 
   // Based on https://github.com/Clipy/Clipy/blob/develop/Clipy/Sources/Services/PasteService.swift.
-  func paste() {
-    Accessibility.check()
+  @discardableResult
+  func paste() -> Bool {
+    guard accessibilityAllowed() else {
+      permissionDenied()
+      return false
+    }
 
+    pasteEventPoster()
+    return true
+  }
+
+  private static func postPasteEvent() {
     // Add flag that left/right modifier key has been pressed.
     // See https://github.com/TermiT/Flycut/pull/18 for details.
     let cmdFlag = CGEventFlags(rawValue: UInt64(KeyChord.pasteKeyModifiers.rawValue) | 0x000008)
