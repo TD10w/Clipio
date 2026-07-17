@@ -1,6 +1,5 @@
 import Defaults
 import KeyboardShortcuts
-import Sparkle
 import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -76,16 +75,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     if !RuntimeEnvironment.isTesting {
       terminateOtherRunningCopies()
     }
-
-    #if DEBUG
-    if RuntimeEnvironment.isTesting {
-      SPUUpdater(hostBundle: Bundle.main,
-                 applicationBundle: Bundle.main,
-                 userDriver: SPUStandardUserDriver(hostBundle: Bundle.main, delegate: nil),
-                 delegate: nil)
-      .automaticallyChecksForUpdates = false
-    }
-    #endif
 
     guard !RuntimeEnvironment.skipsApplicationStartup else { return }
 
