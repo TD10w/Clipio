@@ -6,6 +6,28 @@ final class FloatingGlassStyleTests: XCTestCase {
     XCTAssertTrue(RuntimeEnvironment.isTesting)
   }
 
+  func testUITestArgumentsUseIsolatedFullAppMode() {
+    let environment = RuntimeEnvironment(
+      arguments: ["Clipio", "enable-testing", "enable-ui-testing"]
+    )
+
+    XCTAssertTrue(environment.isUITesting)
+    XCTAssertFalse(environment.isUnitTesting)
+    XCTAssertTrue(environment.isTesting)
+    XCTAssertTrue(environment.usesInMemoryStorage)
+    XCTAssertFalse(environment.skipsApplicationStartup)
+  }
+
+  func testUnitTestArgumentsUseIsolatedHeadlessMode() {
+    let environment = RuntimeEnvironment(arguments: ["Clipio", "enable-testing"])
+
+    XCTAssertFalse(environment.isUITesting)
+    XCTAssertTrue(environment.isUnitTesting)
+    XCTAssertTrue(environment.isTesting)
+    XCTAssertTrue(environment.usesInMemoryStorage)
+    XCTAssertTrue(environment.skipsApplicationStartup)
+  }
+
   func testSelectedDirectionUsesCrystalLensMetrics() {
     XCTAssertEqual(FloatingGlassStyle.cardWidth, 138)
     XCTAssertEqual(FloatingGlassStyle.cardHeight, 150)

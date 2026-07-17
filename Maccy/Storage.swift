@@ -20,11 +20,9 @@ class Storage {
   init() {
     var config = ModelConfiguration(url: url)
 
-    #if DEBUG
-    if RuntimeEnvironment.isTesting {
+    if RuntimeEnvironment.usesInMemoryStorage {
       config = ModelConfiguration(isStoredInMemoryOnly: true)
     }
-    #endif
 
     do {
       container = try ModelContainer(for: HistoryItem.self, configurations: config)

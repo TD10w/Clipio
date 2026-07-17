@@ -87,7 +87,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     #endif
 
-    guard !RuntimeEnvironment.isTesting else { return }
+    guard !RuntimeEnvironment.skipsApplicationStartup else { return }
 
     // Bridge FloatingPanel via AppDelegate.
     AppState.shared.appDelegate = self
@@ -112,9 +112,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     updateStatusItemAppearance()
 
-    Task {
-      for await value in Defaults.updates(.showInStatusBar) {
-        statusItem.isVisible = value
+    if RuntimeEnvironment.isUITesting {
+      statusItem.isVisible = true
+    } else {
+      Task {
+        for await value in Defaults.updates(.showInStatusBar) {
+          statusItem.isVisible = value
+        }
       }
     }
 
@@ -145,7 +149,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   func applicationDidFinishLaunching(_ aNotification: Notification) {
-    guard !RuntimeEnvironment.isTesting else { return }
+    guard !RuntimeEnvironment.skipsApplicationStartup else { return }
 
     migrateUserDefaults()
     disableUnusedGlobalHotkeys()
@@ -170,7 +174,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // than making the first shortcut press pay for the SwiftData fetch and view setup.
     Task { @MainActor in
       try? await AppState.shared.history.load()
+      if RuntimeEnvironment.isUITesting {
+        let environment = ProcessInfo.processInfo.environment
+        for key in ["CLIPIO_UI_TEST_OLDER_ITEM", "CLIPIO_UI_TEST_NEWER_ITEM"] {
+          if let fixture = environment[key] {
+            let content = HistoryItemContent(
+              type: NSPasteboard.PasteboardType.string.rawValue,
+              value: fixture.data(using: .utf8)
+            )
+            let item = HistoryItem(contents: [content])
+            item.title = item.generateTitle()
+            AppState.shared.history.add(item)
+          }
+        }
+      }
       panel.prewarm()
+      if RuntimeEnvironment.isUITesting {
+        panel.open(height: AppState.shared.popup.height, at: .statusItem)
+      }
     }
   }
 
