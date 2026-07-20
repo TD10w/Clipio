@@ -5,6 +5,13 @@ import Defaults
 // swiftlint:disable force_try
 @MainActor
 class HistoryItemTests: XCTestCase {
+  override func setUp() {
+    super.setUp()
+    // Storage.shared lives for the entire unit-test process. Discard pending models
+    // from earlier tests before this class exercises an explicit save.
+    Storage.shared.context.rollback()
+  }
+
   func testTitleForString() {
     let title = "foo"
     let item = historyItem(title)
