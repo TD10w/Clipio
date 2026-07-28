@@ -4,13 +4,13 @@ A 20-second, 1920×1080 Hyperframes product film for Clipio.
 
 ## What it shows
 
+- A cleaner Apple-style product-material cover
 - The `⇧⌘C` shortcut and top-center shelf unfold
-- Text, image, and detected hex-color card treatments
-- Search and the hover preview popup
-- Native drag and drop into a document
+- A real hover → `⌥P` → pinned-card interaction
+- One complete Safari `⌘C` → Clipio capture → `Return` choose → Notes `⌘V` workflow
 - The closing position: `Fast. Visual. Local.`
 
-This first version is a faithful motion reconstruction built from Clipio's real visual
+This second version is a faithful motion reconstruction built from Clipio's real visual
 assets and current layout metrics. It intentionally avoids exposing live clipboard data.
 A sanitized screen recording can replace the reconstructed interaction shots later without
 changing the story or timing.

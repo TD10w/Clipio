@@ -988,6 +988,748 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
+
+      /* Version 2 — product-material cover and copy/paste workflow */
+      .editorial-step {
+        display: inline-flex;
+        align-items: center;
+        width: max-content;
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid rgba(142, 220, 255, 0.3);
+        border-radius: 999px;
+        background: rgba(7, 17, 31, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        color: #bde9ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 650;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        backdrop-filter: blur(18px);
+      }
+
+      .workflow-keycap {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 64px;
+        padding: 0 24px;
+        border: 1px solid rgba(244, 248, 255, 0.26);
+        border-radius: 20px;
+        background: rgba(225, 238, 252, 0.16);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.28),
+          0 24px 60px rgba(1, 9, 25, 0.3);
+        color: #f4f8ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 27px;
+        font-weight: 650;
+        backdrop-filter: blur(24px);
+      }
+
+      .workflow-keycap small {
+        color: #c5d6e8;
+        font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .app-window {
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.26);
+        border-radius: 34px;
+        background: #f0f5fb;
+        box-shadow:
+          0 46px 110px rgba(0, 7, 20, 0.48),
+          0 0 0 1px rgba(255, 255, 255, 0.08);
+        color: #07111f;
+      }
+
+      .app-toolbar {
+        display: flex;
+        align-items: center;
+        height: 64px;
+        padding: 0 24px;
+        gap: 11px;
+        border-bottom: 1px solid rgba(7, 17, 31, 0.1);
+        background: #dfe8f2;
+      }
+
+      .window-title {
+        margin-left: 12px;
+        color: #34465a;
+        font-size: 18px;
+        font-weight: 620;
+      }
+
+      .demo-cursor {
+        position: absolute;
+        z-index: 30;
+        width: 46px;
+        height: 58px;
+        pointer-events: none;
+        filter: drop-shadow(0 8px 12px rgba(1, 9, 25, 0.42));
+        transform-origin: 0 0;
+      }
+
+      .demo-cursor svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .click-ring {
+        position: absolute;
+        z-index: 29;
+        width: 64px;
+        height: 64px;
+        border: 3px solid rgba(244, 200, 74, 0.9);
+        border-radius: 50%;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* Scene 1 — deliberate product-material cover */
+      #scene-1 {
+        background-color: #07111f;
+      }
+
+      #scene-1 .scene-content {
+        position: relative;
+        justify-content: center;
+        padding: 0 0 0 152px;
+      }
+
+      .cover-spotlight {
+        position: absolute;
+        right: -120px;
+        top: 36px;
+        width: 1120px;
+        height: 1000px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(142, 220, 255, 0.18) 0%,
+          rgba(80, 140, 196, 0.08) 38%,
+          rgba(7, 17, 31, 0) 68%
+        );
+      }
+
+      .cover-glass-anchor {
+        position: absolute;
+        right: -260px;
+        top: 172px;
+        width: 1040px;
+        height: 716px;
+        transform: rotate(-5deg);
+      }
+
+      .cover-glass {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border: 2px solid rgba(244, 248, 255, 0.34);
+        border-radius: 108px;
+        background: rgba(214, 232, 248, 0.12);
+        box-shadow:
+          inset 0 2px 0 rgba(255, 255, 255, 0.34),
+          inset 0 -2px 0 rgba(142, 220, 255, 0.16),
+          -60px 72px 150px rgba(0, 5, 16, 0.48);
+        backdrop-filter: blur(42px) saturate(1.16);
+      }
+
+      .cover-glass::before {
+        content: "";
+        position: absolute;
+        left: 72px;
+        right: 72px;
+        top: 94px;
+        height: 76px;
+        border: 1px solid rgba(244, 248, 255, 0.18);
+        border-radius: 38px;
+        background: rgba(4, 12, 24, 0.48);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      }
+
+      .cover-glass-rim {
+        position: absolute;
+        inset: 5px;
+        border: 1px solid rgba(142, 220, 255, 0.24);
+        border-radius: 102px;
+      }
+
+      .cover-card-row {
+        position: absolute;
+        left: 72px;
+        right: 72px;
+        top: 206px;
+        display: flex;
+        gap: 30px;
+      }
+
+      .cover-card {
+        position: relative;
+        width: 246px;
+        height: 330px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.24);
+        border-radius: 48px;
+        background: rgba(7, 17, 31, 0.68);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.16),
+          0 24px 48px rgba(1, 9, 25, 0.25);
+      }
+
+      .cover-card.warm {
+        background: #f4c84a;
+      }
+
+      .cover-card.cool {
+        background: #72e0d1;
+      }
+
+      .cover-card-lines {
+        display: flex;
+        flex-direction: column;
+        padding: 74px 28px;
+        gap: 18px;
+      }
+
+      .cover-card-line {
+        height: 14px;
+        border-radius: 7px;
+        background: rgba(244, 248, 255, 0.72);
+      }
+
+      .cover-card-line.short {
+        width: 64%;
+      }
+
+      .cover-lockup {
+        position: relative;
+        z-index: 4;
+        display: grid;
+        grid-template-columns: 234px minmax(0, 650px);
+        align-items: center;
+        gap: 62px;
+        width: 1000px;
+      }
+
+      .cover-icon-wrap {
+        position: relative;
+        width: 234px;
+        height: 234px;
+      }
+
+      .cover-icon-wrap::before {
+        content: "";
+        position: absolute;
+        inset: -56px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(244, 200, 74, 0.2) 0%,
+          rgba(244, 200, 74, 0.06) 46%,
+          rgba(244, 200, 74, 0) 72%
+        );
+      }
+
+      .cover-icon {
+        position: relative;
+        width: 234px;
+        height: 234px;
+        border-radius: 54px;
+        box-shadow:
+          0 34px 92px rgba(0, 0, 0, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.18);
+      }
+
+      .cover-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      .cover-wordmark {
+        margin: 0;
+        color: #f4f8ff;
+        font-size: 128px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 0.9;
+      }
+
+      .cover-tagline {
+        margin: 0;
+        color: #c4d3e4;
+        font-size: 39px;
+        font-weight: 350;
+        letter-spacing: -0.025em;
+      }
+
+      .cover-meta {
+        position: absolute;
+        left: 154px;
+        bottom: 74px;
+        color: #8299b3;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      /* Scene 2 — open and pin */
+      .s2-open-copy,
+      .s2-pin-copy {
+        position: absolute;
+        left: 138px;
+        bottom: 88px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .s2-pin-copy {
+        opacity: 0;
+      }
+
+      .s2-open-chip,
+      .s2-pin-chip {
+        position: absolute;
+        right: 138px;
+        bottom: 102px;
+      }
+
+      .s2-pin-chip {
+        opacity: 0;
+      }
+
+      .pin-pill,
+      .pin-filled {
+        position: absolute;
+        z-index: 8;
+        right: 10px;
+        top: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pin-pill {
+        min-height: 34px;
+        padding: 0 10px;
+        gap: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 17px;
+        background: rgba(0, 0, 0, 0.48);
+        color: #f4f8ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 15px;
+        font-weight: 650;
+        opacity: 0;
+      }
+
+      .pin-pill svg,
+      .pin-filled svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .pin-filled {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.22);
+        color: #f4c84a;
+        opacity: 0;
+      }
+
+      .pin-filled svg path {
+        fill: currentColor;
+      }
+
+      #s2-number-badge,
+      #s2-letter-badge {
+        position: absolute;
+      }
+
+      #s2-letter-badge {
+        opacity: 0;
+        background: #805f08;
+      }
+
+      .s2-pointer {
+        left: 1488px;
+        top: 650px;
+      }
+
+      .s2-click-ring {
+        left: 448px;
+        top: 214px;
+      }
+
+      /* Scene 3 — copy and capture */
+      #scene-3 .scene-content {
+        position: relative;
+        padding: 70px 92px;
+      }
+
+      .workflow-heading {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .workflow-heading .headline {
+        font-size: 76px;
+      }
+
+      .browser-window {
+        position: absolute;
+        left: 92px;
+        top: 242px;
+        width: 1190px;
+        height: 720px;
+      }
+
+      .browser-address {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 520px;
+        height: 36px;
+        margin-left: 220px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
+        color: #5b6c7f;
+        font-size: 16px;
+      }
+
+      .browser-page {
+        position: relative;
+        height: 656px;
+        padding: 86px 94px;
+        background: #f7f2e9;
+      }
+
+      .browser-kicker {
+        color: #637283;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 17px;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .browser-title {
+        max-width: 840px;
+        margin: 28px 0 42px;
+        color: #172231;
+        font-size: 69px;
+        font-weight: 760;
+        letter-spacing: -0.05em;
+        line-height: 1.03;
+      }
+
+      .browser-copy-line {
+        max-width: 860px;
+        color: #506174;
+        font-size: 31px;
+        font-weight: 430;
+        line-height: 1.45;
+      }
+
+      .selected-copy {
+        position: relative;
+        display: inline-block;
+        padding: 2px 6px 4px;
+        border-radius: 7px;
+        background: #88b9f2;
+        color: #07111f;
+      }
+
+      .copy-flash {
+        position: absolute;
+        inset: -8px;
+        border: 3px solid rgba(244, 248, 255, 0.95);
+        border-radius: 12px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .copy-keycap {
+        position: absolute;
+        right: 100px;
+        top: 250px;
+      }
+
+      .capture-connector {
+        position: absolute;
+        left: 1254px;
+        top: 632px;
+        width: 122px;
+        height: 2px;
+        background: #8edcff;
+        box-shadow: 0 0 18px rgba(142, 220, 255, 0.48);
+        transform-origin: left center;
+      }
+
+      .capture-card {
+        position: absolute;
+        right: 96px;
+        top: 438px;
+        width: 438px;
+        height: 316px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.32);
+        border-radius: 48px;
+        background: rgba(223, 238, 252, 0.16);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.24),
+          0 34px 82px rgba(1, 9, 25, 0.44);
+        color: #f4f8ff;
+        opacity: 0;
+        backdrop-filter: blur(32px);
+      }
+
+      .capture-card-body {
+        display: flex;
+        align-items: center;
+        height: 250px;
+        padding: 54px 34px 34px;
+        color: #f4f8ff;
+        font-size: 34px;
+        font-weight: 560;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+      }
+
+      .capture-card-footer {
+        display: flex;
+        align-items: center;
+        height: 66px;
+        padding: 0 24px;
+        gap: 12px;
+        border-top: 1px solid rgba(244, 248, 255, 0.14);
+        background: rgba(7, 17, 31, 0.44);
+        color: #d5e2ef;
+        font-size: 18px;
+      }
+
+      .safari-mark {
+        position: relative;
+        width: 28px;
+        height: 28px;
+        border: 3px solid #e8f4ff;
+        border-radius: 50%;
+        background: #2f91e9;
+        box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.2);
+      }
+
+      .safari-mark::after {
+        content: "";
+        position: absolute;
+        left: 11px;
+        top: 4px;
+        width: 3px;
+        height: 16px;
+        border-radius: 2px;
+        background: #f45c58;
+        transform: rotate(34deg);
+      }
+
+      .save-step {
+        position: absolute;
+        right: 106px;
+        top: 356px;
+        opacity: 0;
+      }
+
+      /* Scene 4 — choose from Clipio over Notes */
+      #scene-4 .scene-content,
+      #scene-5 .scene-content {
+        position: relative;
+        padding: 0;
+      }
+
+      .notes-wallpaper {
+        position: absolute;
+        inset: 0;
+        background-color: #9fb7cd;
+        background-image:
+          radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 34%),
+          radial-gradient(circle at 86% 90%, rgba(60, 104, 146, 0.38), rgba(60, 104, 146, 0) 38%);
+      }
+
+      .notes-window {
+        position: absolute;
+        left: 170px;
+        top: 188px;
+        width: 1580px;
+        height: 780px;
+      }
+
+      .notes-body {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        height: 716px;
+      }
+
+      .notes-sidebar {
+        padding: 38px 28px;
+        border-right: 1px solid rgba(7, 17, 31, 0.1);
+        background: #e7edf4;
+      }
+
+      .notes-sidebar-title {
+        margin-bottom: 28px;
+        color: #27394c;
+        font-size: 28px;
+        font-weight: 720;
+      }
+
+      .notes-row {
+        margin-bottom: 12px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        color: #4b6075;
+        font-size: 20px;
+        font-weight: 520;
+      }
+
+      .notes-row.active {
+        background: #f4c84a;
+        color: #35280a;
+      }
+
+      .notes-editor {
+        position: relative;
+        padding: 72px 86px;
+        background: #fbfcfe;
+      }
+
+      .notes-title {
+        margin: 0 0 34px;
+        color: #07111f;
+        font-size: 62px;
+        font-weight: 780;
+        letter-spacing: -0.045em;
+      }
+
+      .notes-placeholder {
+        color: #8493a3;
+        font-size: 26px;
+        font-weight: 430;
+      }
+
+      .notes-caret {
+        display: inline-block;
+        width: 3px;
+        height: 34px;
+        margin-left: 2px;
+        border-radius: 2px;
+        background: #2478d4;
+        vertical-align: -6px;
+      }
+
+      .choose-step,
+      .paste-step {
+        position: absolute;
+        z-index: 22;
+        left: 88px;
+        top: 76px;
+      }
+
+      .choose-open-chip {
+        position: absolute;
+        z-index: 22;
+        right: 88px;
+        top: 72px;
+      }
+
+      .choose-return-chip {
+        position: absolute;
+        z-index: 22;
+        right: 102px;
+        bottom: 76px;
+      }
+
+      .choose-shelf-wrap {
+        position: absolute;
+        z-index: 18;
+        left: 222px;
+        top: 104px;
+        transform-origin: top center;
+      }
+
+      .choose-shelf-wrap .history-card:first-child .card-body {
+        font-size: 23px;
+      }
+
+      .choose-shelf-wrap .history-card:first-child .source-app {
+        border-radius: 50%;
+        background: #2f91e9;
+      }
+
+      .paste-keycap {
+        position: absolute;
+        z-index: 22;
+        right: 88px;
+        top: 72px;
+      }
+
+      .pasted-line {
+        position: relative;
+        display: inline-block;
+        max-width: 850px;
+        margin-top: 12px;
+        padding: 8px 12px 10px;
+        border-radius: 12px;
+        background: rgba(244, 200, 74, 0.22);
+        color: #122238;
+        font-size: 38px;
+        font-weight: 520;
+        letter-spacing: -0.025em;
+        opacity: 0;
+      }
+
+      .paste-confirmation {
+        position: absolute;
+        left: 86px;
+        bottom: 78px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: #4c6379;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0;
+      }
+
+      .paste-confirmation::before {
+        content: "";
+        width: 46px;
+        height: 2px;
+        background: #c79a1f;
+      }
+
+      .paste-headline {
+        position: absolute;
+        left: 88px;
+        bottom: 74px;
+        color: #f4f8ff;
+        font-size: 58px;
+        font-weight: 780;
+        letter-spacing: -0.045em;
+      }
     </style>
   </head>
   <body>
@@ -999,29 +1741,45 @@
       data-width="1920"
       data-height="1080"
     >
-      <div id="scene-1" class="scene">
-        <div id="s1-ambient" class="ambient"></div>
+      <div id="scene-1" class="scene" data-layout-allow-occlusion>
+        <div id="s1-spotlight" class="cover-spotlight"></div>
+        <div id="s1-glass-anchor" class="cover-glass-anchor" data-layout-allow-overflow>
+          <div id="s1-glass" class="cover-glass">
+            <div class="cover-glass-rim"></div>
+            <div class="cover-card-row">
+              <div class="cover-card">
+                <div class="cover-card-lines">
+                  <div class="cover-card-line"></div>
+                  <div class="cover-card-line short"></div>
+                  <div class="cover-card-line"></div>
+                </div>
+              </div>
+              <div class="cover-card warm"></div>
+              <div class="cover-card cool"></div>
+            </div>
+          </div>
+        </div>
         <div class="scene-content">
-          <div class="brand-lockup">
-            <div id="s1-icon-wrap" class="brand-icon-wrap">
+          <div id="s1-lockup" class="cover-lockup">
+            <div id="s1-icon-wrap" class="cover-icon-wrap">
               <img
                 id="s1-icon"
-                class="brand-icon"
+                class="cover-icon"
                 src="assets/clipio-icon.png"
                 alt="Clipio app icon"
               />
             </div>
-            <div class="brand-copy">
-              <div id="s1-eyebrow" class="eyebrow">Clipboard, reimagined</div>
-              <h1 id="s1-wordmark" class="wordmark">Clipio</h1>
-              <p id="s1-tagline" class="brand-tagline">Your clipboard, made visual.</p>
-              <div id="s1-highlight" class="glass-highlight"></div>
+            <div class="cover-copy">
+              <div id="s1-eyebrow" class="eyebrow">Clipboard manager for macOS</div>
+              <h1 id="s1-wordmark" class="cover-wordmark">Clipio</h1>
+              <p id="s1-tagline" class="cover-tagline">Your clipboard, made visual.</p>
             </div>
           </div>
+          <div id="s1-meta" class="cover-meta">Fast · Visual · Local</div>
         </div>
       </div>
 
-      <div id="scene-2" class="scene">
+      <div id="scene-2" class="scene" data-layout-allow-occlusion>
         <div id="s2-desktop" class="desktop s2-desktop">
           <div id="s2-menu" class="menu-bar">
             <div class="menu-left">
@@ -1055,16 +1813,33 @@
                 </div>
               </div>
               <div class="shelf-cards">
-                <div class="history-card selected">
-                  <div class="shortcut-badge">⌘1</div>
-                  <div class="card-body">Ship the small thing. Make it feel obvious.</div>
+                <div id="s2-pin-card" class="history-card selected">
+                  <div id="s2-number-badge" class="shortcut-badge">⌘1</div>
+                  <div id="s2-letter-badge" class="shortcut-badge">⌘A</div>
+                  <div class="card-body">A calmer way to work.</div>
                   <div class="card-footer"><span class="source-app"></span><span>12 sec ago</span></div>
+                  <div id="s2-pin-pill" class="pin-pill">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M8 4.5h8l-1.6 5.1 2.7 2.7v1.2H6.9v-1.2l2.7-2.7L8 4.5Zm4 9v6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span>⌥P</span>
+                  </div>
+                  <div id="s2-pin-filled" class="pin-filled">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M8 3.8h8.1l-1.5 5.5 2.8 2.8v1.7H13v6.4h-2v-6.4H6.6v-1.7l2.8-2.8L8 3.8Z" />
+                    </svg>
+                  </div>
                 </div>
                 <div class="history-card">
                   <div class="shortcut-badge">⌘2</div>
-                  <div class="card-body image">
-                    <img src="assets/sample-shelf.jpg" alt="Clipboard image sample" />
-                  </div>
+                  <div class="card-body">Design notes for the next Clipio release.</div>
                   <div class="card-footer"><span class="source-app"></span><span>1 min ago</span></div>
                 </div>
                 <div class="history-card">
@@ -1087,78 +1862,134 @@
             </div>
           </div>
 
-          <div class="s2-copy">
+          <div id="s2-open-copy" class="s2-open-copy">
             <div id="s2-eyebrow" class="eyebrow">One shortcut away</div>
             <h2 id="s2-headline" class="headline">Always within reach.</h2>
           </div>
 
-          <div id="s2-shortcut" class="glass-chip s2-shortcut">
-            <span class="keycap">⇧⌘C</span>
-            <span>Open Clipio</span>
+          <div id="s2-pin-copy" class="s2-pin-copy">
+            <div class="eyebrow">Keep it close</div>
+            <h2 class="headline">Pin what matters.</h2>
+          </div>
+
+          <div id="s2-open-chip" class="workflow-keycap s2-open-chip">
+            <span>⇧⌘C</span>
+            <small>Open Clipio</small>
+          </div>
+
+          <div id="s2-pin-chip" class="workflow-keycap s2-pin-chip">
+            <span>⌥P</span>
+            <small>Pin</small>
+          </div>
+
+          <div id="s2-click-ring" class="click-ring s2-click-ring" data-layout-ignore></div>
+
+          <div id="s2-pointer" class="demo-cursor s2-pointer" data-layout-ignore>
+            <svg viewBox="0 0 42 54" aria-hidden="true">
+              <path
+                d="M3 2 L3 42 L13.8 32.6 L21.8 51 L30.6 47 L22.5 29 L37.8 28 Z"
+                fill="#F4F8FF"
+                stroke="#07111F"
+                stroke-width="3"
+                stroke-linejoin="round"
+              />
+            </svg>
           </div>
         </div>
       </div>
 
-      <div id="scene-3" class="scene" data-layout-allow-overflow>
+      <div id="scene-3" class="scene" data-layout-allow-occlusion>
         <div id="s3-ambient" class="ambient"></div>
         <div class="scene-content">
-          <div class="mode-header">
+          <div class="workflow-heading">
             <div>
-              <div id="s3-eyebrow" class="eyebrow">Visual history</div>
-              <h2 id="s3-headline" class="headline">Clear at a glance.</h2>
+              <div id="s3-step" class="editorial-step">01 · Copy</div>
+              <h2 id="s3-headline" class="headline">Copy once.</h2>
             </div>
-            <p id="s3-subhead" class="subhead">Text, images, and colors keep their own visual rhythm.</p>
+            <p id="s3-subhead" class="subhead">Clipio notices what you copy and keeps it close.</p>
           </div>
 
-          <div class="mode-deck">
-            <div id="s3-text-item" class="mode-item">
-              <div class="mode-label"><span class="mode-index">01</span><span>TEXT</span></div>
-              <div class="mode-card">
-                <div class="shortcut-badge">⌘1</div>
-                <div class="mode-text">Make the important thing the easiest thing to find.</div>
-              </div>
+          <div id="s3-browser" class="app-window browser-window">
+            <div class="app-toolbar">
+              <span class="traffic-dot red"></span>
+              <span class="traffic-dot yellow"></span>
+              <span class="traffic-dot green"></span>
+              <div class="browser-address">fieldnotes.design</div>
             </div>
-
-            <div id="s3-image-item" class="mode-item">
-              <div class="mode-label"><span class="mode-index">02</span><span>IMAGE</span></div>
-              <div class="mode-card mode-image">
-                <div class="shortcut-badge">⌘2</div>
-                <img src="assets/sample-mode.jpg" alt="Clipboard image sample" />
-              </div>
+            <div class="browser-page">
+              <div class="browser-kicker">Field Notes · Issue 04</div>
+              <h3 class="browser-title">Make space for the work that matters.</h3>
+              <p class="browser-copy-line">
+                Build tools that stay out of the way.
+                <span id="s3-selected-copy" class="selected-copy">
+                  A calmer way to work.
+                  <span id="s3-copy-flash" class="copy-flash"></span>
+                </span>
+              </p>
             </div>
+          </div>
 
-            <div id="s3-color-item" class="mode-item">
-              <div class="mode-label"><span class="mode-index">03</span><span>COLOR</span></div>
-              <div class="mode-card mode-color">
-                <div class="shortcut-badge">⌘3</div>
-                <div class="mode-color-value">#72E0D1</div>
-              </div>
+          <div id="s3-copy-keycap" class="workflow-keycap copy-keycap">
+            <span>⌘C</span>
+            <small>Copy</small>
+          </div>
+
+          <div id="s3-capture-connector" class="capture-connector"></div>
+
+          <div id="s3-save-step" class="editorial-step save-step">02 · Saved to Clipio</div>
+
+          <div id="s3-capture-card" class="capture-card">
+            <div class="shortcut-badge">⌘1</div>
+            <div class="capture-card-body">A calmer way to work.</div>
+            <div class="capture-card-footer">
+              <span class="safari-mark"></span>
+              <span>Safari</span>
+              <span>·</span>
+              <span>now</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="scene-4" class="scene" data-layout-allow-overflow>
-        <div id="s4-ambient" class="ambient"></div>
+      <div id="scene-4" class="scene" data-layout-allow-overlap data-layout-allow-occlusion>
+        <div id="s4-wallpaper" class="notes-wallpaper"></div>
         <div class="scene-content">
-          <div class="search-heading">
-            <div>
-              <div id="s4-eyebrow" class="eyebrow">Search + preview</div>
-              <h2 id="s4-headline" class="headline">Find what you copied.</h2>
+          <div id="s4-notes" class="app-window notes-window">
+            <div class="app-toolbar">
+              <span class="traffic-dot red"></span>
+              <span class="traffic-dot yellow"></span>
+              <span class="traffic-dot green"></span>
+              <span class="window-title">Notes</span>
             </div>
-            <div id="s4-keycap" class="glass-chip">
-              <span class="keycap">type to filter</span>
+            <div class="notes-body">
+              <div class="notes-sidebar">
+                <div class="notes-sidebar-title">iCloud</div>
+                <div class="notes-row active">Ideas</div>
+                <div class="notes-row">Launch notes</div>
+                <div class="notes-row">Reading list</div>
+              </div>
+              <div class="notes-editor">
+                <h3 class="notes-title">Ideas</h3>
+                <span class="notes-placeholder">Start typing</span><span id="s4-caret" class="notes-caret"></span>
+              </div>
             </div>
           </div>
 
-          <div class="search-stage">
-            <div id="s4-shelf" class="clipio-shelf search-shelf">
+          <div id="s4-step" class="editorial-step choose-step">03 · Choose in Clipio</div>
+
+          <div id="s4-open-keycap" class="workflow-keycap choose-open-chip">
+            <span>⇧⌘C</span>
+            <small>Open Clipio</small>
+          </div>
+
+          <div id="s4-shelf" class="choose-shelf-wrap" data-layout-allow-occlusion>
+            <div class="clipio-shelf">
               <div class="shelf-rim"></div>
               <div class="shelf-header">
                 <div class="shelf-brand">Clipio</div>
                 <div class="search-field">
                   <span class="search-icon">⌕</span>
-                  <span id="s4-search-value" class="search-value"></span>
+                  <span>type to search…</span>
                 </div>
                 <div class="toolbar">
                   <div class="tool-button">⌫</div>
@@ -1166,91 +1997,79 @@
                   <div class="tool-button">⏻</div>
                 </div>
               </div>
-              <div id="s4-results" class="shelf-cards">
-                <div id="s4-image-card" class="history-card selected">
+              <div class="shelf-cards">
+                <div id="s4-captured-card" class="history-card selected">
                   <div class="shortcut-badge">⌘1</div>
-                  <div class="card-body image">
-                    <img src="assets/sample-search-card.jpg" alt="Filtered clipboard image" />
-                  </div>
-                  <div class="card-footer"><span class="source-app"></span><span>design reference</span></div>
+                  <div class="card-body">A calmer way to work.</div>
+                  <div class="card-footer"><span class="source-app"></span><span>Safari · now</span></div>
                 </div>
                 <div class="history-card">
                   <div class="shortcut-badge">⌘2</div>
-                  <div class="card-body">Clipio design notes and interaction checklist.</div>
-                  <div class="card-footer"><span class="source-app"></span><span>design notes</span></div>
+                  <div class="card-body">Design notes for the next Clipio release.</div>
+                  <div class="card-footer"><span class="source-app"></span><span>1 min ago</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘3</div>
+                  <div class="card-body">Your clipboard, made visual.</div>
+                  <div class="card-footer"><span class="source-app"></span><span>4 min ago</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘4</div>
+                  <div class="card-body color"></div>
+                  <div class="color-value">#72E0D1</div>
+                  <div class="card-footer"><span class="source-app"></span><span>6 min ago</span></div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div id="s4-callout" class="hover-callout">
-              <div class="eyebrow">Hover to look closer</div>
-              <p class="subhead">A larger preview appears below the shelf without interrupting your flow.</p>
-            </div>
-
-            <div id="s4-preview" class="preview-panel">
-              <img src="assets/sample-preview.jpg" alt="Large clipboard preview" />
-              <div class="preview-caption">IMAGE PREVIEW</div>
-            </div>
+          <div id="s4-return-keycap" class="workflow-keycap choose-return-chip">
+            <span>↩</span>
+            <small>Choose</small>
           </div>
         </div>
       </div>
 
-      <div id="scene-5" class="scene">
-        <div id="s5-ambient" class="ambient"></div>
+      <div id="scene-5" class="scene" data-layout-allow-occlusion>
+        <div id="s5-wallpaper" class="notes-wallpaper"></div>
         <div class="scene-content">
-          <div class="reuse-heading">
-            <div>
-              <div id="s5-eyebrow" class="eyebrow">Native drag and drop</div>
-              <h2 id="s5-headline" class="headline">Drag. Drop. Done.</h2>
+          <div id="s5-notes" class="app-window notes-window">
+            <div class="app-toolbar">
+              <span class="traffic-dot red"></span>
+              <span class="traffic-dot yellow"></span>
+              <span class="traffic-dot green"></span>
+              <span class="window-title">Notes</span>
             </div>
-            <p id="s5-subhead" class="subhead">Move text, images, and files into the app where you need them.</p>
+            <div class="notes-body">
+              <div class="notes-sidebar">
+                <div class="notes-sidebar-title">iCloud</div>
+                <div class="notes-row active">Ideas</div>
+                <div class="notes-row">Launch notes</div>
+                <div class="notes-row">Reading list</div>
+              </div>
+              <div class="notes-editor">
+                <h3 class="notes-title">Ideas</h3>
+                <div id="s5-empty-entry">
+                  <span class="notes-placeholder">Start typing</span><span class="notes-caret"></span>
+                </div>
+                <div id="s5-pasted-line" class="pasted-line">
+                  A calmer way to work.<span id="s5-final-caret" class="notes-caret"></span>
+                </div>
+                <div id="s5-confirmation" class="paste-confirmation">Pasted from Clipio</div>
+              </div>
+            </div>
           </div>
 
-          <div class="reuse-stage" data-layout-allow-overlap>
-            <div id="s5-source" class="source-stack">
-              <div class="stack-card back"></div>
-              <div class="stack-card front">
-                <div class="shortcut-badge">⌘1</div>
-                Ship the small thing. Make it feel obvious.
-              </div>
-            </div>
+          <div id="s5-step" class="editorial-step paste-step">04 · Paste</div>
 
-            <div id="s5-document" class="document">
-              <div class="document-toolbar">
-                <span class="traffic-dot red"></span>
-                <span class="traffic-dot yellow"></span>
-                <span class="traffic-dot green"></span>
-              </div>
-              <div class="document-body">
-                <div class="document-title">Launch notes</div>
-                <div class="document-line long"></div>
-                <div class="document-line mid"></div>
-                <div class="document-drop" data-layout-allow-occlusion>
-                  Ship the small thing. Make it feel obvious.
-                </div>
-              </div>
-            </div>
-
-            <div id="s5-drag-card" class="drag-card">
-              Ship the small thing. Make it feel obvious.
-            </div>
-
-            <div id="s5-cursor" class="cursor" data-layout-ignore>
-              <svg viewBox="0 0 42 54" aria-hidden="true">
-                <path
-                  d="M3 2 L3 42 L13.8 32.6 L21.8 51 L30.6 47 L22.5 29 L37.8 28 Z"
-                  fill="#F4F8FF"
-                  stroke="#07111F"
-                  stroke-width="3"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
+          <div id="s5-paste-keycap" class="workflow-keycap paste-keycap">
+            <span>⌘V</span>
+            <small>Paste</small>
           </div>
         </div>
       </div>
 
-      <div id="scene-6" class="scene">
+      <div id="scene-6" class="scene" data-layout-allow-occlusion>
         <div id="s6-ambient" class="ambient"></div>
         <div class="scene-content">
           <div id="s6-layout" class="outro-layout">
@@ -1289,178 +2108,406 @@
 
       const tl = gsap.timeline({ paused: true });
 
-      // Scene 1 — brand build
-      tl.from("#s1-ambient", { opacity: 0, scale: 0.92, duration: 1.2, ease: "sine.out" }, 0.2);
-      tl.from(
-        "#s1-icon-wrap",
-        { x: -80, scale: 0.86, opacity: 0, duration: 0.72, ease: "expo.out" },
-        0.28,
+      // Scene 1 — clean product-material cover
+      tl.fromTo(
+        "#s1-spotlight",
+        { opacity: 0, scale: 0.94 },
+        { opacity: 1, scale: 1, duration: 1.35, ease: "sine.out" },
+        0.18,
       );
-      tl.from("#s1-icon", { rotation: -3, duration: 0.88, ease: "back.out(1.15)" }, 0.34);
-      tl.from("#s1-eyebrow", { x: 44, opacity: 0, duration: 0.42, ease: "power3.out" }, 0.52);
-      tl.from("#s1-wordmark", { y: 58, opacity: 0, duration: 0.62, ease: "expo.out" }, 0.68);
-      tl.from("#s1-tagline", { x: 46, opacity: 0, duration: 0.7, ease: "power2.out" }, 0.88);
-      tl.from("#s1-highlight", { scaleX: 0, opacity: 0, duration: 0.5, ease: "power4.out" }, 1.14);
+      tl.fromTo(
+        "#s1-glass",
+        { x: 190, opacity: 0 },
+        { x: 0, opacity: 1, duration: 1.08, ease: "expo.out" },
+        0.24,
+      );
+      tl.fromTo(
+        "#s1-glass .cover-card",
+        { y: 70, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.74, stagger: 0.11, ease: "power3.out" },
+        0.52,
+      );
+      tl.fromTo(
+        "#s1-icon-wrap",
+        { x: -58, scale: 0.9, opacity: 0 },
+        { x: 0, scale: 1, opacity: 1, duration: 0.68, ease: "expo.out" },
+        0.34,
+      );
+      tl.fromTo(
+        "#s1-icon",
+        { rotation: -2.4 },
+        { rotation: 0, duration: 0.82, ease: "back.out(1.12)" },
+        0.4,
+      );
+      tl.fromTo(
+        "#s1-eyebrow",
+        { x: 34, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.4, ease: "power4.out" },
+        0.56,
+      );
+      tl.fromTo(
+        "#s1-wordmark",
+        { y: 48, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.58, ease: "expo.out" },
+        0.7,
+      );
+      tl.fromTo(
+        "#s1-tagline",
+        { x: 36, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.66, ease: "power2.out" },
+        0.9,
+      );
+      tl.fromTo("#s1-meta", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "sine.out" }, 1.12);
+      tl.to("#s1-glass", { y: -8, duration: 1.1, ease: "sine.inOut" }, 1.32);
 
       // Transition 1 — restrained blur crossfade
       tl.to(
         "#scene-1",
-        { filter: "blur(12px)", scale: 1.025, opacity: 0, duration: 0.54, ease: "power2.inOut" },
-        2.4,
+        { filter: "blur(12px)", scale: 1.022, opacity: 0, duration: 0.48, ease: "power2.in" },
+        2.42,
       );
       tl.fromTo(
         "#scene-2",
-        { filter: "blur(12px)", scale: 0.975, opacity: 0 },
-        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.54, ease: "power2.inOut" },
-        2.46,
+        { filter: "blur(12px)", scale: 0.978, opacity: 0 },
+        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.52, ease: "power3.out" },
+        2.48,
       );
 
-      // Scene 2 — real shelf unfold
-      tl.from("#s2-menu", { y: -46, opacity: 0, duration: 0.36, ease: "power3.out" }, 2.72);
-      tl.from(
+      // Scene 2 — open the shelf, hover, and pin
+      tl.fromTo(
+        "#s2-menu",
+        { y: -46, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.34, ease: "power3.out" },
+        2.68,
+      );
+      tl.fromTo(
         "#s2-shelf",
+        { scaleX: 0.12, scaleY: 0.1, opacity: 0, transformOrigin: "top center" },
         {
-          scaleX: 0.12,
-          scaleY: 0.1,
-          opacity: 0,
+          scaleX: 1,
+          scaleY: 1,
+          opacity: 1,
           transformOrigin: "top center",
-          duration: 0.68,
+          duration: 0.66,
           ease: "back.out(1.15)",
         },
-        2.84,
+        2.78,
       );
-      tl.from("#s2-eyebrow", { x: -42, opacity: 0, duration: 0.38, ease: "power4.out" }, 3.22);
-      tl.from("#s2-headline", { y: 54, opacity: 0, duration: 0.58, ease: "expo.out" }, 3.32);
-      tl.from("#s2-shortcut", { x: 72, scale: 0.92, opacity: 0, duration: 0.5, ease: "power3.out" }, 3.48);
-
-      // Transition 2 — blur crossfade into the editorial close-up
+      tl.fromTo(
+        "#s2-open-copy",
+        { x: -42, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.48, ease: "power4.out" },
+        3.08,
+      );
+      tl.fromTo(
+        "#s2-open-chip",
+        { x: 64, scale: 0.94, opacity: 0 },
+        { x: 0, scale: 1, opacity: 1, duration: 0.48, ease: "power2.out" },
+        3.18,
+      );
+      tl.fromTo("#s2-pointer", { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "none" }, 3.58);
       tl.to(
-        "#scene-2",
-        { filter: "blur(10px)", scale: 1.025, opacity: 0, duration: 0.48, ease: "power2.inOut" },
-        6.1,
+        "#s2-pointer",
+        { x: -1038, y: -420, duration: 0.72, ease: "power2.inOut" },
+        3.72,
       );
+      tl.fromTo(
+        "#s2-pin-pill",
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.24, ease: "power3.out" },
+        4.4,
+      );
+      tl.to("#s2-open-copy", { x: -28, opacity: 0, duration: 0.28, ease: "power2.in" }, 4.48);
+      tl.to("#s2-open-chip", { x: 26, opacity: 0, duration: 0.25, ease: "power2.in" }, 4.5);
+      tl.fromTo(
+        "#s2-pin-copy",
+        { x: -34, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.46, ease: "expo.out" },
+        4.66,
+      );
+      tl.fromTo(
+        "#s2-pin-chip",
+        { x: 46, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.38, ease: "power3.out" },
+        4.7,
+      );
+      tl.to("#s2-pin-chip", { scale: 0.94, duration: 0.08, ease: "power1.in" }, 5.04);
+      tl.to("#s2-pin-chip", { scale: 1, duration: 0.24, ease: "back.out(1.6)" }, 5.12);
+      tl.to("#s2-pin-pill", { scale: 0.86, opacity: 0, duration: 0.18, ease: "power2.in" }, 5.14);
+      tl.to("#s2-number-badge", { opacity: 0, duration: 0.16, ease: "power1.in" }, 5.14);
+      tl.fromTo(
+        "#s2-pin-filled",
+        { scale: 0.42, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.7)" },
+        5.2,
+      );
+      tl.fromTo(
+        "#s2-letter-badge",
+        { scale: 0.78, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.36, ease: "back.out(1.4)" },
+        5.22,
+      );
+      tl.to("#s2-pin-card", { scale: 1.025, duration: 0.09, ease: "power1.out" }, 5.2);
+      tl.to("#s2-pin-card", { scale: 1, duration: 0.3, ease: "back.out(1.45)" }, 5.29);
+      tl.to(
+        "#s2-pointer",
+        { x: -968, y: -350, duration: 0.46, ease: "power2.inOut" },
+        5.62,
+      );
+
+      // Transition 2 — continuous lateral handoff into the source app
+      tl.to("#scene-2", { x: -1920, duration: 0.5, ease: "power3.in" }, 6.34);
       tl.fromTo(
         "#scene-3",
-        { filter: "blur(10px)", scale: 0.975, opacity: 0 },
-        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.48, ease: "power2.inOut" },
-        6.16,
+        { x: 1920, opacity: 1 },
+        { x: 0, duration: 0.52, ease: "power3.out" },
+        6.34,
       );
+      tl.set("#scene-2", { opacity: 0, x: 0 }, 6.84);
 
-      // Scene 3 — three true visual treatments
-      tl.from("#s3-ambient", { opacity: 0, scale: 1.05, duration: 0.9, ease: "sine.out" }, 6.34);
-      tl.from("#s3-eyebrow", { x: -44, opacity: 0, duration: 0.34, ease: "power4.out" }, 6.42);
-      tl.from("#s3-headline", { y: 48, opacity: 0, duration: 0.52, ease: "expo.out" }, 6.52);
-      tl.from("#s3-subhead", { x: 52, opacity: 0, duration: 0.62, ease: "power2.out" }, 6.62);
-      tl.from(
-        "#s3-text-item",
-        { x: -54, rotation: -1.6, opacity: 0, duration: 0.54, ease: "power3.out" },
-        6.86,
+      // Scene 3 — copy in Safari, then show editorial capture
+      tl.fromTo(
+        "#s3-ambient",
+        { opacity: 0, scale: 1.04 },
+        { opacity: 1, scale: 1, duration: 0.9, ease: "sine.out" },
+        6.5,
       );
-      tl.from(
-        "#s3-image-item",
-        { y: 62, scale: 0.96, opacity: 0, duration: 0.66, ease: "back.out(1.12)" },
-        6.98,
+      tl.fromTo(
+        "#s3-step",
+        { x: -36, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.34, ease: "power4.out" },
+        6.58,
       );
-      tl.from(
-        "#s3-color-item",
-        { x: 54, rotation: 1.6, opacity: 0, duration: 0.58, ease: "expo.out" },
-        7.1,
+      tl.fromTo(
+        "#s3-headline",
+        { y: 46, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" },
+        6.66,
       );
+      tl.fromTo(
+        "#s3-subhead",
+        { x: 44, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.58, ease: "power2.out" },
+        6.76,
+      );
+      tl.fromTo(
+        "#s3-browser",
+        { y: 46, scale: 0.98, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.58, ease: "power3.out" },
+        6.88,
+      );
+      tl.fromTo(
+        "#s3-copy-keycap",
+        { x: 48, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.42, ease: "power4.out" },
+        7.3,
+      );
+      tl.to("#s3-copy-keycap", { scale: 0.94, duration: 0.08, ease: "power1.in" }, 7.92);
+      tl.to("#s3-copy-keycap", { scale: 1, duration: 0.24, ease: "back.out(1.55)" }, 8.0);
+      tl.fromTo(
+        "#s3-copy-flash",
+        { scale: 0.96, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.12, ease: "power2.out" },
+        7.96,
+      );
+      tl.to(
+        "#s3-copy-flash",
+        { scale: 1.12, opacity: 0, duration: 0.34, ease: "power3.out" },
+        8.08,
+      );
+      tl.to("#s3-browser", { x: -72, scale: 0.975, opacity: 0.64, duration: 0.55, ease: "power2.inOut" }, 8.46);
+      tl.fromTo(
+        "#s3-save-step",
+        { x: 42, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.38, ease: "power4.out" },
+        8.58,
+      );
+      tl.fromTo(
+        "#s3-capture-connector",
+        { scaleX: 0, opacity: 0 },
+        { scaleX: 1, opacity: 1, duration: 0.34, ease: "power3.out" },
+        8.66,
+      );
+      tl.fromTo(
+        "#s3-capture-card",
+        { x: 72, scale: 0.9, opacity: 0 },
+        { x: 0, scale: 1, opacity: 1, duration: 0.62, ease: "back.out(1.22)" },
+        8.78,
+      );
+      tl.to("#s3-capture-card", { y: -8, duration: 0.72, ease: "sine.inOut" }, 9.4);
 
-      // Transition 3 — horizontal push into search
-      tl.to("#scene-3", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 9.6);
+      // Transition 3 — blur into Notes
+      tl.to(
+        "#scene-3",
+        { filter: "blur(12px)", scale: 1.02, opacity: 0, duration: 0.46, ease: "power2.in" },
+        9.92,
+      );
       tl.fromTo(
         "#scene-4",
-        { x: 1920, opacity: 1 },
-        { x: 0, duration: 0.5, ease: "power3.inOut" },
-        9.6,
+        { filter: "blur(12px)", scale: 0.98, opacity: 0 },
+        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" },
+        9.98,
       );
-      tl.set("#scene-3", { opacity: 0, x: 0 }, 10.1);
 
-      // Scene 4 — type, filter, hover, preview
-      tl.from("#s4-ambient", { opacity: 0, scale: 0.94, duration: 0.85, ease: "sine.out" }, 9.86);
-      tl.from("#s4-eyebrow", { y: -28, opacity: 0, duration: 0.32, ease: "power3.out" }, 9.92);
-      tl.from("#s4-headline", { x: -54, opacity: 0, duration: 0.5, ease: "expo.out" }, 10.0);
-      tl.from("#s4-keycap", { x: 48, scale: 0.94, opacity: 0, duration: 0.44, ease: "power2.out" }, 10.08);
-      tl.from("#s4-shelf", { y: 46, opacity: 0, duration: 0.56, ease: "power3.out" }, 10.14);
-      tl.set("#s4-search-value", { innerText: "d" }, 10.58);
-      tl.set("#s4-search-value", { innerText: "de" }, 10.72);
-      tl.set("#s4-search-value", { innerText: "des" }, 10.86);
-      tl.set("#s4-search-value", { innerText: "desi" }, 11.0);
-      tl.set("#s4-search-value", { innerText: "desig" }, 11.14);
-      tl.set("#s4-search-value", { innerText: "design" }, 11.28);
-      tl.from(
-        "#s4-results .history-card",
+      // Scene 4 — open Clipio over Notes and choose with Return
+      tl.fromTo(
+        "#s4-notes",
+        { y: 26, scale: 0.99, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.46, ease: "power3.out" },
+        10.14,
+      );
+      tl.fromTo(
+        "#s4-step",
+        { x: -34, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.34, ease: "power4.out" },
+        10.18,
+      );
+      tl.fromTo(
+        "#s4-open-keycap",
+        { x: 44, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.36, ease: "power2.out" },
+        10.24,
+      );
+      tl.to("#s4-open-keycap", { scale: 0.94, duration: 0.08, ease: "power1.in" }, 10.62);
+      tl.to("#s4-open-keycap", { scale: 1, duration: 0.22, ease: "back.out(1.5)" }, 10.7);
+      tl.fromTo(
+        "#s4-shelf",
+        { y: -340, scaleX: 0.4, scaleY: 0.08, opacity: 0, transformOrigin: "top center" },
         {
-          y: 34,
-          scale: 0.96,
-          opacity: 0,
-          duration: 0.52,
-          stagger: 0.12,
-          ease: "back.out(1.1)",
+          y: 0,
+          scaleX: 1,
+          scaleY: 1,
+          opacity: 1,
+          transformOrigin: "top center",
+          duration: 0.66,
+          ease: "back.out(1.15)",
         },
-        11.42,
+        10.72,
       );
-      tl.from("#s4-callout", { x: -54, opacity: 0, duration: 0.48, ease: "power4.out" }, 11.82);
-      tl.from(
-        "#s4-preview",
-        { y: 58, scale: 0.96, opacity: 0, duration: 0.64, ease: "expo.out" },
-        12.62,
+      tl.fromTo(
+        "#s4-shelf .shelf-cards",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: "power2.out" },
+        11.18,
       );
+      tl.to("#s4-open-keycap", { x: 26, opacity: 0, duration: 0.24, ease: "power2.in" }, 11.22);
+      tl.fromTo(
+        "#s4-return-keycap",
+        { x: 46, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.38, ease: "power4.out" },
+        12.06,
+      );
+      tl.to("#s4-captured-card", { scale: 1.028, duration: 0.1, ease: "power1.out" }, 12.56);
+      tl.to("#s4-captured-card", { scale: 1, duration: 0.28, ease: "back.out(1.4)" }, 12.66);
+      tl.to("#s4-return-keycap", { scale: 0.94, duration: 0.08, ease: "power1.in" }, 13.18);
+      tl.to("#s4-return-keycap", { scale: 1, duration: 0.24, ease: "back.out(1.55)" }, 13.26);
+      tl.to("#s4-captured-card", { scale: 1.035, duration: 0.09, ease: "power1.out" }, 13.22);
+      tl.to("#s4-captured-card", { scale: 1, duration: 0.26, ease: "back.out(1.45)" }, 13.31);
+      tl.to(
+        "#s4-shelf",
+        { y: -340, scaleY: 0.08, opacity: 0, duration: 0.46, ease: "power3.in" },
+        13.58,
+      );
+      tl.to("#s4-return-keycap", { x: 28, opacity: 0, duration: 0.24, ease: "power2.in" }, 13.72);
+      tl.to("#s4-caret", { opacity: 0.15, duration: 0.32, yoyo: true, repeat: 5, ease: "none" }, 10.6);
 
-      // Transition 4 — push into the drag-and-drop action
-      tl.to("#scene-4", { x: -1920, duration: 0.48, ease: "power3.inOut" }, 14.1);
+      // Transition 4 — match dissolve, keeping Notes visually continuous
+      tl.to("#scene-4", { opacity: 0, duration: 0.38, ease: "power1.inOut" }, 14.34);
       tl.fromTo(
         "#scene-5",
-        { x: 1920, opacity: 1 },
-        { x: 0, duration: 0.48, ease: "power3.inOut" },
-        14.1,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.38, ease: "power1.inOut" },
+        14.34,
       );
-      tl.set("#scene-4", { opacity: 0, x: 0 }, 14.58);
 
-      // Scene 5 — card travels into a real document target
-      tl.from("#s5-ambient", { opacity: 0, scale: 1.05, duration: 0.8, ease: "sine.out" }, 14.36);
-      tl.from("#s5-eyebrow", { x: -40, opacity: 0, duration: 0.3, ease: "power4.out" }, 14.4);
-      tl.from("#s5-headline", { y: 48, opacity: 0, duration: 0.46, ease: "expo.out" }, 14.48);
-      tl.from("#s5-subhead", { x: 48, opacity: 0, duration: 0.54, ease: "power2.out" }, 14.58);
-      tl.from("#s5-source", { x: -62, rotation: -3, opacity: 0, duration: 0.5, ease: "back.out(1.15)" }, 14.62);
-      tl.from("#s5-document", { x: 74, scale: 0.97, opacity: 0, duration: 0.62, ease: "power3.out" }, 14.7);
-      tl.from(
-        "#s5-drag-card",
-        { x: -780, y: 90, rotation: -2, scale: 0.92, opacity: 0, duration: 1.0, ease: "power3.inOut" },
-        15.16,
+      // Scene 5 — literal clipboard paste, not simulated typing
+      tl.fromTo(
+        "#s5-step",
+        { x: -32, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.34, ease: "power4.out" },
+        14.52,
       );
-      tl.from(
-        "#s5-cursor",
-        { x: -770, y: 84, opacity: 0, duration: 1.0, ease: "power3.inOut" },
-        15.16,
+      tl.fromTo(
+        "#s5-paste-keycap",
+        { x: 44, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.38, ease: "power2.out" },
+        14.58,
       );
+      tl.to("#s5-paste-keycap", { scale: 0.94, duration: 0.08, ease: "power1.in" }, 15.16);
+      tl.to("#s5-paste-keycap", { scale: 1, duration: 0.24, ease: "back.out(1.55)" }, 15.24);
+      tl.set("#s5-empty-entry", { opacity: 0 }, 15.3);
+      tl.set("#s5-pasted-line", { opacity: 1 }, 15.3);
+      tl.fromTo(
+        "#s5-pasted-line",
+        { scale: 0.985 },
+        { scale: 1, duration: 0.2, ease: "power3.out", immediateRender: false },
+        15.3,
+      );
+      tl.fromTo(
+        "#s5-confirmation",
+        { y: 12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.38, ease: "power4.out" },
+        15.5,
+      );
+      tl.to("#s5-final-caret", { opacity: 0.12, duration: 0.3, yoyo: true, repeat: 3, ease: "none" }, 15.48);
+      tl.to("#s5-paste-keycap", { x: 22, opacity: 0, duration: 0.26, ease: "power2.in" }, 15.82);
 
       // Transition 5 — gentle blur into the closing lockup
       tl.to(
         "#scene-5",
-        { filter: "blur(14px)", scale: 1.025, opacity: 0, duration: 0.58, ease: "power1.inOut" },
-        16.8,
+        { filter: "blur(14px)", scale: 1.022, opacity: 0, duration: 0.56, ease: "power1.in" },
+        16.56,
       );
       tl.fromTo(
         "#scene-6",
-        { filter: "blur(14px)", scale: 0.975, opacity: 0 },
-        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.58, ease: "power1.inOut" },
-        16.86,
+        { filter: "blur(14px)", scale: 0.978, opacity: 0 },
+        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.58, ease: "power2.out" },
+        16.62,
       );
 
       // Scene 6 — resolve and hold
-      tl.from("#s6-ambient", { opacity: 0, scale: 0.9, duration: 1.2, ease: "sine.out" }, 17.04);
-      tl.from(
-        "#s6-icon-wrap",
-        { x: -84, scale: 0.88, opacity: 0, duration: 0.76, ease: "expo.out" },
-        17.1,
+      tl.fromTo(
+        "#s6-ambient",
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 1.15, ease: "sine.out" },
+        16.82,
       );
-      tl.from("#s6-icon", { rotation: -2.4, duration: 0.82, ease: "back.out(1.12)" }, 17.18);
-      tl.from("#s6-eyebrow", { x: 46, opacity: 0, duration: 0.4, ease: "power4.out" }, 17.34);
-      tl.from("#s6-title", { y: 58, opacity: 0, duration: 0.58, ease: "expo.out" }, 17.44);
-      tl.from("#s6-tagline", { x: 46, opacity: 0, duration: 0.62, ease: "power2.out" }, 17.62);
-      tl.from("#s6-badge", { x: 38, opacity: 0, duration: 0.46, ease: "power3.out" }, 17.82);
+      tl.fromTo(
+        "#s6-icon-wrap",
+        { x: -84, scale: 0.88, opacity: 0 },
+        { x: 0, scale: 1, opacity: 1, duration: 0.74, ease: "expo.out" },
+        16.9,
+      );
+      tl.fromTo(
+        "#s6-icon",
+        { rotation: -2.4 },
+        { rotation: 0, duration: 0.8, ease: "back.out(1.12)" },
+        16.98,
+      );
+      tl.fromTo(
+        "#s6-eyebrow",
+        { x: 46, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.4, ease: "power4.out" },
+        17.12,
+      );
+      tl.fromTo(
+        "#s6-title",
+        { y: 58, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.56, ease: "expo.out" },
+        17.22,
+      );
+      tl.fromTo(
+        "#s6-tagline",
+        { x: 46, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+        17.4,
+      );
+      tl.fromTo(
+        "#s6-badge",
+        { x: 38, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.44, ease: "power3.out" },
+        17.62,
+      );
       tl.to("#s6-layout", { opacity: 0, duration: 0.34, ease: "power2.in" }, 19.62);
 
       window.__timelines["main"] = tl;

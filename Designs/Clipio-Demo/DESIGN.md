@@ -33,6 +33,26 @@ Use tight display tracking (`-0.035em`) and slightly open dark-canvas body leadi
 - Ambient movement is limited to slow localized glows and subtle product parallax.
 - Every scene builds quickly, breathes, then hands off while fully visible.
 
+## Cover Direction
+
+- Replace the generic glow field with a deliberate product-material macro: one oversized,
+  softly lit Clipio glass shelf crops into the frame from the right.
+- Keep the canvas nearly solid midnight navy. Use a single cool spotlight behind the glass
+  and one restrained warm reflection from the app icon.
+- Anchor the icon and wordmark to the left with a smaller footprint and more breathing room.
+- Remove the cyan underline. The glass rim itself is the highlight.
+- The cover should read as an Apple product film still, not a generic technology wallpaper.
+
+## Interaction Direction
+
+- Cursor motion is calm and purposeful. A click uses one subtle compression and one soft ring.
+- Keyboard actions are shown with restrained floating keycaps that are clearly editorial
+  annotations, not part of Clipio's interface.
+- Pinning must match the product: hover reveals the `pin + ⌥P` pill; the result is a permanent
+  gold pin and a letter shortcut badge.
+- The copy/paste story must remain literal: `⌘C` in the source app, Clipio captures after a
+  short delay, `Return` chooses the item, and `⌘V` pastes in the destination app.
+
 ## What NOT to Do
 
 - No cyberpunk neon, purple-blue gradient wash, or glowing particle field.
@@ -40,3 +60,5 @@ Use tight display tracking (`-0.035em`) and slightly open dark-canvas body leadi
 - No bouncy toy motion, aggressive glitch cuts, or constant ambient zoom.
 - No dense explanatory copy; one clear product thought per scene.
 - No visual claims that Clipio does not actually support.
+- No fake “saved” toast presented as native Clipio UI.
+- No implication that `Return` automatically pastes under the default settings.

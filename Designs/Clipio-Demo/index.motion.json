@@ -1,0 +1,19 @@
+{
+  "duration": 20,
+  "maxStaticSec": 2.4,
+  "assertions": [
+    { "kind": "appearsBy", "selector": "#s1-wordmark", "bySec": 1.4 },
+    { "kind": "before", "a": "#s2-pin-pill", "b": "#s2-pin-filled" },
+    { "kind": "appearsBy", "selector": "#s2-pin-filled", "bySec": 5.7 },
+    { "kind": "before", "a": "#s3-copy-keycap", "b": "#s3-capture-card" },
+    { "kind": "appearsBy", "selector": "#s3-capture-card", "bySec": 9.7 },
+    { "kind": "before", "a": "#s4-shelf", "b": "#s4-return-keycap" },
+    { "kind": "appearsBy", "selector": "#s4-return-keycap", "bySec": 12.7 },
+    { "kind": "before", "a": "#s5-paste-keycap", "b": "#s5-pasted-line" },
+    { "kind": "appearsBy", "selector": "#s5-pasted-line", "bySec": 15.7 },
+    { "kind": "staysInFrame", "selector": "#s1-lockup" },
+    { "kind": "staysInFrame", "selector": "#s3-browser" },
+    { "kind": "staysInFrame", "selector": "#s5-notes" },
+    { "kind": "keepsMoving", "withinSelector": "#root" }
+  ]
+}

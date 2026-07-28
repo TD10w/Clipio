@@ -1,48 +1,52 @@
-# Clipio Demo — 20-Second Storyboard
+# Clipio Demo v2 — 20-Second Storyboard
 
 Format: 1920×1080, 30 fps, English on-screen copy, light original sound bed, no narration.
 
 ## Narrative
 
-Clipio turns clipboard history from an invisible list into a visual, keyboard-first shelf.
-The film begins with brand recognition, demonstrates the shelf and its content types, then
-shows search, preview, and fast reuse before ending on the product promise.
+Clipio keeps an everyday copy close, visible, and reusable. The film begins with a cleaner
+product-material cover, demonstrates a real Pin action, then follows one text fragment from
+Safari through Clipio and into Notes before ending on the product promise.
 
 ## Timeline
 
-### 0.0–2.6 — Brand
+### 0.0–2.6 — Product-Material Cover
 
-- The Clipio icon settles into a quiet navy canvas.
-- `CLIPIO` and `Your clipboard, made visual.` build in sequence.
-- A restrained glass-edge highlight establishes the material language.
+- A nearly solid midnight canvas holds one oversized Clipio glass-shelf macro on the right.
+- The app icon and `Clipio` lockup settle on the left with generous breathing room.
+- `Your clipboard, made visual.` appears without the previous cyan underline.
 
-### 2.4–6.3 — Instant Shelf
+### 2.5–6.5 — Open and Pin
 
-- Smooth push into a macOS desktop composition.
-- `⇧⌘C` appears first; the Clipio shelf unfolds from the menu bar.
-- Copy: `Always within reach.`
-- The shelf holds long enough to read as a real product.
+- `⇧⌘C` opens the shelf from the top center.
+- A cursor hovers the first text card; its real `pin + ⌥P` pill appears.
+- `⌥P` is pressed. The pill resolves into a permanent gold pin and the badge changes from
+  a numeric shortcut to an assigned letter shortcut.
+- Copy changes from `Always within reach.` to `Pin what matters.`
 
-### 6.1–9.8 — Visual History
+### 6.3–10.2 — Copy and Capture
 
-- Blur crossfade into a closer shelf view.
-- Text, image, and detected hex-color treatments receive a simple editorial camera pass.
-- Copy: `Your history. Clear at a glance.`
-- Small labels identify `TEXT`, `IMAGE`, and `COLOR` without covering the UI.
+- Safari shows `A calmer way to work.` selected on a clean page.
+- An editorial step label reads `01 · COPY`; `⌘C` presses with a restrained confirmation flash.
+- After a believable clipboard-polling delay, the selected text becomes a Clipio card with a
+  Safari source mark and `now`.
+- `02 · SAVED TO CLIPIO` is clearly a film annotation, not a native toast.
 
-### 9.6–14.3 — Find and Preview
+### 10.0–14.6 — Choose in Clipio
 
-- Smooth push into the search interaction.
-- `design` types into the search field; the view cuts to the filtered shelf state.
-- After a believable hover hold, an image card gains its rim and opens a larger preview.
-- Copy: `Find what you copied.`
+- Notes is open with an empty `Ideas` note and a visible caret.
+- `⇧⌘C` unfolds Clipio above the note.
+- The newly copied Safari card appears first with a `now` timestamp and selection rim.
+- `Return` chooses the card, restores it to the system clipboard, and closes the shelf.
+- The editorial label reads `03 · CHOOSE IN CLIPIO`; `Return` is never labeled as Paste.
 
-### 14.1–17.0 — Reuse
+### 14.4–16.8 — Paste
 
-- A text card travels toward a document target to demonstrate drag and drop.
-- Copy: `Drag. Drop. Done.`
+- Notes remains focused with its caret.
+- The label reads `04 · PASTE`; `⌘V` presses.
+- `A calmer way to work.` lands in the note in one clipboard paste, not a typing animation.
 
-### 16.8–20.0 — Close
+### 16.6–20.0 — Close
 
 - Gentle blur crossfade to the closing lockup.
 - `Clipio` / `Fast. Visual. Local.` / `Built for macOS`
@@ -50,10 +54,11 @@ shows search, preview, and fast reuse before ending on the product promise.
 
 ## Accuracy Notes
 
-- The shelf model follows the current 820×220 layout, 138×150 cards, `⌘1`–`⌘9`
-  shortcut badges, source metadata, search, preview popup, and drag-out behavior.
-- Links and code may appear as sample text, but are not presented as distinct detected
-  content types. Drag and drop is not labeled as automatic paste.
-- This first draft is a faithful motion reconstruction using real Clipio visual assets.
-  A later pass can replace interaction shots with fresh screen recordings without changing
-  the composition or timing.
+- The shelf model follows the current 820×220 layout, 138×150 cards, source metadata, and
+  the real top-center open behavior.
+- Pin defaults to `⌥P`. An unpinned card shows its pill only on hover; a pinned card shows a
+  permanent gold pin and receives an available letter shortcut. The example letter is illustrative.
+- Under Clipio's default configuration, clicking or pressing `Return` copies the selected item
+  back to the system clipboard; the user then pastes with `⌘V`.
+- The capture bridge is editorial storytelling. Clipio does not show a native “saved” toast.
+- This version remains a privacy-safe motion reconstruction using real Clipio visual assets.
