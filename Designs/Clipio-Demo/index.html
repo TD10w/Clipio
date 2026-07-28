@@ -89,12 +89,7 @@
         height: 980px;
         left: -360px;
         top: -420px;
-        background: radial-gradient(
-          circle,
-          rgba(142, 220, 255, 0.24) 0%,
-          rgba(142, 220, 255, 0.08) 42%,
-          rgba(142, 220, 255, 0) 72%
-        );
+        background: none;
       }
 
       .ambient::after {
@@ -102,12 +97,7 @@
         height: 760px;
         right: -260px;
         bottom: -330px;
-        background: radial-gradient(
-          circle,
-          rgba(244, 200, 74, 0.16) 0%,
-          rgba(244, 200, 74, 0.05) 38%,
-          rgba(244, 200, 74, 0) 72%
-        );
+        background: none;
       }
 
       .eyebrow {
@@ -168,11 +158,7 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background-color: #0a1930;
-        background-image:
-          radial-gradient(circle at 18% 26%, rgba(80, 164, 255, 0.62), rgba(80, 164, 255, 0) 34%),
-          radial-gradient(circle at 84% 82%, rgba(77, 224, 213, 0.48), rgba(77, 224, 213, 0) 33%),
-          radial-gradient(circle at 64% 8%, rgba(39, 86, 184, 0.48), rgba(39, 86, 184, 0) 38%);
+        background: transparent;
       }
 
       .menu-bar {
@@ -1577,10 +1563,7 @@
       .notes-wallpaper {
         position: absolute;
         inset: 0;
-        background-color: #9fb7cd;
-        background-image:
-          radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 34%),
-          radial-gradient(circle at 86% 90%, rgba(60, 104, 146, 0.38), rgba(60, 104, 146, 0) 38%);
+        background: transparent;
       }
 
       .notes-window {
@@ -1747,6 +1730,193 @@
         font-weight: 780;
         letter-spacing: -0.045em;
       }
+
+      /* Version 3 — app-icon palette across every scene */
+      :root {
+        --icon-ivory: #fbf8f2;
+        --icon-cream: #f4e7c4;
+        --icon-champagne: #d9bd79;
+        --icon-yellow: #f4c84a;
+        --icon-gold: #9a681a;
+        --icon-ink: #49331e;
+        --icon-secondary: #705b42;
+      }
+
+      html,
+      body {
+        background-color: var(--icon-cream);
+        background-image: none;
+      }
+
+      .unified-bg {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        background-color: var(--icon-cream);
+        background-image:
+          radial-gradient(
+            circle at 78% 18%,
+            rgba(255, 216, 95, 0.5) 0%,
+            rgba(255, 216, 95, 0.16) 32%,
+            rgba(255, 216, 95, 0) 58%
+          ),
+          radial-gradient(
+            circle at 15% 92%,
+            rgba(137, 84, 32, 0.13) 0%,
+            rgba(137, 84, 32, 0.045) 30%,
+            rgba(137, 84, 32, 0) 56%
+          ),
+          linear-gradient(135deg, var(--icon-ivory) 0%, var(--icon-cream) 48%, var(--icon-champagne) 100%);
+      }
+
+      .scene,
+      #scene-1 {
+        background: transparent;
+      }
+
+      .desktop,
+      .notes-wallpaper {
+        background: transparent;
+      }
+
+      .ambient::before {
+        background: none;
+      }
+
+      .ambient::after {
+        background: none;
+      }
+
+      .eyebrow {
+        color: #8a5d17;
+      }
+
+      .headline,
+      .outro-title,
+      .outro-tagline {
+        color: var(--icon-ink);
+      }
+
+      .subhead,
+      .macos-badge {
+        color: var(--icon-secondary);
+      }
+
+      .outro-tagline .warm {
+        color: var(--icon-gold);
+      }
+
+      .glass-chip,
+      .workflow-keycap {
+        border-color: rgba(116, 83, 45, 0.24);
+        background: rgba(255, 250, 235, 0.58);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.72),
+          0 24px 60px rgba(92, 58, 22, 0.18);
+        color: var(--icon-ink);
+      }
+
+      .workflow-keycap small {
+        color: var(--icon-secondary);
+      }
+
+      .editorial-step {
+        border-color: rgba(244, 200, 74, 0.48);
+        background: rgba(73, 51, 30, 0.88);
+        color: #fff6df;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      }
+
+      .menu-bar {
+        border-bottom-color: rgba(73, 51, 30, 0.12);
+        background: rgba(255, 250, 235, 0.52);
+        color: rgba(73, 51, 30, 0.92);
+      }
+
+      .clipio-shelf {
+        border-color: rgba(255, 255, 255, 0.72);
+        background: rgba(255, 248, 225, 0.38);
+        box-shadow:
+          inset 0 2px 0 rgba(255, 255, 255, 0.68),
+          inset 0 -1px 0 rgba(235, 191, 84, 0.34),
+          0 42px 90px rgba(92, 58, 22, 0.24);
+        color: var(--icon-ink);
+      }
+
+      .shelf-rim {
+        border-color: rgba(235, 191, 84, 0.38);
+      }
+
+      .app-window {
+        border-color: rgba(116, 83, 45, 0.2);
+        background: #fbf8f2;
+        box-shadow:
+          0 46px 110px rgba(92, 58, 22, 0.26),
+          0 0 0 1px rgba(255, 255, 255, 0.32);
+      }
+
+      .app-toolbar {
+        border-bottom-color: rgba(73, 51, 30, 0.1);
+        background: #eee1c4;
+      }
+
+      .browser-page,
+      .notes-editor {
+        background: #fffaf0;
+      }
+
+      .notes-sidebar {
+        border-right-color: rgba(73, 51, 30, 0.1);
+        background: #f1e6d1;
+      }
+
+      .notes-sidebar-title,
+      .notes-row,
+      .window-title {
+        color: var(--icon-secondary);
+      }
+
+      .selected-copy {
+        background: #f5d46d;
+        color: var(--icon-ink);
+      }
+
+      .capture-connector {
+        background: var(--icon-yellow);
+        box-shadow: 0 0 18px rgba(244, 200, 74, 0.48);
+      }
+
+      .capture-card {
+        border-color: rgba(255, 246, 218, 0.4);
+        background: rgba(73, 51, 30, 0.91);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.18),
+          0 34px 82px rgba(92, 58, 22, 0.32);
+      }
+
+      .capture-card-footer {
+        border-top-color: rgba(255, 246, 218, 0.14);
+        background: rgba(45, 31, 18, 0.44);
+        color: #f2e5ce;
+      }
+
+      .notes-caret {
+        background: var(--icon-gold);
+      }
+
+      .pasted-line {
+        background: rgba(244, 200, 74, 0.24);
+        color: var(--icon-ink);
+      }
+
+      .paste-confirmation {
+        color: var(--icon-secondary);
+      }
+
+      .paste-confirmation::before {
+        background: var(--icon-gold);
+      }
     </style>
   </head>
   <body>
@@ -1758,6 +1928,7 @@
       data-width="1920"
       data-height="1080"
     >
+      <div class="unified-bg" data-layout-ignore></div>
       <div id="scene-1" class="scene" data-layout-allow-occlusion>
         <div id="s1-spotlight" class="cover-spotlight"></div>
         <div id="s1-glass-anchor" class="cover-glass-anchor" data-layout-allow-overflow>

@@ -11,11 +11,13 @@ settle into stillness so the product remains the focus.
 
 ## Colors
 
-- `#07111F` — deep navy canvas
-- `#F4F8FF` — primary type and glass highlights
-- `#AFC2D8` — secondary type and metadata
-- `#8EDCFF` — selection, focus, and glass rim accent
-- `#F4C84A` — Clipio brand accent and closing highlight
+- `#FBF8F2` — app-icon ivory canvas
+- `#F4E7C4` — warm cream field
+- `#D9BD79` — champagne depth
+- `#49331E` — warm primary ink
+- `#705B42` — secondary type and metadata
+- `#F4C84A` — banana-yellow brand accent
+- `#07111F` — reserved for Clipio's actual dark clipboard cards
 
 ## Typography
 
@@ -23,7 +25,7 @@ settle into stillness so the product remains the focus.
   system-like proportions preserve the Apple-style register in deterministic renders
 - `Geist Mono` — 600 for shortcuts and compact interaction labels
 
-Use tight display tracking (`-0.035em`) and slightly open dark-canvas body leading.
+Use tight display tracking (`-0.035em`) and slightly open body leading.
 
 ## Motion
 
@@ -46,6 +48,8 @@ Use tight display tracking (`-0.035em`) and slightly open dark-canvas body leadi
 
 ## Interaction Direction
 
+- Every scene uses the same app-icon-derived ivory/champagne canvas; product windows and
+  editorial annotations provide depth instead of switching back to a cold blue wallpaper.
 - Cursor motion is calm and purposeful. A click uses one subtle compression and one soft ring.
 - Keyboard actions are shown with restrained floating keycaps that are clearly editorial
   annotations, not part of Clipio's interface.

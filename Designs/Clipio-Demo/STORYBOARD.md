@@ -2,6 +2,9 @@
 
 Format: 1920×1080, 30 fps, English on-screen copy, light original sound bed, no narration.
 
+All six scenes share the Clipio app icon's warm ivory, banana-yellow, champagne, and
+chestnut palette. Dark surfaces are reserved for Clipio's real clipboard cards.
+
 ## Narrative
 
 Clipio keeps an everyday copy close, visible, and reusable. The film begins with a cleaner
