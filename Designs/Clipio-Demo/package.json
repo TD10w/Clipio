@@ -1,0 +1,14 @@
+{
+  "name": "clipio-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.76 preview",
+    "lint": "npx --yes hyperframes@0.7.76 lint",
+    "validate": "npx --yes hyperframes@0.7.76 validate",
+    "inspect": "npx --yes hyperframes@0.7.76 inspect",
+    "check": "npx --yes hyperframes@0.7.76 check",
+    "render:draft": "npx --yes hyperframes@0.7.76 render --quality draft --fps 30 --workers 1 --output renders/clipio-demo-draft.mp4",
+    "render": "npx --yes hyperframes@0.7.76 render --quality high --fps 30 --workers 1 --output renders/clipio-demo.mp4"
+  }
+}

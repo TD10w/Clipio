@@ -1,0 +1,1469 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Clipio — Product Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Geist";
+        src: url("assets/fonts/geist-latin.woff2") format("woff2");
+        font-style: normal;
+        font-weight: 300 800;
+        font-display: block;
+      }
+
+      @font-face {
+        font-family: "Geist Mono";
+        src: url("assets/fonts/geist-mono-latin.woff2") format("woff2");
+        font-style: normal;
+        font-weight: 500 700;
+        font-display: block;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        margin: 0;
+        overflow: hidden;
+        background-color: #07111f;
+        color: #f4f8ff;
+        font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        position: relative;
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background-color: #07111f;
+      }
+
+      #scene-2,
+      #scene-3,
+      #scene-4,
+      #scene-5,
+      #scene-6 {
+        opacity: 0;
+      }
+
+      .scene-content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: 72px 96px;
+        gap: 24px;
+        overflow: hidden;
+      }
+
+      .ambient {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .ambient::before,
+      .ambient::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(8px);
+      }
+
+      .ambient::before {
+        width: 980px;
+        height: 980px;
+        left: -360px;
+        top: -420px;
+        background: radial-gradient(
+          circle,
+          rgba(142, 220, 255, 0.24) 0%,
+          rgba(142, 220, 255, 0.08) 42%,
+          rgba(142, 220, 255, 0) 72%
+        );
+      }
+
+      .ambient::after {
+        width: 760px;
+        height: 760px;
+        right: -260px;
+        bottom: -330px;
+        background: radial-gradient(
+          circle,
+          rgba(244, 200, 74, 0.16) 0%,
+          rgba(244, 200, 74, 0.05) 38%,
+          rgba(244, 200, 74, 0) 72%
+        );
+      }
+
+      .eyebrow {
+        color: #8edcff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .headline {
+        max-width: 1240px;
+        margin: 0;
+        color: #f4f8ff;
+        font-size: 84px;
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 0.98;
+      }
+
+      .subhead {
+        max-width: 860px;
+        margin: 0;
+        color: #afc2d8;
+        font-size: 28px;
+        font-weight: 350;
+        letter-spacing: -0.012em;
+        line-height: 1.4;
+      }
+
+      .glass-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 50px;
+        padding: 0 20px;
+        border: 1px solid rgba(244, 248, 255, 0.22);
+        border-radius: 999px;
+        background: rgba(226, 240, 255, 0.11);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.22),
+          0 16px 44px rgba(1, 10, 24, 0.22);
+        color: #f4f8ff;
+        backdrop-filter: blur(20px);
+      }
+
+      .keycap {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
+        font-size: 25px;
+        font-weight: 600;
+        letter-spacing: -0.04em;
+      }
+
+      .desktop {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #0a1930;
+        background-image:
+          radial-gradient(circle at 18% 26%, rgba(80, 164, 255, 0.62), rgba(80, 164, 255, 0) 34%),
+          radial-gradient(circle at 84% 82%, rgba(77, 224, 213, 0.48), rgba(77, 224, 213, 0) 33%),
+          radial-gradient(circle at 64% 8%, rgba(39, 86, 184, 0.48), rgba(39, 86, 184, 0) 38%);
+      }
+
+      .menu-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: 46px;
+        padding: 0 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(226, 240, 255, 0.17);
+        color: rgba(244, 248, 255, 0.9);
+        font-size: 18px;
+        font-weight: 550;
+        backdrop-filter: blur(26px);
+      }
+
+      .menu-left,
+      .menu-right {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+
+      .menu-clipio-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+
+      .clipio-shelf {
+        position: relative;
+        width: 1476px;
+        height: 396px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.36);
+        border-radius: 54px;
+        background: rgba(225, 237, 251, 0.22);
+        box-shadow:
+          inset 0 2px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(142, 220, 255, 0.2),
+          0 42px 90px rgba(1, 9, 25, 0.42);
+        backdrop-filter: blur(34px) saturate(1.15);
+      }
+
+      .shelf-rim {
+        position: absolute;
+        inset: 1px;
+        border: 1px solid rgba(142, 220, 255, 0.26);
+        border-radius: 52px;
+        pointer-events: none;
+      }
+
+      .shelf-header {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 78px;
+        padding: 16px 24px 8px;
+        gap: 20px;
+      }
+
+      .shelf-brand {
+        min-width: 124px;
+        font-size: 30px;
+        font-weight: 750;
+        letter-spacing: -0.035em;
+      }
+
+      .search-field {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        height: 48px;
+        padding: 0 18px;
+        gap: 12px;
+        border: 1px solid rgba(244, 248, 255, 0.2);
+        border-radius: 24px;
+        background: rgba(4, 12, 24, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        color: #f4f8ff;
+        font-size: 20px;
+        font-weight: 400;
+      }
+
+      .search-icon {
+        font-size: 23px;
+        opacity: 0.92;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .tool-button {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        place-items: center;
+        border: 1px solid rgba(244, 248, 255, 0.18);
+        border-radius: 50%;
+        background: rgba(8, 19, 34, 0.35);
+        color: #f4f8ff;
+        font-size: 19px;
+      }
+
+      .shelf-cards {
+        display: flex;
+        width: 100%;
+        height: 302px;
+        padding: 14px 24px 18px;
+        gap: 22px;
+      }
+
+      .history-card {
+        position: relative;
+        flex: 0 0 248px;
+        height: 270px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.28);
+        border-radius: 42px;
+        background: rgba(7, 17, 31, 0.72);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.22),
+          0 18px 38px rgba(3, 12, 27, 0.24);
+        color: #f4f8ff;
+      }
+
+      .history-card.selected {
+        border: 3px solid #8edcff;
+        box-shadow:
+          0 0 0 1px rgba(244, 248, 255, 0.24),
+          0 0 28px rgba(142, 220, 255, 0.46),
+          0 20px 42px rgba(3, 12, 27, 0.3);
+      }
+
+      .shortcut-badge {
+        position: absolute;
+        z-index: 4;
+        top: 12px;
+        left: 12px;
+        display: inline-flex;
+        align-items: center;
+        height: 34px;
+        padding: 0 11px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 18px;
+        background: #0a4fae;
+        color: #f4f8ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 17px;
+        font-weight: 650;
+        letter-spacing: -0.04em;
+      }
+
+      .card-body {
+        width: 100%;
+        height: 222px;
+        padding: 54px 20px 18px;
+        color: #f4f8ff;
+        font-size: 21px;
+        font-weight: 480;
+        letter-spacing: -0.018em;
+        line-height: 1.22;
+      }
+
+      .card-body.code {
+        color: #d7eaff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+
+      .card-body.image {
+        padding: 0;
+      }
+
+      .card-body.image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .card-body.color {
+        padding: 0;
+        background: #72e0d1;
+      }
+
+      .color-value {
+        position: absolute;
+        left: 14px;
+        bottom: 58px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        background: rgba(7, 17, 31, 0.7);
+        color: #f4f8ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 16px;
+      }
+
+      .card-footer {
+        position: absolute;
+        z-index: 3;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        height: 48px;
+        padding: 0 16px;
+        gap: 8px;
+        border-top: 1px solid rgba(244, 248, 255, 0.12);
+        background: rgba(7, 17, 31, 0.38);
+        color: #d7e3f1;
+        font-size: 16px;
+        font-weight: 430;
+      }
+
+      .source-app {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        border-radius: 5px;
+        background: #5a8df5;
+        box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.18);
+      }
+
+      /* Scene 1 — Brand */
+      #scene-1 .scene-content {
+        justify-content: center;
+        padding-left: 168px;
+      }
+
+      .brand-lockup {
+        display: grid;
+        grid-template-columns: 290px minmax(0, 1fr);
+        align-items: center;
+        gap: 88px;
+        width: 1540px;
+      }
+
+      .brand-icon-wrap {
+        position: relative;
+        width: 290px;
+        height: 290px;
+      }
+
+      .brand-icon-wrap::before {
+        content: "";
+        position: absolute;
+        inset: -80px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(244, 200, 74, 0.26) 0%,
+          rgba(244, 200, 74, 0.08) 42%,
+          rgba(244, 200, 74, 0) 72%
+        );
+      }
+
+      .brand-icon {
+        position: relative;
+        width: 290px;
+        height: 290px;
+        border-radius: 64px;
+        box-shadow:
+          0 34px 100px rgba(0, 0, 0, 0.34),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+      }
+
+      .brand-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .wordmark {
+        margin: 0;
+        color: #f4f8ff;
+        font-size: 132px;
+        font-weight: 800;
+        letter-spacing: -0.055em;
+        line-height: 0.92;
+      }
+
+      .brand-tagline {
+        max-width: 900px;
+        margin: 0;
+        color: #afc2d8;
+        font-size: 44px;
+        font-weight: 350;
+        letter-spacing: -0.025em;
+        line-height: 1.15;
+      }
+
+      .glass-highlight {
+        width: 430px;
+        height: 6px;
+        border-radius: 6px;
+        background: rgba(142, 220, 255, 0.92);
+        box-shadow:
+          0 0 22px rgba(142, 220, 255, 0.48),
+          0 0 72px rgba(142, 220, 255, 0.18);
+        transform-origin: left center;
+      }
+
+      /* Scene 2 — Instant shelf */
+      #scene-2 .scene-content {
+        padding: 0;
+      }
+
+      .s2-desktop {
+        position: relative;
+        flex: 1;
+      }
+
+      .s2-shelf-wrap {
+        position: absolute;
+        left: 222px;
+        top: 108px;
+        transform-origin: top center;
+      }
+
+      .s2-copy {
+        position: absolute;
+        left: 138px;
+        bottom: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .s2-shortcut {
+        position: absolute;
+        right: 138px;
+        bottom: 120px;
+      }
+
+      /* Scene 3 — Content treatments */
+      #scene-3 .scene-content {
+        padding: 82px 112px 76px;
+      }
+
+      .mode-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .mode-header .headline {
+        max-width: 980px;
+      }
+
+      .mode-deck {
+        display: grid;
+        flex: 1;
+        grid-template-columns: repeat(3, 1fr);
+        align-items: center;
+        gap: 34px;
+        width: 100%;
+        padding-top: 20px;
+      }
+
+      .mode-item {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-width: 0;
+      }
+
+      .mode-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #afc2d8;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+      }
+
+      .mode-index {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border: 1px solid rgba(142, 220, 255, 0.34);
+        border-radius: 50%;
+        color: #8edcff;
+      }
+
+      .mode-card {
+        position: relative;
+        width: 100%;
+        height: 520px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.28);
+        border-radius: 54px;
+        background: rgba(228, 239, 251, 0.14);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.24),
+          0 32px 70px rgba(1, 9, 25, 0.32);
+        backdrop-filter: blur(28px);
+      }
+
+      .mode-card .shortcut-badge {
+        top: 18px;
+        left: 18px;
+      }
+
+      .mode-text {
+        padding: 94px 42px 90px;
+        font-size: 36px;
+        font-weight: 520;
+        letter-spacing: -0.03em;
+        line-height: 1.16;
+      }
+
+      .mode-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .mode-color {
+        background: #72e0d1;
+      }
+
+      .mode-color-value {
+        position: absolute;
+        left: 28px;
+        bottom: 28px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: rgba(7, 17, 31, 0.76);
+        color: #f4f8ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 600;
+      }
+
+      /* Scene 4 — Search and preview */
+      #scene-4 .scene-content {
+        padding: 64px 86px 58px;
+      }
+
+      .search-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 40px;
+      }
+
+      .search-heading .headline {
+        max-width: 920px;
+        font-size: 72px;
+      }
+
+      .search-stage {
+        position: relative;
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+      }
+
+      .search-shelf {
+        position: absolute;
+        left: 170px;
+        top: 22px;
+        width: 1400px;
+        height: 340px;
+        border-radius: 48px;
+      }
+
+      .search-shelf .shelf-header {
+        height: 76px;
+      }
+
+      .search-shelf .shelf-cards {
+        height: 264px;
+        padding-top: 10px;
+      }
+
+      .search-shelf .history-card {
+        flex-basis: 246px;
+        height: 236px;
+        border-radius: 38px;
+      }
+
+      .search-shelf .card-body {
+        height: 188px;
+      }
+
+      .search-value {
+        color: #f4f8ff;
+        font-weight: 520;
+      }
+
+      .preview-panel {
+        position: absolute;
+        right: 142px;
+        bottom: 8px;
+        width: 690px;
+        height: 330px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.3);
+        border-radius: 34px;
+        background: rgba(220, 235, 250, 0.18);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.24),
+          0 30px 80px rgba(1, 9, 25, 0.4);
+        backdrop-filter: blur(30px);
+      }
+
+      .preview-panel img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .preview-caption {
+        position: absolute;
+        left: 24px;
+        bottom: 22px;
+        padding: 10px 15px;
+        border-radius: 14px;
+        background: rgba(7, 17, 31, 0.76);
+        color: #f4f8ff;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 17px;
+        font-weight: 600;
+      }
+
+      .hover-callout {
+        position: absolute;
+        left: 120px;
+        bottom: 116px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 520px;
+      }
+
+      .hover-callout .subhead {
+        max-width: 480px;
+      }
+
+      /* Scene 5 — Drag and drop */
+      #scene-5 .scene-content {
+        padding: 76px 96px;
+      }
+
+      .reuse-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+
+      .reuse-heading .headline {
+        max-width: 760px;
+      }
+
+      .reuse-stage {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .source-stack {
+        position: absolute;
+        left: 100px;
+        top: 140px;
+        width: 360px;
+        height: 390px;
+      }
+
+      .stack-card {
+        position: absolute;
+        width: 290px;
+        height: 330px;
+        border: 1px solid rgba(244, 248, 255, 0.24);
+        border-radius: 46px;
+        background: rgba(226, 239, 252, 0.15);
+        box-shadow: 0 24px 54px rgba(1, 9, 25, 0.32);
+        backdrop-filter: blur(28px);
+      }
+
+      .stack-card.back {
+        left: 52px;
+        top: 24px;
+        transform: rotate(5deg);
+        opacity: 0.62;
+      }
+
+      .stack-card.front {
+        left: 8px;
+        top: 0;
+        padding: 82px 28px 64px;
+        transform: rotate(-2deg);
+        color: #f4f8ff;
+        font-size: 26px;
+        font-weight: 520;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+      }
+
+      .document {
+        position: absolute;
+        right: 88px;
+        top: 30px;
+        width: 1020px;
+        height: 600px;
+        overflow: hidden;
+        border: 1px solid rgba(244, 248, 255, 0.24);
+        border-radius: 38px;
+        background: #eef4fb;
+        box-shadow: 0 40px 90px rgba(1, 9, 25, 0.38);
+        color: #07111f;
+      }
+
+      .document-toolbar {
+        display: flex;
+        align-items: center;
+        height: 62px;
+        padding: 0 24px;
+        gap: 12px;
+        border-bottom: 1px solid rgba(7, 17, 31, 0.1);
+        background: #dfe9f4;
+      }
+
+      .traffic-dot {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+      }
+
+      .traffic-dot.red {
+        background: #ff675f;
+      }
+
+      .traffic-dot.yellow {
+        background: #f4c84a;
+      }
+
+      .traffic-dot.green {
+        background: #45c85a;
+      }
+
+      .document-body {
+        display: flex;
+        flex-direction: column;
+        height: 538px;
+        padding: 62px 74px;
+        gap: 24px;
+      }
+
+      .document-title {
+        color: #07111f;
+        font-size: 52px;
+        font-weight: 760;
+        letter-spacing: -0.04em;
+      }
+
+      .document-line {
+        height: 14px;
+        border-radius: 7px;
+        background: #c1cedc;
+      }
+
+      .document-line.long {
+        width: 82%;
+      }
+
+      .document-line.mid {
+        width: 64%;
+      }
+
+      .document-drop {
+        display: flex;
+        align-items: center;
+        width: 690px;
+        min-height: 94px;
+        margin-top: 16px;
+        padding: 20px 24px;
+        border: 2px solid #4aa7d0;
+        border-radius: 22px;
+        background: rgba(142, 220, 255, 0.18);
+        color: #17334c;
+        font-size: 24px;
+        font-weight: 520;
+        letter-spacing: -0.018em;
+      }
+
+      .drag-card {
+        position: absolute;
+        z-index: 5;
+        right: 280px;
+        top: 342px;
+        display: flex;
+        align-items: center;
+        width: 560px;
+        min-height: 88px;
+        padding: 18px 22px;
+        border: 1px solid rgba(244, 248, 255, 0.4);
+        border-radius: 24px;
+        background: rgba(222, 238, 253, 0.8);
+        box-shadow:
+          0 28px 64px rgba(1, 9, 25, 0.34),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        color: #10243a;
+        font-size: 22px;
+        font-weight: 550;
+        backdrop-filter: blur(18px);
+      }
+
+      .cursor {
+        position: absolute;
+        z-index: 7;
+        right: 246px;
+        top: 414px;
+        width: 42px;
+        height: 54px;
+        filter: drop-shadow(0 6px 9px rgba(1, 9, 25, 0.36));
+      }
+
+      .cursor svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Scene 6 — Outro */
+      #scene-6 .scene-content {
+        justify-content: center;
+        padding: 118px 188px;
+      }
+
+      .outro-layout {
+        display: grid;
+        grid-template-columns: 440px minmax(0, 1fr);
+        align-items: center;
+        gap: 110px;
+        width: 100%;
+      }
+
+      .outro-icon-wrap {
+        position: relative;
+        width: 440px;
+        height: 440px;
+      }
+
+      .outro-icon-wrap::before {
+        content: "";
+        position: absolute;
+        inset: -120px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(244, 200, 74, 0.3) 0%,
+          rgba(244, 200, 74, 0.08) 42%,
+          rgba(244, 200, 74, 0) 72%
+        );
+      }
+
+      .outro-icon {
+        position: relative;
+        width: 440px;
+        height: 440px;
+        border-radius: 94px;
+        box-shadow:
+          0 48px 130px rgba(0, 0, 0, 0.42),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+      }
+
+      .outro-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+      }
+
+      .outro-title {
+        margin: 0;
+        color: #f4f8ff;
+        font-size: 138px;
+        font-weight: 800;
+        letter-spacing: -0.058em;
+        line-height: 0.9;
+      }
+
+      .outro-tagline {
+        margin: 0;
+        color: #f4f8ff;
+        font-size: 48px;
+        font-weight: 500;
+        letter-spacing: -0.032em;
+      }
+
+      .outro-tagline .warm {
+        color: #f4c84a;
+      }
+
+      .macos-badge {
+        margin-top: 12px;
+        color: #afc2d8;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="scene-1" class="scene">
+        <div id="s1-ambient" class="ambient"></div>
+        <div class="scene-content">
+          <div class="brand-lockup">
+            <div id="s1-icon-wrap" class="brand-icon-wrap">
+              <img
+                id="s1-icon"
+                class="brand-icon"
+                src="assets/clipio-icon.png"
+                alt="Clipio app icon"
+              />
+            </div>
+            <div class="brand-copy">
+              <div id="s1-eyebrow" class="eyebrow">Clipboard, reimagined</div>
+              <h1 id="s1-wordmark" class="wordmark">Clipio</h1>
+              <p id="s1-tagline" class="brand-tagline">Your clipboard, made visual.</p>
+              <div id="s1-highlight" class="glass-highlight"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-2" class="scene">
+        <div id="s2-desktop" class="desktop s2-desktop">
+          <div id="s2-menu" class="menu-bar">
+            <div class="menu-left">
+              <span>●</span>
+              <span>Finder</span>
+              <span>File</span>
+              <span>Edit</span>
+              <span>View</span>
+            </div>
+            <div class="menu-right">
+              <span>⌁</span>
+              <span>◔</span>
+              <img class="menu-clipio-icon" src="assets/clipio-icon-menu.png" alt="" />
+              <span>Tue 10:24</span>
+            </div>
+          </div>
+
+          <div id="s2-shelf" class="s2-shelf-wrap">
+            <div class="clipio-shelf">
+              <div class="shelf-rim"></div>
+              <div class="shelf-header">
+                <div class="shelf-brand">Clipio</div>
+                <div class="search-field">
+                  <span class="search-icon">⌕</span>
+                  <span>type to search…</span>
+                </div>
+                <div class="toolbar">
+                  <div class="tool-button">⌫</div>
+                  <div class="tool-button">⚙</div>
+                  <div class="tool-button">⏻</div>
+                </div>
+              </div>
+              <div class="shelf-cards">
+                <div class="history-card selected">
+                  <div class="shortcut-badge">⌘1</div>
+                  <div class="card-body">Ship the small thing. Make it feel obvious.</div>
+                  <div class="card-footer"><span class="source-app"></span><span>12 sec ago</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘2</div>
+                  <div class="card-body image">
+                    <img src="assets/sample-shelf.jpg" alt="Clipboard image sample" />
+                  </div>
+                  <div class="card-footer"><span class="source-app"></span><span>1 min ago</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘3</div>
+                  <div class="card-body code">https://clipio.app/design-notes</div>
+                  <div class="card-footer"><span class="source-app"></span><span>4 min ago</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘4</div>
+                  <div class="card-body color"></div>
+                  <div class="color-value">#72E0D1</div>
+                  <div class="card-footer"><span class="source-app"></span><span>6 min ago</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘5</div>
+                  <div class="card-body">A visual shelf for everything you just copied.</div>
+                  <div class="card-footer"><span class="source-app"></span><span>8 min ago</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="s2-copy">
+            <div id="s2-eyebrow" class="eyebrow">One shortcut away</div>
+            <h2 id="s2-headline" class="headline">Always within reach.</h2>
+          </div>
+
+          <div id="s2-shortcut" class="glass-chip s2-shortcut">
+            <span class="keycap">⇧⌘C</span>
+            <span>Open Clipio</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-3" class="scene" data-layout-allow-overflow>
+        <div id="s3-ambient" class="ambient"></div>
+        <div class="scene-content">
+          <div class="mode-header">
+            <div>
+              <div id="s3-eyebrow" class="eyebrow">Visual history</div>
+              <h2 id="s3-headline" class="headline">Clear at a glance.</h2>
+            </div>
+            <p id="s3-subhead" class="subhead">Text, images, and colors keep their own visual rhythm.</p>
+          </div>
+
+          <div class="mode-deck">
+            <div id="s3-text-item" class="mode-item">
+              <div class="mode-label"><span class="mode-index">01</span><span>TEXT</span></div>
+              <div class="mode-card">
+                <div class="shortcut-badge">⌘1</div>
+                <div class="mode-text">Make the important thing the easiest thing to find.</div>
+              </div>
+            </div>
+
+            <div id="s3-image-item" class="mode-item">
+              <div class="mode-label"><span class="mode-index">02</span><span>IMAGE</span></div>
+              <div class="mode-card mode-image">
+                <div class="shortcut-badge">⌘2</div>
+                <img src="assets/sample-mode.jpg" alt="Clipboard image sample" />
+              </div>
+            </div>
+
+            <div id="s3-color-item" class="mode-item">
+              <div class="mode-label"><span class="mode-index">03</span><span>COLOR</span></div>
+              <div class="mode-card mode-color">
+                <div class="shortcut-badge">⌘3</div>
+                <div class="mode-color-value">#72E0D1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-4" class="scene" data-layout-allow-overflow>
+        <div id="s4-ambient" class="ambient"></div>
+        <div class="scene-content">
+          <div class="search-heading">
+            <div>
+              <div id="s4-eyebrow" class="eyebrow">Search + preview</div>
+              <h2 id="s4-headline" class="headline">Find what you copied.</h2>
+            </div>
+            <div id="s4-keycap" class="glass-chip">
+              <span class="keycap">type to filter</span>
+            </div>
+          </div>
+
+          <div class="search-stage">
+            <div id="s4-shelf" class="clipio-shelf search-shelf">
+              <div class="shelf-rim"></div>
+              <div class="shelf-header">
+                <div class="shelf-brand">Clipio</div>
+                <div class="search-field">
+                  <span class="search-icon">⌕</span>
+                  <span id="s4-search-value" class="search-value"></span>
+                </div>
+                <div class="toolbar">
+                  <div class="tool-button">⌫</div>
+                  <div class="tool-button">⚙</div>
+                  <div class="tool-button">⏻</div>
+                </div>
+              </div>
+              <div id="s4-results" class="shelf-cards">
+                <div id="s4-image-card" class="history-card selected">
+                  <div class="shortcut-badge">⌘1</div>
+                  <div class="card-body image">
+                    <img src="assets/sample-search-card.jpg" alt="Filtered clipboard image" />
+                  </div>
+                  <div class="card-footer"><span class="source-app"></span><span>design reference</span></div>
+                </div>
+                <div class="history-card">
+                  <div class="shortcut-badge">⌘2</div>
+                  <div class="card-body">Clipio design notes and interaction checklist.</div>
+                  <div class="card-footer"><span class="source-app"></span><span>design notes</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="s4-callout" class="hover-callout">
+              <div class="eyebrow">Hover to look closer</div>
+              <p class="subhead">A larger preview appears below the shelf without interrupting your flow.</p>
+            </div>
+
+            <div id="s4-preview" class="preview-panel">
+              <img src="assets/sample-preview.jpg" alt="Large clipboard preview" />
+              <div class="preview-caption">IMAGE PREVIEW</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-5" class="scene">
+        <div id="s5-ambient" class="ambient"></div>
+        <div class="scene-content">
+          <div class="reuse-heading">
+            <div>
+              <div id="s5-eyebrow" class="eyebrow">Native drag and drop</div>
+              <h2 id="s5-headline" class="headline">Drag. Drop. Done.</h2>
+            </div>
+            <p id="s5-subhead" class="subhead">Move text, images, and files into the app where you need them.</p>
+          </div>
+
+          <div class="reuse-stage" data-layout-allow-overlap>
+            <div id="s5-source" class="source-stack">
+              <div class="stack-card back"></div>
+              <div class="stack-card front">
+                <div class="shortcut-badge">⌘1</div>
+                Ship the small thing. Make it feel obvious.
+              </div>
+            </div>
+
+            <div id="s5-document" class="document">
+              <div class="document-toolbar">
+                <span class="traffic-dot red"></span>
+                <span class="traffic-dot yellow"></span>
+                <span class="traffic-dot green"></span>
+              </div>
+              <div class="document-body">
+                <div class="document-title">Launch notes</div>
+                <div class="document-line long"></div>
+                <div class="document-line mid"></div>
+                <div class="document-drop" data-layout-allow-occlusion>
+                  Ship the small thing. Make it feel obvious.
+                </div>
+              </div>
+            </div>
+
+            <div id="s5-drag-card" class="drag-card">
+              Ship the small thing. Make it feel obvious.
+            </div>
+
+            <div id="s5-cursor" class="cursor" data-layout-ignore>
+              <svg viewBox="0 0 42 54" aria-hidden="true">
+                <path
+                  d="M3 2 L3 42 L13.8 32.6 L21.8 51 L30.6 47 L22.5 29 L37.8 28 Z"
+                  fill="#F4F8FF"
+                  stroke="#07111F"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-6" class="scene">
+        <div id="s6-ambient" class="ambient"></div>
+        <div class="scene-content">
+          <div id="s6-layout" class="outro-layout">
+            <div id="s6-icon-wrap" class="outro-icon-wrap">
+              <img
+                id="s6-icon"
+                class="outro-icon"
+                src="assets/clipio-icon-outro.png"
+                alt="Clipio app icon"
+              />
+            </div>
+            <div class="outro-copy">
+              <div id="s6-eyebrow" class="eyebrow">Clipboard manager for macOS</div>
+              <h2 id="s6-title" class="outro-title">Clipio</h2>
+              <p id="s6-tagline" class="outro-tagline">
+                Fast. Visual. <span class="warm">Local.</span>
+              </p>
+              <div id="s6-badge" class="macos-badge">Built for macOS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <audio
+        id="clipio-soundbed"
+        src="assets/clipio-soundbed.m4a"
+        data-start="0"
+        data-duration="20"
+        data-track-index="8"
+        data-volume="0.65"
+      ></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1 — brand build
+      tl.from("#s1-ambient", { opacity: 0, scale: 0.92, duration: 1.2, ease: "sine.out" }, 0.2);
+      tl.from(
+        "#s1-icon-wrap",
+        { x: -80, scale: 0.86, opacity: 0, duration: 0.72, ease: "expo.out" },
+        0.28,
+      );
+      tl.from("#s1-icon", { rotation: -3, duration: 0.88, ease: "back.out(1.15)" }, 0.34);
+      tl.from("#s1-eyebrow", { x: 44, opacity: 0, duration: 0.42, ease: "power3.out" }, 0.52);
+      tl.from("#s1-wordmark", { y: 58, opacity: 0, duration: 0.62, ease: "expo.out" }, 0.68);
+      tl.from("#s1-tagline", { x: 46, opacity: 0, duration: 0.7, ease: "power2.out" }, 0.88);
+      tl.from("#s1-highlight", { scaleX: 0, opacity: 0, duration: 0.5, ease: "power4.out" }, 1.14);
+
+      // Transition 1 — restrained blur crossfade
+      tl.to(
+        "#scene-1",
+        { filter: "blur(12px)", scale: 1.025, opacity: 0, duration: 0.54, ease: "power2.inOut" },
+        2.4,
+      );
+      tl.fromTo(
+        "#scene-2",
+        { filter: "blur(12px)", scale: 0.975, opacity: 0 },
+        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.54, ease: "power2.inOut" },
+        2.46,
+      );
+
+      // Scene 2 — real shelf unfold
+      tl.from("#s2-menu", { y: -46, opacity: 0, duration: 0.36, ease: "power3.out" }, 2.72);
+      tl.from(
+        "#s2-shelf",
+        {
+          scaleX: 0.12,
+          scaleY: 0.1,
+          opacity: 0,
+          transformOrigin: "top center",
+          duration: 0.68,
+          ease: "back.out(1.15)",
+        },
+        2.84,
+      );
+      tl.from("#s2-eyebrow", { x: -42, opacity: 0, duration: 0.38, ease: "power4.out" }, 3.22);
+      tl.from("#s2-headline", { y: 54, opacity: 0, duration: 0.58, ease: "expo.out" }, 3.32);
+      tl.from("#s2-shortcut", { x: 72, scale: 0.92, opacity: 0, duration: 0.5, ease: "power3.out" }, 3.48);
+
+      // Transition 2 — blur crossfade into the editorial close-up
+      tl.to(
+        "#scene-2",
+        { filter: "blur(10px)", scale: 1.025, opacity: 0, duration: 0.48, ease: "power2.inOut" },
+        6.1,
+      );
+      tl.fromTo(
+        "#scene-3",
+        { filter: "blur(10px)", scale: 0.975, opacity: 0 },
+        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.48, ease: "power2.inOut" },
+        6.16,
+      );
+
+      // Scene 3 — three true visual treatments
+      tl.from("#s3-ambient", { opacity: 0, scale: 1.05, duration: 0.9, ease: "sine.out" }, 6.34);
+      tl.from("#s3-eyebrow", { x: -44, opacity: 0, duration: 0.34, ease: "power4.out" }, 6.42);
+      tl.from("#s3-headline", { y: 48, opacity: 0, duration: 0.52, ease: "expo.out" }, 6.52);
+      tl.from("#s3-subhead", { x: 52, opacity: 0, duration: 0.62, ease: "power2.out" }, 6.62);
+      tl.from(
+        "#s3-text-item",
+        { x: -54, rotation: -1.6, opacity: 0, duration: 0.54, ease: "power3.out" },
+        6.86,
+      );
+      tl.from(
+        "#s3-image-item",
+        { y: 62, scale: 0.96, opacity: 0, duration: 0.66, ease: "back.out(1.12)" },
+        6.98,
+      );
+      tl.from(
+        "#s3-color-item",
+        { x: 54, rotation: 1.6, opacity: 0, duration: 0.58, ease: "expo.out" },
+        7.1,
+      );
+
+      // Transition 3 — horizontal push into search
+      tl.to("#scene-3", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 9.6);
+      tl.fromTo(
+        "#scene-4",
+        { x: 1920, opacity: 1 },
+        { x: 0, duration: 0.5, ease: "power3.inOut" },
+        9.6,
+      );
+      tl.set("#scene-3", { opacity: 0, x: 0 }, 10.1);
+
+      // Scene 4 — type, filter, hover, preview
+      tl.from("#s4-ambient", { opacity: 0, scale: 0.94, duration: 0.85, ease: "sine.out" }, 9.86);
+      tl.from("#s4-eyebrow", { y: -28, opacity: 0, duration: 0.32, ease: "power3.out" }, 9.92);
+      tl.from("#s4-headline", { x: -54, opacity: 0, duration: 0.5, ease: "expo.out" }, 10.0);
+      tl.from("#s4-keycap", { x: 48, scale: 0.94, opacity: 0, duration: 0.44, ease: "power2.out" }, 10.08);
+      tl.from("#s4-shelf", { y: 46, opacity: 0, duration: 0.56, ease: "power3.out" }, 10.14);
+      tl.set("#s4-search-value", { innerText: "d" }, 10.58);
+      tl.set("#s4-search-value", { innerText: "de" }, 10.72);
+      tl.set("#s4-search-value", { innerText: "des" }, 10.86);
+      tl.set("#s4-search-value", { innerText: "desi" }, 11.0);
+      tl.set("#s4-search-value", { innerText: "desig" }, 11.14);
+      tl.set("#s4-search-value", { innerText: "design" }, 11.28);
+      tl.from(
+        "#s4-results .history-card",
+        {
+          y: 34,
+          scale: 0.96,
+          opacity: 0,
+          duration: 0.52,
+          stagger: 0.12,
+          ease: "back.out(1.1)",
+        },
+        11.42,
+      );
+      tl.from("#s4-callout", { x: -54, opacity: 0, duration: 0.48, ease: "power4.out" }, 11.82);
+      tl.from(
+        "#s4-preview",
+        { y: 58, scale: 0.96, opacity: 0, duration: 0.64, ease: "expo.out" },
+        12.62,
+      );
+
+      // Transition 4 — push into the drag-and-drop action
+      tl.to("#scene-4", { x: -1920, duration: 0.48, ease: "power3.inOut" }, 14.1);
+      tl.fromTo(
+        "#scene-5",
+        { x: 1920, opacity: 1 },
+        { x: 0, duration: 0.48, ease: "power3.inOut" },
+        14.1,
+      );
+      tl.set("#scene-4", { opacity: 0, x: 0 }, 14.58);
+
+      // Scene 5 — card travels into a real document target
+      tl.from("#s5-ambient", { opacity: 0, scale: 1.05, duration: 0.8, ease: "sine.out" }, 14.36);
+      tl.from("#s5-eyebrow", { x: -40, opacity: 0, duration: 0.3, ease: "power4.out" }, 14.4);
+      tl.from("#s5-headline", { y: 48, opacity: 0, duration: 0.46, ease: "expo.out" }, 14.48);
+      tl.from("#s5-subhead", { x: 48, opacity: 0, duration: 0.54, ease: "power2.out" }, 14.58);
+      tl.from("#s5-source", { x: -62, rotation: -3, opacity: 0, duration: 0.5, ease: "back.out(1.15)" }, 14.62);
+      tl.from("#s5-document", { x: 74, scale: 0.97, opacity: 0, duration: 0.62, ease: "power3.out" }, 14.7);
+      tl.from(
+        "#s5-drag-card",
+        { x: -780, y: 90, rotation: -2, scale: 0.92, opacity: 0, duration: 1.0, ease: "power3.inOut" },
+        15.16,
+      );
+      tl.from(
+        "#s5-cursor",
+        { x: -770, y: 84, opacity: 0, duration: 1.0, ease: "power3.inOut" },
+        15.16,
+      );
+
+      // Transition 5 — gentle blur into the closing lockup
+      tl.to(
+        "#scene-5",
+        { filter: "blur(14px)", scale: 1.025, opacity: 0, duration: 0.58, ease: "power1.inOut" },
+        16.8,
+      );
+      tl.fromTo(
+        "#scene-6",
+        { filter: "blur(14px)", scale: 0.975, opacity: 0 },
+        { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.58, ease: "power1.inOut" },
+        16.86,
+      );
+
+      // Scene 6 — resolve and hold
+      tl.from("#s6-ambient", { opacity: 0, scale: 0.9, duration: 1.2, ease: "sine.out" }, 17.04);
+      tl.from(
+        "#s6-icon-wrap",
+        { x: -84, scale: 0.88, opacity: 0, duration: 0.76, ease: "expo.out" },
+        17.1,
+      );
+      tl.from("#s6-icon", { rotation: -2.4, duration: 0.82, ease: "back.out(1.12)" }, 17.18);
+      tl.from("#s6-eyebrow", { x: 46, opacity: 0, duration: 0.4, ease: "power4.out" }, 17.34);
+      tl.from("#s6-title", { y: 58, opacity: 0, duration: 0.58, ease: "expo.out" }, 17.44);
+      tl.from("#s6-tagline", { x: 46, opacity: 0, duration: 0.62, ease: "power2.out" }, 17.62);
+      tl.from("#s6-badge", { x: 38, opacity: 0, duration: 0.46, ease: "power3.out" }, 17.82);
+      tl.to("#s6-layout", { opacity: 0, duration: 0.34, ease: "power2.in" }, 19.62);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
