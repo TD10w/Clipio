@@ -37,8 +37,9 @@ Use tight display tracking (`-0.035em`) and slightly open dark-canvas body leadi
 
 - Replace the generic glow field with a deliberate product-material macro: one oversized,
   softly lit Clipio glass shelf crops into the frame from the right.
-- Keep the canvas nearly solid midnight navy. Use a single cool spotlight behind the glass
-  and one restrained warm reflection from the app icon.
+- Build the canvas from the Clipio app icon: warm ivory, banana yellow, champagne gold,
+  and a restrained chestnut reflection.
+- Keep one cool spotlight behind the glass and one restrained warm reflection from the app icon.
 - Anchor the icon and wordmark to the left with a smaller footprint and more breathing room.
 - Remove the cyan underline. The glass rim itself is the highlight.
 - The cover should read as an Apple product film still, not a generic technology wallpaper.

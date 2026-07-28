@@ -12,7 +12,8 @@ Safari through Clipio and into Notes before ending on the product promise.
 
 ### 0.0–2.6 — Product-Material Cover
 
-- A nearly solid midnight canvas holds one oversized Clipio glass-shelf macro on the right.
+- A warm ivory-and-champagne canvas derived from the Clipio app icon holds one oversized
+  Clipio glass-shelf macro on the right.
 - The app icon and `Clipio` lockup settle on the left with generous breathing room.
 - `Your clipboard, made visual.` appears without the previous cyan underline.
 

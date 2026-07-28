@@ -1091,7 +1091,20 @@
 
       /* Scene 1 — deliberate product-material cover */
       #scene-1 {
-        background-color: #07111f;
+        background:
+          radial-gradient(
+            circle at 78% 18%,
+            rgba(255, 216, 95, 0.54) 0%,
+            rgba(255, 216, 95, 0.18) 32%,
+            rgba(255, 216, 95, 0) 58%
+          ),
+          radial-gradient(
+            circle at 15% 92%,
+            rgba(137, 84, 32, 0.14) 0%,
+            rgba(137, 84, 32, 0.05) 30%,
+            rgba(137, 84, 32, 0) 56%
+          ),
+          linear-gradient(135deg, #fbf8f2 0%, #f4e7c4 48%, #d9bd79 100%);
       }
 
       #scene-1 .scene-content {
@@ -1109,9 +1122,9 @@
         border-radius: 50%;
         background: radial-gradient(
           circle,
-          rgba(142, 220, 255, 0.18) 0%,
-          rgba(80, 140, 196, 0.08) 38%,
-          rgba(7, 17, 31, 0) 68%
+          rgba(255, 253, 244, 0.82) 0%,
+          rgba(255, 216, 95, 0.28) 38%,
+          rgba(255, 216, 95, 0) 68%
         );
       }
 
@@ -1129,13 +1142,13 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        border: 2px solid rgba(244, 248, 255, 0.34);
+        border: 2px solid rgba(255, 253, 244, 0.78);
         border-radius: 108px;
-        background: rgba(214, 232, 248, 0.12);
+        background: rgba(255, 248, 225, 0.3);
         box-shadow:
-          inset 0 2px 0 rgba(255, 255, 255, 0.34),
-          inset 0 -2px 0 rgba(142, 220, 255, 0.16),
-          -60px 72px 150px rgba(0, 5, 16, 0.48);
+          inset 0 2px 0 rgba(255, 255, 255, 0.78),
+          inset 0 -2px 0 rgba(235, 191, 84, 0.42),
+          -60px 72px 150px rgba(92, 58, 22, 0.22);
         backdrop-filter: blur(42px) saturate(1.16);
       }
 
@@ -1251,9 +1264,13 @@
         gap: 22px;
       }
 
+      .cover-copy .eyebrow {
+        color: #9a681a;
+      }
+
       .cover-wordmark {
         margin: 0;
-        color: #f4f8ff;
+        color: #49331e;
         font-size: 128px;
         font-weight: 800;
         letter-spacing: -0.06em;
@@ -1262,7 +1279,7 @@
 
       .cover-tagline {
         margin: 0;
-        color: #c4d3e4;
+        color: #705b42;
         font-size: 39px;
         font-weight: 350;
         letter-spacing: -0.025em;
@@ -1272,7 +1289,7 @@
         position: absolute;
         left: 154px;
         bottom: 74px;
-        color: #8299b3;
+        color: #78644c;
         font-family: "Geist Mono", ui-monospace, monospace;
         font-size: 18px;
         font-weight: 600;
