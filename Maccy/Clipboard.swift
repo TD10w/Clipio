@@ -3,7 +3,19 @@ import Defaults
 import Sauce
 
 class Clipboard {
-  static let shared = Clipboard()
+  static let shared: Clipboard = {
+    if RuntimeEnvironment.isUITesting {
+      return Clipboard(
+        pasteboard: NSPasteboard(name: RuntimeEnvironment.uiTestPasteboardName),
+        enabledPasteboardTypes: [.fileURL, .html, .png, .rtf, .string, .tiff],
+        checkInterval: 0.1,
+        accessibilityAllowed: { true },
+        permissionDenied: {},
+        pasteEventPoster: {}
+      )
+    }
+    return Clipboard()
+  }()
 
   typealias OnNewCopyHook = (HistoryItem) -> Void
 
@@ -11,6 +23,10 @@ class Clipboard {
   var changeCount: Int
 
   private let pasteboard: NSPasteboard
+  private let accessibilityAllowed: () -> Bool
+  private let permissionDenied: () -> Void
+  private let pasteEventPoster: () -> Void
+  private let checkIntervalOverride: TimeInterval?
 
   private var timer: Timer?
   private let enabledPasteboardTypesOverride: Set<NSPasteboard.PasteboardType>?
@@ -40,10 +56,23 @@ class Clipboard {
 
   init(
     pasteboard: NSPasteboard = .general,
-    enabledPasteboardTypes: Set<NSPasteboard.PasteboardType>? = nil
+    enabledPasteboardTypes: Set<NSPasteboard.PasteboardType>? = nil,
+    checkInterval: TimeInterval? = nil,
+    accessibilityAllowed: @escaping () -> Bool = { Accessibility.requestTrust() },
+    permissionDenied: @escaping () -> Void = { Accessibility.explainMissingPermission() },
+    pasteEventPoster: @escaping () -> Void = {
+      guard !RuntimeEnvironment.isUITesting else {
+        return
+      }
+      Clipboard.postPasteEvent()
+    }
   ) {
     self.pasteboard = pasteboard
     self.enabledPasteboardTypesOverride = enabledPasteboardTypes
+    self.checkIntervalOverride = checkInterval
+    self.accessibilityAllowed = accessibilityAllowed
+    self.permissionDenied = permissionDenied
+    self.pasteEventPoster = pasteEventPoster
     changeCount = pasteboard.changeCount
   }
 
@@ -57,7 +86,7 @@ class Clipboard {
 
   func start() {
     timer = Timer.scheduledTimer(
-      timeInterval: Defaults[.clipboardCheckInterval],
+      timeInterval: checkIntervalOverride ?? Defaults[.clipboardCheckInterval],
       target: self,
       selector: #selector(checkForChangesInPasteboard),
       userInfo: nil,
@@ -116,15 +145,24 @@ class Clipboard {
     sync()
 
     Task {
-      Notifier.notify(body: item.title, sound: .knock)
+      Notifier.play(sound: .knock)
       checkForChangesInPasteboard()
     }
   }
 
   // Based on https://github.com/Clipy/Clipy/blob/develop/Clipy/Sources/Services/PasteService.swift.
-  func paste() {
-    Accessibility.check()
+  @discardableResult
+  func paste() -> Bool {
+    guard accessibilityAllowed() else {
+      permissionDenied()
+      return false
+    }
 
+    pasteEventPoster()
+    return true
+  }
+
+  private static func postPasteEvent() {
     // Add flag that left/right modifier key has been pressed.
     // See https://github.com/TermiT/Flycut/pull/18 for details.
     let cmdFlag = CGEventFlags(rawValue: UInt64(KeyChord.pasteKeyModifiers.rawValue) | 0x000008)
@@ -167,7 +205,7 @@ class Clipboard {
 
     changeCount = pasteboard.changeCount
 
-    if Defaults[.ignoreEvents] {
+    if Defaults[.ignoreEvents] && !RuntimeEnvironment.isUITesting {
       if Defaults[.ignoreOnlyNextEvent] {
         Defaults[.ignoreEvents] = false
         Defaults[.ignoreOnlyNextEvent] = false
@@ -183,7 +221,9 @@ class Clipboard {
       return
     }
 
-    if let sourceAppBundle = sourceApp?.bundleIdentifier, shouldIgnore(sourceAppBundle) {
+    if !RuntimeEnvironment.isUITesting,
+       let sourceAppBundle = sourceApp?.bundleIdentifier,
+       shouldIgnore(sourceAppBundle) {
       return
     }
 
@@ -198,7 +238,7 @@ class Clipboard {
         return
       }
 
-      if shouldIgnore(item) {
+      if !RuntimeEnvironment.isUITesting && shouldIgnore(item) {
         return
       }
 
@@ -237,8 +277,12 @@ class Clipboard {
   }
 
   private func shouldIgnore(_ types: Set<NSPasteboard.PasteboardType>) -> Bool {
-    let ignoredTypes = self.ignoredTypes
-      .union(Defaults[.ignoredPasteboardTypes].map({ NSPasteboard.PasteboardType($0) }))
+    let ignoredTypes = if RuntimeEnvironment.isUITesting {
+      self.ignoredTypes
+    } else {
+      self.ignoredTypes
+        .union(Defaults[.ignoredPasteboardTypes].map({ NSPasteboard.PasteboardType($0) }))
+    }
 
     return types.isDisjoint(with: enabledTypes) ||
       !types.isDisjoint(with: ignoredTypes)

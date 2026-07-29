@@ -54,6 +54,46 @@ class ClipboardTests: XCTestCase {
     XCTAssertEqual(NSPasteboard.general.changeCount, systemChangeCount)
   }
 
+  func testCopyFeedbackPlaysSoundWithoutClipboardContent() {
+    let sound = NSSound(named: .init("ClipioTestsSound")) ?? NSSound()
+    var playedSound: NSSound?
+
+    Notifier.play(sound: sound) { receivedSound in
+      playedSound = receivedSound
+      return true
+    }
+
+    XCTAssertTrue(playedSound === sound)
+  }
+
+  func testPasteDoesNotPostEventsWhenAccessibilityIsDenied() {
+    var deniedWasExplained = false
+    var eventWasPosted = false
+    let clipboard = Clipboard(
+      pasteboard: pasteboard,
+      accessibilityAllowed: { false },
+      permissionDenied: { deniedWasExplained = true },
+      pasteEventPoster: { eventWasPosted = true }
+    )
+
+    XCTAssertFalse(clipboard.paste())
+    XCTAssertTrue(deniedWasExplained)
+    XCTAssertFalse(eventWasPosted)
+  }
+
+  func testPastePostsOneEventSequenceWhenAccessibilityIsGranted() {
+    var postCount = 0
+    let clipboard = Clipboard(
+      pasteboard: pasteboard,
+      accessibilityAllowed: { true },
+      permissionDenied: { XCTFail("Permission explanation should not appear") },
+      pasteEventPoster: { postCount += 1 }
+    )
+
+    XCTAssertTrue(clipboard.paste())
+    XCTAssertEqual(postCount, 1)
+  }
+
   func testChangesListenerAndAddHooks() {
     let hookExpectation = expectation(description: "Hook is called")
     clipboard.onNewCopy({ (_: HistoryItem) in

@@ -48,7 +48,7 @@ class Popup {
   private var state: PopupState = .toggle
 
   init() {
-    guard !RuntimeEnvironment.isTesting else { return }
+    guard !RuntimeEnvironment.isUnitTesting else { return }
     KeyboardShortcuts.onKeyDown(for: .popup, action: handleFirstKeyDown)
     initEventsMonitor()
   }
