@@ -241,6 +241,19 @@ class HistoryTests: XCTestCase {
     XCTAssertFalse(history.items.contains(items[0]))
   }
 
+  func testNewestItemBecomesScrollTargetAtMaxSize() {
+    for index in 0..<10 {
+      history.add(historyItem(String(index)))
+    }
+    AppState.shared.navigator.scrollTarget = nil
+
+    let newest = history.add(historyItem("10"))
+
+    XCTAssertEqual(history.items.count, 10)
+    XCTAssertEqual(history.items.first, newest)
+    XCTAssertEqual(AppState.shared.navigator.scrollTarget, newest.id)
+  }
+
   func testMaxSizeIgnoresPinned() {
     var items: [HistoryItemDecorator] = []
 

@@ -200,6 +200,10 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       items = all
       updateUnpinnedShortcuts()
       AppState.shared.popup.needsResize = true
+      // A full horizontal shelf keeps its current scroll offset when the oldest
+      // card is replaced. Reveal the newly copied card so collection does not
+      // appear to stop at the history-size limit.
+      AppState.shared.navigator.scrollTarget = itemDecorator.id
     }
 
     return itemDecorator
