@@ -3,7 +3,7 @@ import SwiftUI
 
 // Animation tunables for FloatingPanel — one-line changes to dial in the feel.
 private enum FloatingPanelAnim {
-  static let openDuration: TimeInterval = 0.04
+  static let openDuration: TimeInterval = 0.22
   static let closeDuration: TimeInterval = 0.16
 }
 
