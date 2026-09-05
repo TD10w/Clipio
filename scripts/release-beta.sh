@@ -3,7 +3,7 @@
 set -euo pipefail
 
 project_dir=${0:A:h:h}
-derived_data="$project_dir/build/BetaRelease"
+derived_data=""
 output="$project_dir/build/Beta/Clipio-beta.zip"
 validate_only=""
 
@@ -18,7 +18,7 @@ Required environment variables for a new build:
   CLIPIO_NOTARY_PROFILE  notarytool keychain profile name
 
 Options:
-  --derived-data <path>  Store Xcode build output at this path.
+  --derived-data <path>  Store Xcode build output at this path (defaults to /private/tmp).
   --output <path>        Write the final notarized ZIP to this path.
   --validate-only <app>  Validate an already signed and stapled Clipio.app.
   -h, --help             Show this help.
@@ -89,6 +89,44 @@ validate_distribution() {
   spctl --assess --type execute --verbose=4 "$app_bundle"
 }
 
+sign_sparkle_components() {
+  local app_bundle="$1"
+  local sparkle_bundle="$app_bundle/Contents/Frameworks/Sparkle.framework"
+  local sparkle_version="$sparkle_bundle/Versions/B"
+
+  [[ -d "$sparkle_bundle" ]] || return 0
+
+  # Sparkle ships these helpers ad-hoc signed. Apple notarization requires
+  # every nested executable to use a valid Developer ID certificate and a
+  # secure timestamp, so sign from the deepest nested code outward.
+  for item in \
+    "$sparkle_version/XPCServices/Downloader.xpc" \
+    "$sparkle_version/XPCServices/Installer.xpc" \
+    "$sparkle_version/Updater.app"; do
+    [[ -e "$item" ]] || continue
+    codesign \
+      --force \
+      --sign "$developer_id" \
+      --timestamp \
+      --options runtime \
+      "$item"
+  done
+
+  [[ -e "$sparkle_version/Autoupdate" ]] && codesign \
+    --force \
+    --sign "$developer_id" \
+    --timestamp \
+    --options runtime \
+    "$sparkle_version/Autoupdate"
+
+  codesign \
+    --force \
+    --sign "$developer_id" \
+    --timestamp \
+    --options runtime \
+    "$sparkle_bundle"
+}
+
 if [[ -n "$validate_only" ]]; then
   validate_distribution "${validate_only:A}"
   print "Validated external beta app: ${validate_only:A}"
@@ -104,7 +142,11 @@ notary_profile=${CLIPIO_NOTARY_PROFILE:-}
 security find-identity -p codesigning -v | grep -F -- "$developer_id" >/dev/null || \
   fail "Developer ID identity is not available in this keychain"
 
-derived_data=${derived_data:A}
+if [[ -z "$derived_data" ]]; then
+  derived_data=$(mktemp -d "/private/tmp/clipio-beta-build.XXXXXX")
+else
+  derived_data=${derived_data:A}
+fi
 output=${output:A}
 [[ ! -e "$output" ]] || fail "Refusing to overwrite existing output: $output"
 
@@ -120,10 +162,23 @@ xcodebuild \
   CODE_SIGN_IDENTITY="$developer_id" \
   CODE_SIGNING_ALLOWED=YES \
   ENABLE_HARDENED_RUNTIME=YES \
-  OTHER_CODE_SIGN_FLAGS="--timestamp" \
+  CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
   build
 
 app_bundle="$derived_data/Build/Products/Release/Clipio.app"
+# Xcode also signs Swift Package intermediate object files when distribution
+# signing is enabled. Timestamping those .o files fails on recent Xcode, so
+ # timestamp the final app and nested distribution code explicitly after the
+ # build has completed.
+sign_sparkle_components "$app_bundle"
+codesign \
+  --force \
+  --sign "$developer_id" \
+  --timestamp \
+  --options runtime \
+  --entitlements "$project_dir/Maccy/Maccy.entitlements" \
+  --generate-entitlement-der \
+  "$app_bundle"
 validate_signature "$app_bundle"
 
 notary_dir=$(mktemp -d "${TMPDIR:-/tmp}/clipio-notary.XXXXXX")

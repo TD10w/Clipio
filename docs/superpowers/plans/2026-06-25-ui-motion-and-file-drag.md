@@ -158,7 +158,7 @@ Replace the entire `close()` override (currently lines 171–177) with:
 - [ ] **Step 4: Compile-check**
 
 ```bash
-cd "/Users/dx/Documents/Claude/Claude Code/Clipio"
+cd "/path/to/Clipio"
 xcodebuild -project "Clipio.xcodeproj" -scheme "Maccy" -configuration Debug build CODE_SIGNING_ALLOWED=NO 2>&1 | grep -E "error:|BUILD"
 ```
 
@@ -227,7 +227,7 @@ In the `body` computed property, find the existing `.animation(.easeOut(duration
 - [ ] **Step 3: Compile-check**
 
 ```bash
-cd "/Users/dx/Documents/Claude/Claude Code/Clipio"
+cd "/path/to/Clipio"
 xcodebuild -project "Clipio.xcodeproj" -scheme "Maccy" -configuration Debug build CODE_SIGNING_ALLOWED=NO 2>&1 | grep -E "error:|BUILD"
 ```
 
@@ -353,7 +353,7 @@ Replace the entire `dragPreview()` method with:
 - [ ] **Step 3: Compile-check**
 
 ```bash
-cd "/Users/dx/Documents/Claude/Claude Code/Clipio"
+cd "/path/to/Clipio"
 xcodebuild -project "Clipio.xcodeproj" -scheme "Maccy" -configuration Debug build CODE_SIGNING_ALLOWED=NO 2>&1 | grep -E "error:|BUILD"
 ```
 

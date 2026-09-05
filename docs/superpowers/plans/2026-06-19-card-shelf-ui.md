@@ -65,7 +65,7 @@ In Xcode: `Cmd+R`. Press `Shift+Cmd+C`. You should see the popup appear — it w
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/dubulu/Documents/AgentOS/Project/Maccy
+cd /path/to/Clipio
 git add Maccy/Extensions/Defaults.Keys+Names.swift Maccy/AppDelegate.swift
 git commit -m "feat: set default window size to wide shelf (820x200)"
 ```

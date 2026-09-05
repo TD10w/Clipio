@@ -43,6 +43,13 @@ grep -q 'notarytool submit' "$release_script" || fail "Beta build must submit fo
 grep -q 'stapler staple' "$release_script" || fail "Beta build must staple the ticket"
 grep -q 'spctl --assess' "$release_script" || fail "Beta build must run Gatekeeper assessment"
 grep -q 'get-task-allow' "$release_script" || fail "Beta build must reject debug entitlements"
+grep -q 'CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO' "$release_script" || \
+  fail "Beta build must disable injected base entitlements"
+grep -q 'XPCServices/Downloader.xpc' "$release_script" || \
+  fail "Beta build must sign Sparkle helper code"
+if grep -q 'OTHER_CODE_SIGN_FLAGS' "$release_script"; then
+  fail "Beta build must not timestamp Swift Package intermediate objects"
+fi
 
 grep -q 'ENABLE_HARDENED_RUNTIME = YES;' "$project_dir/Clipio.xcodeproj/project.pbxproj" || \
   fail "Release must enable Hardened Runtime"

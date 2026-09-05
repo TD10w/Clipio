@@ -6,3 +6,13 @@ Maccy/.DS_Store
 default.profraw
 build/
 .worktrees/
+
+# Local credentials and private test/release notes
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
+private/

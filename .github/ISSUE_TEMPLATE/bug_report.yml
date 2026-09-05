@@ -14,24 +14,24 @@ body:
       options:
         - label: I have verified that there isn't already an issue reporting the same bug to prevent duplication.
           required: false
-        - label: I have seen the [FAQ](https://github.com/p0deje/Maccy?tab=readme-ov-file#faq).
+        - label: I have read the Clipio README and known limitations.
           required: false
   - type: input
     attributes:
-      label: Maccy Version (see 'About' window)
-      placeholder: e.g. 0.29.0
+      label: Clipio Version / Commit (see 'About' window)
+      placeholder: e.g. 2.6.1 or commit hash
     validations:
       required: false
   - type: input
     attributes:
       label: macOS Version
-      placeholder: e.g. 13.5.2
+      placeholder: e.g. 14.7; Apple Silicon or Intel
     validations:
       required: false
   - type: textarea
     attributes:
-      label: Maccy Settings
-      description: Provide the output from running 'defaults read org.p0deje.Maccy' in Terminal.app.
+      label: Relevant settings / 相关设置
+      description: Describe only relevant settings (such as paste by default). Do not attach full settings dumps, clipboard history, passwords, or tokens.
       render: Shell
     validations:
       required: false
@@ -47,7 +47,7 @@ body:
       label: Steps to Reproduce
       description: |
         Provide the steps to consistently reproduce the issue. If possible, record a screen video
-        demonstrating the problem using QuickTime.app.
+        demonstrating the problem using sample content. Redact private text, account names, and file paths.
       placeholder: |
         1. Navigate to …
         2. Click on …

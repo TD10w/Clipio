@@ -16,7 +16,7 @@ class About {
   private var links: NSMutableAttributedString {
     let string = NSMutableAttributedString(string: "Source",
                                            attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
-    string.addAttribute(.link, value: "https://github.com/TD10w/Maccy", range: NSRange(location: 0, length: 6))
+    string.addAttribute(.link, value: "https://github.com/TD10w/Clipio", range: NSRange(location: 0, length: string.length))
     return string
   }
 
