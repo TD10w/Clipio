@@ -29,7 +29,6 @@
 		CB0F10000000000000000004 /* FloatingGlassStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0F10000000000000000003 /* FloatingGlassStyle.swift */; };
 		CB5AFE000000000000000002 /* RuntimeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5AFE000000000000000001 /* RuntimeEnvironment.swift */; };
 		CB0FACE100000000000000A2 /* PreviewPopupPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0FACE100000000000000A1 /* PreviewPopupPanel.swift */; };
-		DA009931256411F90030E697 /* appcast.xml in Resources */ = {isa = PBXBuildFile; fileRef = DA00992C256411F90030E697 /* appcast.xml */; };
 		DA009932256411F90030E697 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DA00992D256411F90030E697 /* README.md */; };
 		DA009934256411F90030E697 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DA00992F256411F90030E697 /* LICENSE */; };
 		DA009947256414800030E697 /* SwiftHEXColors in Frameworks */ = {isa = PBXBuildFile; productRef = DA009946256414800030E697 /* SwiftHEXColors */; };
@@ -201,7 +200,6 @@
 		CB0F10000000000000000001 /* FloatingGlassStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingGlassStyleTests.swift; sourceTree = "<group>"; };
 		CB0F10000000000000000003 /* FloatingGlassStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingGlassStyle.swift; sourceTree = "<group>"; };
 		CB0FACE100000000000000A1 /* PreviewPopupPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPopupPanel.swift; sourceTree = "<group>"; };
-		DA00992C256411F90030E697 /* appcast.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
 		DA00992D256411F90030E697 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DA00992F256411F90030E697 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		DA05B5102C234CB1006980FE /* MaccyApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaccyApp.swift; sourceTree = "<group>"; };
@@ -744,7 +742,6 @@
 				DA360DB11E3DF137005C6F6B /* MaccyTests */,
 				DA0EE7B7204657830025FC60 /* MaccyUITests */,
 				DACCD5822C93605C00BAD74C /* Maccy.xctestplan */,
-				DA00992C256411F90030E697 /* appcast.xml */,
 				DA00992F256411F90030E697 /* LICENSE */,
 				DA00992D256411F90030E697 /* README.md */,
 				DAEE38441E3DBEB100DD2966 /* Products */,
@@ -995,7 +992,6 @@
 				4762D6972467226100B3A2BA /* Localizable.strings in Resources */,
 				DA009934256411F90030E697 /* LICENSE in Resources */,
 				DA20FA742B082E0100056DD5 /* Knock.caf in Resources */,
-				DA009931256411F90030E697 /* appcast.xml in Resources */,
 				DAA5ACB52C1B803000B58513 /* GeneralSettings.strings in Resources */,
 				DA740D7A2C21E6B0007B1A36 /* AdvancedSettings.strings in Resources */,
 				DA689FB02C1CD3B00009B887 /* StorageSettings.strings in Resources */,

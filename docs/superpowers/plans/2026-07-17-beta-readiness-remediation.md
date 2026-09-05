@@ -18,7 +18,7 @@
 - Preserve the uncommitted project-file change until Task 4 explicitly resolves the Release Hardened Runtime value.
 - Use test-first development: write each regression test, observe the expected failure, then implement the minimum fix.
 - After each production task, run the focused tests, all `ClipioTests`, and the required Debug compile-check.
-- Stage and commit only the files belonging to the current task; do not stage `AUDIT_REPORT.md` or unrelated user changes.
+- Stage and commit only the files belonging to the current task; do not stage `docs/history/2026-07-17-audit.md` or unrelated user changes.
 
 ---
 
@@ -552,7 +552,7 @@ git commit -m "fix: hide unfinished beta update controls"
 ### Task 6: Assemble and verify the beta candidate
 
 **Files:**
-- Modify: `AUDIT_REPORT.md` only if the owner wants verification results recorded there
+- Modify: `docs/history/2026-07-17-audit.md` only if the owner wants historical verification results recorded there
 - No production changes are permitted in this task unless a failing acceptance test sends work back to its owning task.
 
 **Interfaces:**

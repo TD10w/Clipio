@@ -90,7 +90,6 @@ consistent with macOS file-clipboard behavior.
 
 ## Notes for next session
 
-- Build/test via the installed Release app (`Install Clipio.command` or the
-  build+copy-to-`/Applications` flow). Do NOT judge performance from Xcode `Cmd+R`
+- Build/test via the installed Release app or the local release workflow. Do NOT judge performance from Xcode `Cmd+R`
   (Debug) — Debug SwiftUI is far laggier and misled us repeatedly this session.
 - Implement incrementally, one feature per commit, compile-check before handoff.

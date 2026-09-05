@@ -107,7 +107,7 @@ Remove this pair from `Maccy/Info.plist`:
 
 ```xml
 <key>SUFeedURL</key>
-<string>https://raw.githubusercontent.com/p0deje/Maccy/master/appcast.xml</string>
+<string>Historical upstream Maccy appcast value (removed before public Clipio beta)</string>
 ```
 
 Keep the Sparkle framework integration intact so a Clipio feed can be added later.

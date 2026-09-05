@@ -45,7 +45,7 @@ Download the Clipio ZIP from this repository's Releases, extract it, move Clipio
 - The current issue form no longer requests full settings dumps; the inherited sponsor button was removed.
 - The unpublished preparation commits were consolidated for publication so previously removed personal account details are not introduced through their intermediate history. A local backup preserves the original checkpoints. Existing public history is unchanged.
 - Keep upstream MIT copyright, code attribution, dependency licenses, and meaningful source links. Internal `Maccy` scheme/source/storage names are not branding defects and changing storage names may require migration.
-- Legacy localized Maccy strings and unused Sparkle/appcast assets still need a dedicated cleanup. No `SoftwareUpdater()` construction was found in app source. Do not advertise automatic updates.
+- Legacy localized Maccy strings and unused Sparkle code remain for a separate cleanup. The stale upstream appcast has been removed from the repository and is no longer packaged. No `SoftwareUpdater()` construction was found in app source. Do not advertise automatic updates.
 - App About source link corrected to Clipio; inherited contributor credits remain.
 - Existing handoff reports a flaky UI lifecycle test and database failure-recovery risks. Do not describe them as newly reproduced defects or claim that previous test counts were rerun here.
 

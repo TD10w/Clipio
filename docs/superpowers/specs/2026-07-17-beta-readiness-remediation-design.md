@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-17
 **Status:** Proposed for owner review
-**Source:** `AUDIT_REPORT.md`
+**Source:** [`docs/history/2026-07-17-audit.md`](../../history/2026-07-17-audit.md)
 
 ## Goal
 
@@ -169,7 +169,7 @@ This task has an external prerequisite: an active Apple Developer membership, a 
 
 Disable updater initialization and hide Check for Updates / automatic-update controls for the beta configuration. Do not build a new Sparkle feed as part of this remediation. Keep Sparkle-related code only where removing it would cause wider, unnecessary change.
 
-The stale repository `appcast.xml` must not be connected to Clipio. Its cleanup can be handled separately if it is not packaged or used.
+The stale upstream appcast has been removed from the repository and is no longer packaged. Any future automatic updater work needs a Clipio-owned feed and a separate release decision.
 
 ### Error handling
 

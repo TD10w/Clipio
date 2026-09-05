@@ -166,7 +166,7 @@ Expected: `BUILD SUCCEEDED` with no `error:` lines. Fix any issues before contin
 
 - [ ] **Step 5: Manually verify in the installed Release build**
 
-Build and install the Release build via the usual `Install Clipio.command` / double-click installer, then:
+Build and install the Release build via the local release workflow, then:
 - Open with the hotkey → shelf pops in (fades + scales up, ~0.14s). Should feel snappy, not slow.
 - Close with the hotkey → shelf fades + scales down.
 - Click outside the shelf → same close animation.
