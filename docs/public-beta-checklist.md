@@ -4,20 +4,20 @@ Assessment date: 2026-09-05. Intended audience: a small group of testers using G
 
 ## Current result
 
-The first early public beta is prepared as `v2.6.1-beta.1`. It is suitable for collecting tester feedback, with independent installation on another Mac and the full UI checklist explicitly outstanding. The owner authorized publishing it with those limitations disclosed.
+The first early public beta is published as [`v2.6.1-beta.1`](https://github.com/TD10w/Clipio/releases/tag/v2.6.1-beta.1). It is suitable for collecting tester feedback, with independent installation on another Mac and the full UI checklist explicitly outstanding. The owner authorized publishing it with those limitations disclosed.
 
 The universal app has been Developer ID signed, accepted by Apple notarization, stapled, and validated again after extraction from the final ZIP. The README and release notes distinguish these completed distribution checks from unperformed installation/UI testing.
 
 ## Release gate
 
-- [x] Prepare candidate `2.6.1-beta.1` with app version `2.6.1`, build `60`, and bilingual release notes. The GitHub tag has not been published.
+- [x] Prepare candidate `2.6.1-beta.1` with app version `2.6.1`, build `60`, and bilingual release notes. The GitHub tag points to `3396981`.
 - [x] Make a Developer ID Application identity and notarytool profile available on the release machine. Keep credentials in Keychain, never in repository files.
 - [x] Build, sign, notarize, and staple the candidate. This run used a clean staging directory to avoid Finder metadata in the reused build output; the script's `--validate-only` gate passed. Direct Xcode Release settings do not provide the full distribution workflow.
 - [x] Verify the app contains both `arm64` and `x86_64` binaries, passes signature verification, stapling validation, and Gatekeeper assessment (also after extracting the final ZIP).
 - [ ] Download and launch the actual ZIP on another Mac; verify permissions and core workflows below. Record the tested OS and CPU, and avoid claiming compatibility beyond evidence.
 - [ ] Review media/privacy/licensing items in `media-notes.md`.
-- [ ] Publish the verified ZIP and checksum with release notes, installation steps, known issues, and the exact source commit.
-- [ ] Update both READMEs from source-only status to actual release availability.
+- [x] Publish the verified ZIP and checksum with bilingual release notes, installation steps, known issues, and source tag `v2.6.1-beta.1` (`3396981`).
+- [x] Update both READMEs with direct downloads, install steps without Xcode, and dark screenshots.
 
 The release script reads `CLIPIO_DEVELOPER_ID` and `CLIPIO_NOTARY_PROFILE`, builds a universal app, signs nested Sparkle code, submits for notarization, staples, and assesses the artifact. Environment variable values are release-machine configuration. Do not copy personal identifiers into public documentation.
 
@@ -81,3 +81,12 @@ XCTest reported `Timed out while enabling automation mode.` The run was stopped
 and is not counted as a pass. This is a test-environment startup limitation, not
 evidence that these app workflows failed. Repeat on an unlocked macOS session
 with UI automation available, then perform the release-artifact manual checklist.
+
+## Public visitor checks
+
+- GitHub Release is public and marked Pre-release; ZIP and checksum assets are uploaded.
+- GitHub-provided asset SHA-256 digests match the local files. An unauthenticated download from the public ZIP URL also matched the final artifact SHA-256.
+- English README rendering was checked in the browser: language switch, direct download, dark screenshots, installation steps, and limitations are visible.
+- Issues were enabled and the template chooser displays Bug Report and Feature request.
+- Repository homepage now links to Clipio Releases instead of the upstream Maccy website.
+- Existing public Git history was not rewritten; only unpublished preparation commits were consolidated.
