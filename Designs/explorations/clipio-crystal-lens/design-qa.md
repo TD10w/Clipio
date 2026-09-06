@@ -1,7 +1,7 @@
 # Crystal Lens Liquid Glass — Design QA
 
 Plan: `docs/superpowers/plans/2026-06-22-crystal-lens-liquid-glass.md`
-Reference: `output/clipio-crystal-lens/option-1-reference.png`
+Reference: `Designs/explorations/clipio-crystal-lens/option-1-reference.png`
 
 ## Machine-verified (assistant)
 
@@ -20,7 +20,7 @@ Code changes shipped:
 ## Needs owner verification (live, macOS 26 + colorful wallpaper)
 
 Capture the full 820×220 shelf with the first card selected, save as
-`output/clipio-crystal-lens/implementation.png`, and place it beside
+`Designs/explorations/clipio-crystal-lens/implementation.png`, and place it beside
 `option-1-reference.png` as `comparison.png`.
 
 Acceptance criteria to confirm against the reference:

@@ -1,8 +1,8 @@
 # Floating Glass Tiles Design QA
 
-- Source visual truth: `output/clipio-ui-directions/02-floating-tiles.svg`
-- Implementation screenshot: `output/clipio-floating-glass/implementation.jpg`
-- Comparison evidence: `output/clipio-floating-glass/comparison.png`
+- Source visual truth: `Designs/explorations/clipio-ui-directions/02-floating-tiles.svg`
+- Implementation screenshot: `Designs/explorations/clipio-floating-glass/implementation.jpg`
+- Comparison evidence: `Designs/explorations/clipio-floating-glass/comparison.png`
 - Viewport: 820 × 220 implementation shelf; source shelf normalized to the same width
 - State: populated clipboard history, search focused, no hover or preview popup
 - Focused region: the complete shelf is only 220 points high, so the full-view comparison keeps typography, card rims, badges, and footer chrome readable without a second crop.

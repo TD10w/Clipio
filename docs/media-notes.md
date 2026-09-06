@@ -11,7 +11,7 @@ Reviewed on 2026-09-05. This is an inventory, not a blanket clearance of all ass
 | `Designs/App-Store/*.pxd`, `Promo/*.psd`, other legacy design sources | Inherited source assets; redistribution provenance not established by this review | Retain provenance; review before reusing in marketing |
 | `Designs/Clipio-Demo/assets/fonts/*.woff2` | Geist / Geist Mono; license file was missing | Confirm exact font provenance and include the corresponding OFL license before redistributing the demo |
 | `Designs/Clipio-Demo/assets/clipio-soundbed.m4a` | Music provenance/license not documented | Obtain source/permission or export without the soundtrack |
-| `output/` and other demo image assets | Design experiments; not all images individually inspected | Do not treat as a privacy-reviewed screenshot set |
+| `Designs/explorations/` and other demo image assets | Design experiments; not all images individually inspected | Do not treat as a privacy-reviewed screenshot set |
 
 Geist's upstream license is available at [vercel/geist-font](https://github.com/vercel/geist-font/blob/main/LICENSE.txt). Confirm that it corresponds to the bundled files. The repository's MIT code license does not establish rights to unrelated assets.
 

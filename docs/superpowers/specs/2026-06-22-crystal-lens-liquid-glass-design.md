@@ -4,7 +4,7 @@
 
 **Selected direction:** Option 1 — Crystal Lens
 
-**Visual reference:** `output/clipio-crystal-lens/option-1-reference.png`
+**Visual reference:** `Designs/explorations/clipio-crystal-lens/option-1-reference.png`
 
 ## Product intent
 

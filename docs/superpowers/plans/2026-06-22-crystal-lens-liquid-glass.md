@@ -10,7 +10,7 @@
 
 **Design spec:** `docs/superpowers/specs/2026-06-22-crystal-lens-liquid-glass-design.md`
 
-**Visual source:** `output/clipio-crystal-lens/option-1-reference.png`
+**Visual source:** `Designs/explorations/clipio-crystal-lens/option-1-reference.png`
 
 ---
 
@@ -191,9 +191,9 @@ git commit -m "Harmonize Crystal Lens header controls"
 ### Task 5: Verify behavior and visual fidelity
 
 **Files:**
-- Create: `output/clipio-crystal-lens/implementation.png`
-- Create: `output/clipio-crystal-lens/comparison.png`
-- Create: `output/clipio-crystal-lens/design-qa.md`
+- Create: `Designs/explorations/clipio-crystal-lens/implementation.png`
+- Create: `Designs/explorations/clipio-crystal-lens/comparison.png`
+- Create: `Designs/explorations/clipio-crystal-lens/design-qa.md`
 
 - [ ] **Step 1: Run the full unit suite**
 
@@ -230,7 +230,7 @@ Repeat build and capture until the design spec's six acceptance criteria pass.
 - [ ] **Step 7: Commit the verified UI checkpoint**
 
 ```bash
-git add Maccy MaccyTests output/clipio-crystal-lens
+git add Maccy MaccyTests Designs/explorations/clipio-crystal-lens
 git commit -m "Adopt Crystal Lens Liquid Glass"
 ```
 

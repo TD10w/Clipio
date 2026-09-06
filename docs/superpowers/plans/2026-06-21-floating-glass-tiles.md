@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift 6, SwiftUI, AppKit, XCTest, macOS 14 fallback, macOS 26 `glassEffect`/`NSGlassEffectView`.
 
-**Visual source:** `output/clipio-ui-directions/02-floating-tiles.svg`
+**Visual source:** `Designs/explorations/clipio-ui-directions/02-floating-tiles.svg`
 
 ---
 
@@ -121,8 +121,8 @@ Run `FloatingGlassStyleTests`, then the required build command. Expected: test p
 
 **Files:**
 - Create: `design-qa.md`
-- Create: `output/clipio-floating-glass/implementation.png`
-- Create: `output/clipio-floating-glass/comparison.png`
+- Create: `Designs/explorations/clipio-floating-glass/implementation.png`
+- Create: `Designs/explorations/clipio-floating-glass/comparison.png`
 
 - [ ] **Step 1: Launch the compiled Clipio app and open the shelf**
 
@@ -130,7 +130,7 @@ Use the existing app UI with realistic clipboard history. Capture the shelf at t
 
 - [ ] **Step 2: Compare source and implementation together**
 
-Place `output/clipio-ui-directions/02-floating-tiles.svg` and the implementation capture into one comparison image. Review typography, spacing, color/material, imagery, icons, and content.
+Place `Designs/explorations/clipio-ui-directions/02-floating-tiles.svg` and the implementation capture into one comparison image. Review typography, spacing, color/material, imagery, icons, and content.
 
 - [ ] **Step 3: Fix all P0/P1/P2 differences**
 

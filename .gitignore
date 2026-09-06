@@ -1,8 +1,7 @@
 xcuserdata/
-Maccy.xcodeproj/project.xcworkspace/xcshareddata
+Clipio.xcodeproj/project.xcworkspace/xcshareddata
 .idea
 .DS_Store
-Maccy/.DS_Store
 default.profraw
 build/
 .worktrees/
