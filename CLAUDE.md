@@ -13,7 +13,7 @@ The owner has no coding background. Their job is product judgment ("does this lo
 the assistant's job is everything technical. Optimize for **fewest manual build-and-look cycles**.
 
 1. **Compile-check before every handoff.** After editing, run:
-   `xcodebuild -project "Clipio.xcodeproj" -scheme "Maccy" -configuration Debug build CODE_SIGNING_ALLOWED=NO`
+   `xcodebuild -project "Clipio.xcodeproj" -scheme "Clipio" -configuration Debug build CODE_SIGNING_ALLOWED=NO`
    Only hand off to the owner once it reports `BUILD SUCCEEDED`. Never make them discover a
    syntax/type error with their own `Cmd+R`.
 2. **Decide before building.** For anything non-trivial, agree on what we're building (sketch/mockup
@@ -22,7 +22,7 @@ the assistant's job is everything technical. Optimize for **fewest manual build-
 4. **Commit working checkpoints.** After each stable, verified state, `git commit` so experiments can
    be reverted with one command. Tell the owner the short hash.
 5. **Ask for specific feedback.** Encourage "the image is too small" / "it didn't switch" over "it's wrong."
-6. The Xcode scheme is still named **`Maccy`**; the app/target/display name is **Clipio**.
+6. Everything is named **Clipio** — scheme, targets, source folders, and display name.
    New `.swift` files must be registered in `Clipio.xcodeproj/project.pbxproj` (manual groups,
    not auto-synced) — the assistant can edit the pbxproj directly instead of asking the owner to add files.
 
@@ -71,12 +71,12 @@ plus a separate hover preview window. The old Maccy vertical-list views have bee
 deleted (commit removing the dead UI island), so don't go looking for `ListItemView`,
 `HistoryItemView`, `SlideoutView`, etc. — they're gone.
 
-- `Maccy/Views/CardItemView.swift` — the individual clipboard card (image / text / color)
-- `Maccy/Views/HistoryListView.swift` — the horizontal card shelf (LazyHStack in a ScrollView)
-- `Maccy/Views/HeaderView.swift` — search field + clear/settings/quit controls
-- `Maccy/Views/FloatingGlassStyle.swift` — shared sizes, radii, tints for the shelf/cards
-- `Maccy/PreviewPopupPanel.swift` / `Maccy/Views/PreviewItemView.swift` — hover preview below the shelf
-- `Maccy/FloatingPanel.swift` — the shelf window (size/position; drops from top-center)
+- `Clipio/Views/CardItemView.swift` — the individual clipboard card (image / text / color)
+- `Clipio/Views/HistoryListView.swift` — the horizontal card shelf (LazyHStack in a ScrollView)
+- `Clipio/Views/HeaderView.swift` — search field + clear/settings/quit controls
+- `Clipio/Views/FloatingGlassStyle.swift` — shared sizes, radii, tints for the shelf/cards
+- `Clipio/PreviewPopupPanel.swift` / `Clipio/Views/PreviewItemView.swift` — hover preview below the shelf
+- `Clipio/FloatingPanel.swift` — the shelf window (size/position; drops from top-center)
 - `Clipio.xcodeproj` — app target, bundle ID, and icon configuration
 - New `.swift` files must be registered manually in `Clipio.xcodeproj/project.pbxproj`
 

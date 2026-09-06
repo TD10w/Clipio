@@ -3,8 +3,8 @@
 set -euo pipefail
 
 project_dir=${0:A:h:h}
-settings="$project_dir/Maccy/Settings/GeneralSettingsPane.swift"
-app_delegate="$project_dir/Maccy/AppDelegate.swift"
+settings="$project_dir/Clipio/Settings/GeneralSettingsPane.swift"
+app_delegate="$project_dir/Clipio/AppDelegate.swift"
 
 if grep -Eq 'SoftwareUpdater|automaticallyChecksForUpdates|checkForUpdates' "$settings"; then
   print -u2 "External beta settings must not expose unconfigured software updates"

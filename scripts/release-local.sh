@@ -48,7 +48,7 @@ done
 print "Building Clipio Release..."
 xcodebuild \
   -project "$project_dir/Clipio.xcodeproj" \
-  -scheme Maccy \
+  -scheme Clipio \
   -configuration Release \
   -derivedDataPath "$derived_data" \
   CODE_SIGN_IDENTITY=- \

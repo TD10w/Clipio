@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 # Clipio without activating or terminating their personal clipboard manager.
 xcodebuild \
   -project "Clipio.xcodeproj" \
-  -scheme "Maccy" \
+  -scheme "Clipio" \
   -derivedDataPath "${TMPDIR:-/tmp}/clipio-ui-tests" \
   test \
   -only-testing:ClipioUITests \
