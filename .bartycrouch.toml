@@ -2,7 +2,7 @@
 tasks = ["interfaces", "translate", "normalize"]
 
 [update.interfaces]
-paths = ["Maccy"]
+paths = ["Clipio"]
 subpathsToIgnore = [".git", "carthage", "pods", "build", ".build", "docs"]
 defaultToBase = false
 ignoreEmptyStrings = true
@@ -10,7 +10,7 @@ unstripped = false
 ignoreKeys = ["#bartycrouch-ignore!", "#bc-ignore!", "#i!"]
 
 [update.translate]
-paths = ["Maccy"]
+paths = ["Clipio"]
 subpathsToIgnore = [".git", "carthage", "pods", "build", ".build", "docs"]
 translator = "deepL"
 secret = "<replace>"
@@ -18,13 +18,13 @@ sourceLocale = "en"
 separateWithEmptyLine = false
 
 [update.normalize]
-paths = ["Maccy"]
+paths = ["Clipio"]
 subpathsToIgnore = [".git", "carthage", "pods", "build", ".build", "docs"]
 separateWithEmptyLine = false
 sortByKeys = false
 
 [lint]
-paths = ["Maccy"]
+paths = ["Clipio"]
 subpathsToIgnore = [".git", "carthage", "pods", "build", ".build", "docs"]
 duplicateKeys = true
 emptyValues = true
