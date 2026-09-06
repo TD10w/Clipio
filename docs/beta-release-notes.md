@@ -19,7 +19,7 @@ No Xcode is needed. Updates are manual. Read the [README](https://github.com/TD1
 
 - Debug and universal Release builds passed; 85 core tests passed with no failures.
 - **Installation on a second Mac and the complete UI checklist have not been verified.** Four UI smoke tests could not start because macOS automation mode timed out; they are not counted as passed.
-- Image/file dragging can vary by destination app. Some inherited translations may still say Maccy. Database failure recovery needs further work; do not keep your only copy of important content in clipboard history.
+- Image/file dragging can vary by destination app. Database failure recovery needs further work; do not keep your only copy of important content in clipboard history.
 - Clipboard history stays local but has no app-level encryption. Use sample content in public bug reports.
 
 Please report your macOS version, CPU type, steps, and expected/actual result in [Clipio Issues](https://github.com/TD10w/Clipio/issues/new/choose).
@@ -43,7 +43,7 @@ Please report your macOS version, CPU type, steps, and expected/actual result in
 
 - Debug、通用 Release 构建通过，85 项核心测试全部通过。
 - **另一台 Mac 的安装体验和完整界面流程尚未验证。** 四项界面测试因为自动化模式启动超时未能执行，没有计入通过。
-- 图片或文件拖拽效果可能受目标应用影响；部分旧翻译可能仍显示 Maccy。数据库故障恢复仍需完善，不要把重要内容的唯一副本保存在剪贴板历史中。
+- 图片或文件拖拽效果可能受目标应用影响。数据库故障恢复仍需完善，不要把重要内容的唯一副本保存在剪贴板历史中。
 - 历史保存在本机，但没有应用层加密。公开反馈时请使用示例内容。
 
 欢迎通过 [Clipio Issues](https://github.com/TD10w/Clipio/issues/new/choose) 反馈，请提供 macOS 版本、芯片类型、操作步骤与预期/实际结果。

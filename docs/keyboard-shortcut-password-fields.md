@@ -2,7 +2,7 @@
 
 ## Problem Description
 
-Some users may experience issues where their Maccy keyboard shortcut stops working, particularly in password fields or secure input contexts. This commonly occurs when using shortcuts that produce visible characters, such as `Option+C` which generates the "ç" character.
+Some users may experience issues where their Clipio keyboard shortcut stops working, particularly in password fields or secure input contexts. This commonly occurs when using shortcuts that produce visible characters, such as `Option+C` which generates the "ç" character.
 
 ## Root Cause
 
@@ -38,7 +38,7 @@ If you want to use a keyboard shortcut that is used by the system (and produces 
 
    ```json
    {
-     "description": "Remap option+c to cmd+shift+c for Maccy trigger",
+     "description": "Remap option+c to cmd+shift+c for Clipio trigger",
      "manipulators": [
        {
          "from": {
@@ -60,8 +60,8 @@ If you want to use a keyboard shortcut that is used by the system (and produces 
    }
    ```
 
-4. **Update Maccy Settings**
-   - Open Maccy preferences
+4. **Update Clipio Settings**
+   - Open Clipio preferences
    - Set the keyboard shortcut to match your Karabiner remapping (in this example: `Cmd+Shift+C`)
    - Test the shortcut in various contexts, including password fields
 
@@ -77,6 +77,6 @@ After implementing the solution:
 1. Test the shortcut in regular text fields
 2. Test the shortcut in password fields
 3. Test the shortcut in secure applications (banking apps, password managers)
-4. Verify Maccy responds consistently across all contexts
+4. Verify Clipio responds consistently across all contexts
 
 This approach allows you to continue using your preferred key combination while ensuring compatibility with macOS security features.

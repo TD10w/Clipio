@@ -86,6 +86,43 @@ and the only preview is the hover popup (`PreviewPopupPanel`). The dormant
 multi-select infra in `NavigationManager` (the `extend*` selection methods) is the
 last known leftover, kept for a future pass.
 
+## Repository Layout & Naming
+
+Everything on disk is named **Clipio** — source folders (`Clipio/`, `ClipioTests/`,
+`ClipioUITests/`), the scheme, the targets, and `Clipio.xctestplan`. If you find a
+`Maccy` path reference anywhere, it is a leftover and should be fixed.
+
+Three deliberate exceptions that must **not** be renamed:
+
+- `Clipio/Storage.swift` writes to `~/Library/Application Support/Maccy/Storage.sqlite`.
+  Changing this path orphans existing users' clipboard history; it needs a migration first.
+- `fromMaccy` (pasteboard marker) — the symbol name is cosmetic, but its rawValue is
+  already `com.clipio.app`, which is what actually matters.
+- Upstream issue links in code comments (`github.com/p0deje/Maccy/issues/...`).
+
+Top-level directories: `Clipio*` (code), `docs/` (notes, plans, specs, screenshots),
+`Designs/` (design assets, incl. `Designs/explorations/` — formerly `output/`),
+`scripts/` + `tests/` (zsh release/verification scripts — run them with `zsh`, not `bash`;
+they use zsh-only `${0:A:h:h}`).
+
+## Localization
+
+`Clipio/*.lproj/Localizable.strings` — 41 languages, 15 keys each, all of them live.
+Dead upstream keys were removed; keep it that way, and add a key to all 41 files or none.
+
+Note: the accessibility-permission alert in `Clipio/Accessibility.swift` is currently
+hardcoded English and does **not** go through Localizable.strings. That is a known gap,
+not an oversight to "fix" silently.
+
+## Working-Tree Hygiene
+
+Something on this machine periodically creates Finder/sync conflict copies
+(`Search 2.swift`, `Views 3/`). 97 of them had accumulated before being cleared.
+`.gitignore` now excludes the `* [0-9]` pattern so they cannot be committed, but the
+copies still appear on disk. They are never referenced by the Xcode project, so they
+do not affect builds — delete them when they show up. Moving the repo out of a synced
+folder would stop them at the source.
+
 ## What We Decided NOT to Do
 
 - Website screenshot preview (requires network fetch per URL, kills lightweight feel)

@@ -71,7 +71,7 @@ Known limitations:
 
 - Early testing build; updates are manual. Second-Mac installation and full UI verification remain outstanding.
 - Image/file dragging can depend on the destination app; report concrete examples of failures.
-- Some inherited translations may still say Maccy, and new UI text is not fully localized.
+- New UI text is not fully localized, and the accessibility permission prompt is English only.
 - Database startup failure recovery and a flaky automated window-lifecycle test still need follow-up. Do not use the clipboard history as your only copy of important content.
 
 ## Build from source (optional)
@@ -84,7 +84,7 @@ cd Clipio
 open Clipio.xcodeproj
 ```
 
-Select the **Maccy** scheme, choose **My Mac**, and run. If Xcode requests signing, select your own development team in Signing & Capabilities. The app is named **Clipio**; the scheme and source folder retain their upstream names.
+Select the **Clipio** scheme, choose **My Mac**, and run. If Xcode requests signing, select your own development team in Signing & Capabilities.
 
 To build an optimized app for your own Mac without installing it:
 
