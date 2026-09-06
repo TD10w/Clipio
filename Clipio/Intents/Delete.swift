@@ -4,7 +4,7 @@ struct Delete: AppIntent, CustomIntentMigratedAppIntent {
   static let intentClassName = "DeleteIntent"
 
   static var title: LocalizedStringResource = "Delete Item from Clipboard History"
-  static var description = IntentDescription("Deletes an item from Maccy clipboard history.")
+  static var description = IntentDescription("Deletes an item from Clipio clipboard history.")
 
   @Parameter(title: "Number", default: 1)
   var number: Int

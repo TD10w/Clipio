@@ -15,3 +15,7 @@ build/
 *.mobileprovision
 *.provisionprofile
 private/
+
+# Finder/sync conflict copies ("Search 2.swift", "Views 3")
+* [0-9]
+* [0-9].*
