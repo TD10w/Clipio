@@ -3,7 +3,7 @@ import XCTest
 
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
-class MaccyUITests: XCTestCase {
+class ClipioUITests: XCTestCase {
   let app = XCUIApplication()
   let pasteboard = NSPasteboard(name: .init("com.clipio.ui-tests"))
   var generalPasteboardChangeCount = 0

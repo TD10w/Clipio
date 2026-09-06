@@ -153,7 +153,7 @@ output=${output:A}
 print "Building universal Clipio Release..."
 xcodebuild \
   -project "$project_dir/Clipio.xcodeproj" \
-  -scheme Maccy \
+  -scheme Clipio \
   -configuration Release \
   -derivedDataPath "$derived_data" \
   ARCHS="arm64 x86_64" \
@@ -176,7 +176,7 @@ codesign \
   --sign "$developer_id" \
   --timestamp \
   --options runtime \
-  --entitlements "$project_dir/Maccy/Maccy.entitlements" \
+  --entitlements "$project_dir/Clipio/Clipio.entitlements" \
   --generate-entitlement-der \
   "$app_bundle"
 validate_signature "$app_bundle"
