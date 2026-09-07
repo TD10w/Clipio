@@ -22,7 +22,19 @@ the assistant's job is everything technical. Optimize for **fewest manual build-
 4. **Commit working checkpoints.** After each stable, verified state, `git commit` so experiments can
    be reverted with one command. Tell the owner the short hash.
 5. **Ask for specific feedback.** Encourage "the image is too small" / "it didn't switch" over "it's wrong."
-6. Everything is named **Clipio** — scheme, targets, source folders, and display name.
+6. **Verify user-facing claims against the built app, not the source tree.** Whether a
+   file exists in the repo says nothing about whether it ships. Before claiming that
+   users see (or don't see) something, check the product:
+   `ls "$(ls -d ~/Library/Developer/Xcode/DerivedData/Clipio-*/Build/Products/Debug/Clipio.app)/Contents/Resources"`.
+   This rule exists because two confident claims about localization were both wrong —
+   the folders in question had never been compiled.
+7. **Never discard path context in a scan whose conclusion depends on location.**
+   Piping `find` through a `sed` that strips directory prefixes produced a tidy list
+   that hid the fact that `.lproj` folders live in three different directories, and a
+   wrong conclusion followed directly from the missing prefix. Aggregate on full paths,
+   and state the scope inside the claim ("in `Clipio/*.lproj/Localizable.strings`, …")
+   so a narrow measurement cannot masquerade as a broad one.
+8. Everything is named **Clipio** — scheme, targets, source folders, and display name.
    New `.swift` files must be registered in `Clipio.xcodeproj/project.pbxproj` (manual groups,
    not auto-synced) — the assistant can edit the pbxproj directly instead of asking the owner to add files.
 
