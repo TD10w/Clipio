@@ -139,12 +139,19 @@ not an oversight to "fix" silently.
 
 ## Working-Tree Hygiene
 
-Something on this machine periodically creates Finder/sync conflict copies
-(`Search 2.swift`, `Views 3/`). 97 of them had accumulated before being cleared.
-`.gitignore` now excludes the `* [0-9]` pattern so they cannot be committed, but the
-copies still appear on disk. They are never referenced by the Xcode project, so they
-do not affect builds — delete them when they show up. Moving the repo out of a synced
-folder would stop them at the source.
+97 Finder-style duplicate files (`Search 2.swift`, `Views 3/`) had accumulated in the
+working tree and were removed. The cause was never identified — `~/Documents` is a
+plain folder, not iCloud-synced, so the obvious explanation was ruled out. None have
+reappeared since.
+
+Do **not** add a `.gitignore` pattern for them. `* [0-9].*` looks right but silently
+matches real assets: `Clipio/Assets.xcassets/paperclip.imageset/clip.fill.dark_32 1.png`
+is a genuine dark-appearance icon referenced by `Contents.json`. A rule like that would
+make a missing icon fail silently. Untracked junk shows up in `git status` anyway.
+
+To check for real duplicates, compare against the original before deleting anything:
+
+    find . -name '* 2.*' -not -path './.git/*' -not -path './build/*'
 
 ## What We Decided NOT to Do
 
