@@ -107,8 +107,19 @@ they use zsh-only `${0:A:h:h}`).
 
 ## Localization
 
-`Clipio/*.lproj/Localizable.strings` — 41 languages, 15 keys each, all of them live.
-Dead upstream keys were removed; keep it that way, and add a key to all 41 files or none.
+Localized strings live in **three** places, not one:
+
+- `Clipio/*.lproj/` — `Localizable.strings` (main shelf UI)
+- `Clipio/Settings/*.lproj/` — the six settings-pane tables
+- `Clipio/Views/*.lproj/` — `PreviewItemView.strings`
+
+**Invariant:** the languages on disk must match `knownRegions` in the pbxproj — 31,
+identical in all three directories. A `.lproj` that is not in `knownRegions` is never
+built into the app, so it is dead weight, not a shipping language. Ten such orphan
+folders were removed. Adding a language means editing `knownRegions` *and* adding the
+files to the matching PBXVariantGroups; adding a key means adding it to all 31 files.
+
+Dead upstream keys were removed from `Localizable.strings` (15 of 30). Keep it that way.
 
 Note: the accessibility-permission alert in `Clipio/Accessibility.swift` is currently
 hardcoded English and does **not** go through Localizable.strings. That is a known gap,
