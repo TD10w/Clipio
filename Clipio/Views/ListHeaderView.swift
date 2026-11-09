@@ -15,7 +15,7 @@ struct ListHeaderView: View {
     HStack(spacing: 12) {
       if showTitle {
         Text("Clipio")
-          .font(.system(size: 17, weight: .semibold, design: .rounded))
+          .font(.system(size: FloatingGlassStyle.wordmarkFontSize, weight: .semibold))
           .foregroundStyle(.primary.opacity(0.92))
           .padding(.leading, 2)
       }
