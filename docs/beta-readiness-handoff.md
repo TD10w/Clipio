@@ -26,7 +26,7 @@
 
 ## 当前工作
 
-1. 用户已确认 Apple 原生 Liquid Glass、全部系统标准字体，以及保留香蕉装小马并减少细节。设计分支已完成原生字体、语义颜色与共享材质试排。剪贴板和收集区浅深色截图、简化图标概念见[评审素材](../Designs/explorations/2026-11-09-liquid-glass/README.md)。图标资源尚未替换，Figma 因组件权限与 Starter 调用上限仅建成框架，可编辑稿待补齐。
+1. 用户已确认 Apple 原生 Liquid Glass、全部系统标准字体，以及原版香蕉装小马图标。设计分支已完成原生字体、语义颜色与共享材质试排。剪贴板和收集区浅深色截图见[评审素材](../Designs/explorations/2026-11-09-liquid-glass/README.md)。用户已否决简化图标，应用继续使用原版。Figma 因组件权限与 Starter 调用上限仅建成框架，可编辑稿待补齐。
 2. Dropzone 工作分支 `feature/dropzone-20261109` 的检查点 `f27fac8` 已于 `3dce65d` 接入设计分支。最终为单收集区加 Pin，普通项成功拖出后消失、取消保留、Pin 保留；剩余内容重启保留。本地文件引用原件，网页图片本地保存。⌘⇧V／⌘⇧C 分别打开剪贴板／收集区，Tab 或单图标切换，搜索独立。见[需求记录](plans/2026-11-09-dropzone-discussion.md)和[实现与证据](superpowers/plans/2026-11-09-file-collection.md)。
 3. 整合检查发现图片限额验证过晚和批量 Pin 分次保存的问题，已在 `ac20752` 修复。整合后 110 项单元测试、13 项受影响界面回归及规定 unsigned Debug 构建通过。界面初轮出现一项启动失败，单独复跑与整组复跑均通过，保留为测试稳定性记录。
 4. 设计分支仍待创始人视觉确认、真实 Finder／Safari／Chrome 拖拽、外部沙箱授权重启及刘海入口定位验收，未安装或发布。
@@ -45,6 +45,7 @@
 - [发布说明](beta-release-notes.md)
 - [素材与来源记录](media-notes.md)
 - [Apple 27 设计方向与字体候选](design-direction-2026-11-09.md)
+- [设计与文件收集人工测试清单](manual-acceptance-2026-11-09.md)
 - [英文 README](../README.md) / [简体中文 README](../README.zh-CN.md)
 
 签名身份、凭证配置和机器专属信息保存在 Git 之外。
