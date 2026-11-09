@@ -24,6 +24,7 @@ final class CollectionStore {
 
   let directory: URL
   private let securityScoped: Bool
+  private let writeManifest: (Data, URL) throws -> Void
   private var canWrite = true
   private let fileManager = FileManager.default
 
@@ -32,9 +33,14 @@ final class CollectionStore {
     let items: [CollectionItem]
   }
 
-  init(directory: URL, securityScoped: Bool = true) {
+  init(
+    directory: URL,
+    securityScoped: Bool = true,
+    writeManifest: @escaping (Data, URL) throws -> Void = { try $0.write(to: $1, options: .atomic) }
+  ) {
     self.directory = directory
     self.securityScoped = securityScoped
+    self.writeManifest = writeManifest
     pruneOldExports()
     let manifest = directory.appendingPathComponent("items.json")
     guard fileManager.fileExists(atPath: manifest.path) else { return }
@@ -148,9 +154,14 @@ final class CollectionStore {
   }
 
   func togglePin(_ id: UUID) throws {
+    try togglePin(ids: [id])
+  }
+
+  func togglePin(ids: Set<UUID>) throws {
+    let indices = items.indices.filter { ids.contains(items[$0].id) }
+    guard !indices.isEmpty else { return }
     var updated = items
-    guard let index = updated.firstIndex(where: { $0.id == id }) else { return }
-    updated[index].isPinned.toggle()
+    for index in indices { updated[index].isPinned.toggle() }
     try commit(updated)
   }
 
@@ -245,7 +256,7 @@ final class CollectionStore {
     guard canWrite else { throw CollectionError.unreadableStore }
     try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
     let data = try JSONEncoder().encode(Manifest(version: 1, items: updated))
-    try data.write(to: directory.appendingPathComponent("items.json"), options: .atomic)
+    try writeManifest(data, directory.appendingPathComponent("items.json"))
     items = updated
     selectedIDs.formIntersection(Set(updated.map(\.id)))
     unavailableIDs.formIntersection(Set(updated.map(\.id)))

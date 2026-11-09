@@ -96,7 +96,7 @@ final class AppState {
   func togglePin() {
     if shelfMode == .collection {
       collection.perform {
-        for id in collection.selectedIDs { try collection.togglePin(id) }
+        try collection.togglePin(ids: collection.selectedIDs)
       }
       return
     }

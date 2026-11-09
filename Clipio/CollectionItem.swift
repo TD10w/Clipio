@@ -14,12 +14,13 @@ struct CollectionItem: Codable, Identifiable, Equatable {
 
 /// Validated image bytes, prepared off the UI thread for browser imports.
 struct CollectionImage: Sendable {
+  static let maximumByteCount = 64 * 1024 * 1024
   let data: Data
   let name: String
   let fileExtension: String
 
   init(data: Data, name: String) throws {
-    guard data.count <= 64 * 1024 * 1024,
+    guard data.count <= Self.maximumByteCount,
           let source = CGImageSourceCreateWithData(data as CFData, nil),
           CGImageSourceGetCount(source) > 0,
           let type = CGImageSourceGetType(source),
@@ -31,6 +32,22 @@ struct CollectionImage: Sendable {
     self.data = data
     self.name = name
     fileExtension = UTType(type as String)?.preferredFilenameExtension ?? "png"
+  }
+
+  init(contentsOf url: URL) throws {
+    let values = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+    guard values.isRegularFile == true, let size = values.fileSize,
+          size >= 0, size <= Self.maximumByteCount else { throw CollectionError.invalidImage }
+    let handle = try FileHandle(forReadingFrom: url)
+    defer { try? handle.close() }
+    var data = Data()
+    data.reserveCapacity(size)
+    while let chunk = try handle.read(upToCount: min(1024 * 1024, Self.maximumByteCount - data.count + 1)),
+          !chunk.isEmpty {
+      guard chunk.count <= Self.maximumByteCount - data.count else { throw CollectionError.invalidImage }
+      data.append(chunk)
+    }
+    try self.init(data: data, name: url.lastPathComponent)
   }
 }
 

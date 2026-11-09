@@ -239,4 +239,139 @@ final class CollectionTests: XCTestCase {
     XCTAssertNil(KeyboardShortcuts.Name.popup.shortcut)
   }
 
+  @MainActor
+  func testBatchPinCommitsOnceThroughAppState() throws {
+    var pinWrites = 0
+    var recordingPins = false
+    let collection = CollectionStore(directory: directory, securityScoped: false) { data, url in
+      if recordingPins {
+        pinWrites += 1
+        if pinWrites == 2 { throw CocoaError(.fileWriteOutOfSpace) }
+      }
+      try data.write(to: url, options: .atomic)
+    }
+    let first = try collection.addFile(source())
+    let second = try collection.addFile(source("second.txt"))
+    collection.selectedIDs = [first, second]
+    let state = AppState(history: History(), footer: Footer(), collection: collection)
+    state.switchShelf(to: .collection)
+    recordingPins = true
+
+    state.togglePin()
+
+    XCTAssertEqual(pinWrites, 1)
+    XCTAssertTrue(collection.items.allSatisfy(\.isPinned))
+    XCTAssertNil(collection.lastError)
+    XCTAssertTrue(store().items.allSatisfy(\.isPinned))
+  }
+
+  @MainActor
+  func testFailedBatchPinCanRetryWithoutReversingAnyItem() throws {
+    var failWrites = false
+    let collection = CollectionStore(directory: directory, securityScoped: false) { data, url in
+      if failWrites { throw CocoaError(.fileWriteOutOfSpace) }
+      try data.write(to: url, options: .atomic)
+    }
+    let first = try collection.addFile(source())
+    let second = try collection.addFile(source("second.txt"))
+    collection.selectedIDs = [first, second]
+    let state = AppState(history: History(), footer: Footer(), collection: collection)
+    state.switchShelf(to: .collection)
+    failWrites = true
+    state.togglePin()
+    XCTAssertTrue(collection.items.allSatisfy { !$0.isPinned })
+
+    failWrites = false
+    state.togglePin()
+    XCTAssertTrue(collection.items.allSatisfy(\.isPinned))
+    XCTAssertTrue(store().items.allSatisfy(\.isPinned))
+  }
+
+  func testOversizedPromisedImageIsRejectedBeforeOpeningData() throws {
+    let url = root.appendingPathComponent("oversized.png")
+    FileManager.default.createFile(atPath: url.path, contents: Data())
+    let handle = try FileHandle(forWritingTo: url)
+    try handle.truncate(atOffset: UInt64(CollectionImage.maximumByteCount + 1))
+    try handle.close()
+    try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: url.path)
+    defer { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path) }
+
+    XCTAssertThrowsError(try CollectionImage(contentsOf: url)) { error in
+      guard let collectionError = error as? CollectionError else {
+        XCTFail("An oversized file must be rejected before the attempted read")
+        return
+      }
+      guard case .invalidImage = collectionError else {
+        XCTFail("Unexpected preflight error")
+        return
+      }
+    }
+  }
+
+  func testRemoteNonImageIsRejectedAtResponse() async {
+    await assertBoundedDownloadRejects("not-image")
+  }
+
+  func testRemoteAdvertisedOversizeIsRejectedAtResponse() async {
+    await assertBoundedDownloadRejects("oversized")
+  }
+
+  func testRemoteChunkedOversizeIsRejectedBeforeEndOfStream() async {
+    await assertBoundedDownloadRejects("chunked")
+  }
+
+  func testRemoteBytesWithinLimitArePreserved() async throws {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [CollectionImageURLProtocol.self]
+    let data = try await CollectionImporter.downloadImage(
+      URL(string: "https://clipio.invalid/valid")!, configuration: configuration, maximumBytes: 64
+    )
+    XCTAssertEqual(data, Data([1, 2, 3, 4]))
+  }
+
+  private func assertBoundedDownloadRejects(_ path: String) async {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [CollectionImageURLProtocol.self]
+    let finished = expectation(description: "Reject invalid download before the server finishes")
+    let task = Task {
+      do {
+        _ = try await CollectionImporter.downloadImage(
+          URL(string: "https://clipio.invalid/\(path)")!, configuration: configuration, maximumBytes: 64
+        )
+        if !Task.isCancelled { XCTFail("Invalid download was accepted") }
+      } catch {
+        if !Task.isCancelled { XCTAssertTrue(error is CollectionError) }
+      }
+      finished.fulfill()
+    }
+    await fulfillment(of: [finished], timeout: 2)
+    task.cancel()
+    _ = await task.result
+  }
+
+}
+
+private final class CollectionImageURLProtocol: URLProtocol, @unchecked Sendable {
+  override class func canInit(with request: URLRequest) -> Bool { request.url?.host == "clipio.invalid" }
+  override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+  override func startLoading() {
+    let path = request.url!.lastPathComponent
+    var headers = ["Content-Type": path == "not-image" ? "application/octet-stream" : "image/png"]
+    if path == "oversized" { headers["Content-Length"] = "1000000000" }
+    if path == "valid" { headers["Content-Length"] = "4" }
+    let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: headers)!
+    client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+    // CFNetwork can sniff image responses before forwarding headers. Supply a
+    // prefix while leaving the stream unfinished to verify early cancellation.
+    if path == "chunked" || path == "oversized" {
+      client?.urlProtocol(self, didLoad: Data(repeating: 0, count: 32768))
+    }
+    if path == "valid" {
+      client?.urlProtocol(self, didLoad: Data([1, 2, 3, 4]))
+      client?.urlProtocolDidFinishLoading(self)
+    }
+  }
+
+  override func stopLoading() {}
 }

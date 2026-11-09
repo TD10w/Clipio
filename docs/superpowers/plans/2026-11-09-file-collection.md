@@ -86,3 +86,17 @@
 - The provisional UI uses the current shelf shell. Final Liquid Glass styling, typography and icon direction belong to the parent design branch.
 - Still to accept on device after UI integration: external Finder files/folders, real Safari/Chrome image and file-promise drags, dragging a mixed pinned/ordinary batch into Finder/chat apps, external sandbox grants across an app/OS restart, notch-entry positioning and cancel/drop motion.
 - No installer, release or merge was performed.
+
+## Parent integration follow-up
+
+The parent integrated checkpoint `f27fac8` into `design/liquid-glass-system-20261109` at `3dce65d`, preserving mode-dependent search and routing while applying shared native materials and system typography. This is a design-preview branch pending founder visual approval.
+
+An independent read-only review found late resource validation in URL/file-promise image imports and partial batch Pin state when a later manifest write fails. The parent addressed both before delivery.
+
+- URL image imports check HTTP status, MIME and known size at the response boundary, cancel at the cumulative byte limit, disable response caching and have a total resource timeout.
+- Promised image files are checked before opening, read with a byte cap, and prepared on the receiver's utility queue. The main thread only commits the prepared image.
+- Multiple selected Pin states are committed atomically in one manifest write. Failed persistence leaves the entire in-memory selection unchanged for retry.
+- Seven focused regressions cover early rejection, unfinished chunked transfers, valid byte preservation, unreadable oversized-file preflight, single-write batch Pin and retry. Regression failures were observed before the fixes. All 110 integrated unit tests passed.
+- Initial integrated UI verification had one transient startup/open failure. Its isolated recheck passed; the full affected UI group is rerun before the parent checkpoint is delivered.
+
+The review's resource-bound finding blocks release until fixed. The parent treated batch Pin as an important consistency issue because retries can otherwise invert a previously successful subset. External application, sandbox restart and founder/device acceptance gates above remain open.

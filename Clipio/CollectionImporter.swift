@@ -70,28 +70,121 @@ enum CollectionImporter {
     // inside the callback, before NSItemProvider revokes that temporary URL.
     return await withCheckedContinuation { continuation in
       provider.loadFileRepresentation(forTypeIdentifier: type) { url, _ in
-        continuation.resume(returning: url.flatMap { try? Data(contentsOf: $0) })
+        continuation.resume(returning: url.flatMap { try? CollectionImage(contentsOf: $0).data })
       }
     }
   }
 
-  private static func downloadImage(_ url: URL) async throws -> Data {
+  nonisolated static func downloadImage(
+    _ url: URL,
+    configuration: URLSessionConfiguration = .ephemeral,
+    maximumBytes: Int = CollectionImage.maximumByteCount
+  ) async throws -> Data {
     guard ["https", "http"].contains(url.scheme?.lowercased() ?? "") else {
       throw CollectionError.unsupportedDrop
     }
-    let configuration = URLSessionConfiguration.ephemeral
-    configuration.timeoutIntervalForRequest = 30
-    let session = URLSession(configuration: configuration)
-    defer { session.finishTasksAndInvalidate() }
-    let (file, response) = try await session.download(from: url)
-    defer { try? FileManager.default.removeItem(at: file) }
-    guard let response = response as? HTTPURLResponse,
-          (200..<300).contains(response.statusCode),
-          response.mimeType?.hasPrefix("image/") == true,
-          let size = try file.resourceValues(forKeys: [.fileSizeKey]).fileSize,
-          size <= 64 * 1024 * 1024 else {
+    guard maximumBytes > 0, maximumBytes <= CollectionImage.maximumByteCount else {
       throw CollectionError.invalidImage
     }
-    return try Data(contentsOf: file)
+    configuration.timeoutIntervalForRequest = 30
+    configuration.timeoutIntervalForResource = 60
+    configuration.urlCache = nil
+    return try await CollectionImageDownload(configuration: configuration, maximumBytes: maximumBytes).load(url)
+  }
+}
+
+// Response/data callbacks are serialized. The lock protects task setup and cancellation.
+private final class CollectionImageDownload: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+  private let configuration: URLSessionConfiguration
+  private let maximumBytes: Int
+  private let lock = NSLock()
+  private var session: URLSession?
+  private var task: URLSessionDataTask?
+  private var continuation: CheckedContinuation<Data, Error>?
+  private var cancelled = false
+  private var received = Data()
+  private var acceptedResponse = false
+  private var failure: Error?
+
+  init(configuration: URLSessionConfiguration, maximumBytes: Int) {
+    self.configuration = configuration
+    self.maximumBytes = maximumBytes
+    super.init()
+  }
+
+  func load(_ url: URL) async throws -> Data {
+    defer { session?.invalidateAndCancel() }
+    return try await withTaskCancellationHandler {
+      try await withCheckedThrowingContinuation { continuation in
+        lock.lock()
+        guard !cancelled else {
+          lock.unlock()
+          continuation.resume(throwing: CancellationError())
+          return
+        }
+        self.continuation = continuation
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        queue.qualityOfService = .utility
+        let session = URLSession(configuration: configuration, delegate: self, delegateQueue: queue)
+        self.session = session
+        let task = session.dataTask(with: url)
+        self.task = task
+        lock.unlock()
+        task.resume()
+      }
+    } onCancel: {
+      self.cancel()
+    }
+  }
+
+  private func cancel() {
+    lock.lock()
+    cancelled = true
+    let task = task
+    lock.unlock()
+    task?.cancel()
+  }
+
+  func urlSession(
+    _ session: URLSession,
+    dataTask: URLSessionDataTask,
+    didReceive response: URLResponse,
+    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
+  ) {
+    guard let response = response as? HTTPURLResponse,
+          (200..<300).contains(response.statusCode),
+          response.mimeType?.lowercased().hasPrefix("image/") == true,
+          response.expectedContentLength <= Int64(maximumBytes),
+          (response.value(forHTTPHeaderField: "Content-Length").flatMap(Int64.init) ?? -1) <= Int64(maximumBytes) else {
+      failure = CollectionError.invalidImage
+      completionHandler(.cancel)
+      return
+    }
+    acceptedResponse = true
+    completionHandler(.allow)
+  }
+
+  func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    guard failure == nil else { return }
+    guard data.count <= maximumBytes - received.count else {
+      failure = CollectionError.invalidImage
+      dataTask.cancel()
+      return
+    }
+    received.append(data)
+  }
+
+  func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    let result: Result<Data, Error>
+    if let error = failure ?? error { result = .failure(error) }
+    else if acceptedResponse { result = .success(received) }
+    else { result = .failure(CollectionError.invalidImage) }
+    lock.lock()
+    let continuation = continuation
+    self.continuation = nil
+    self.task = nil
+    lock.unlock()
+    continuation?.resume(with: result)
   }
 }

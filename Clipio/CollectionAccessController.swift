@@ -135,15 +135,17 @@ final class CollectionAccessController {
     catch { store.lastError = error.localizedDescription; return }
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 1
+    queue.qualityOfService = .utility
     for receiver in receivers {
       receiver.receivePromisedFiles(atDestination: destination, options: [:], operationQueue: queue) { [weak self] url, error in
-        let data = try? Data(contentsOf: url)
+        let image = Result { () throws -> CollectionImage in
+          if let error { throw error }
+          return try CollectionImage(contentsOf: url)
+        }
         DispatchQueue.main.async {
           guard let self else { return }
           self.store.perform {
-            if let error { throw error }
-            guard let data else { throw CollectionError.invalidImage }
-            try self.store.addImage(data: data, name: url.lastPathComponent)
+            try self.store.addImage(image.get())
           }
           try? FileManager.default.removeItem(at: url)
         }
