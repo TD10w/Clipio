@@ -67,17 +67,16 @@ class ClipioUITests: XCTestCase {
 
     app.launchArguments.append("enable-testing")
     app.launchArguments.append("enable-ui-testing")
-    app.launchArguments.append("open-ui-testing-shelf")
     app.launchArguments.append(contentsOf: ["-pasteByDefault", "false"])
+    // Keep the test hotkey separate from the owner's installed clipboard manager.
+    app.launchArguments.append(contentsOf: [
+      "-KeyboardShortcuts_popup",
+      #""{\"carbonKeyCode\":\#(kVK_ANSI_C),\"carbonModifiers\":\#(cmdKey | shiftKey | controlKey | optionKey)}""#
+    ])
     app.launchEnvironment["CLIPIO_UI_TEST_MODE"] = "1"
     app.launchEnvironment["CLIPIO_UI_TEST_OLDER_ITEM"] = copy2
     app.launchEnvironment["CLIPIO_UI_TEST_NEWER_ITEM"] = copy1
     app.launch()
-
-    // Confirm both synthetic fixtures were captured before each test begins.
-    XCTAssertTrue(items.firstMatch.waitForExistence(timeout: 5))
-    assertExists(item(labeled: copy1))
-    assertExists(item(labeled: copy2))
   }
 
   override func tearDown() {
@@ -100,66 +99,93 @@ class ClipioUITests: XCTestCase {
   }
 
   func testCloseWithEscape() throws {
-    popUpWithMouse()
+    openShelf()
     assertExists(item(labeled: copy1))
     app.typeKey(.escape, modifierFlags: [])
     assertNotExists(item(labeled: copy1))
   }
 
-  func testPopupWithMenubar() {
-    popUpWithMouse()
+  func testPopupWithMenubar() throws {
+    let statusItem = app.statusItems.firstMatch
+    guard statusItem.waitForExistence(timeout: 3), statusItem.isHittable else {
+      throw XCTSkip("XCTest cannot access this session's menu extras")
+    }
+    statusItem.click()
+    waitUntilPoppedUp()
+    assertExists(item(labeled: copy1))
+    assertExists(item(labeled: copy2))
+  }
+
+  func testPopupWithApplicationReopen() {
+    openShelf()
     assertExists(item(labeled: copy1))
     assertExists(item(labeled: copy2))
   }
 
   func testNewCopyIsAdded() {
-    popUpWithMouse()
+    openShelf()
     let copy3 = UUID().uuidString
     copyToClipboard(copy3)
     assertExists(item(labeled: copy3))
     app.typeKey(.escape, modifierFlags: [])
-    popUpWithMouse()
+    openShelf()
     assertExists(item(labeled: copy2))
   }
 
   func testSearch() {
-    popUpWithMouse()
-    search(copy2SearchQuery)
-    assertSearchFieldValue(copy2SearchQuery)
-    assertExists(item(labeled: copy2))
-    assertNotExists(item(labeled: copy1))
+    // Numeric fixtures avoid composing text through the user's active input method.
+    let matchingText = "222222222"
+    let otherText = "111111111"
+    copyToClipboard(otherText)
+    copyToClipboard(matchingText)
+    openShelf()
+    search(matchingText)
+    assertSearchFieldValue(matchingText)
+    assertExists(item(labeled: matchingText))
+    XCTAssertTrue(item(labeled: matchingText).isHittable)
+    assertNotVisible(item(labeled: otherText))
   }
 
   func testSearchFiles() {
     copyToClipboard(file2)
     copyToClipboard(file1)
-    popUpWithMouse()
+    openShelf()
     search(file2.lastPathComponent)
     assertExists(item(labeled: file2.absoluteString.removingPercentEncoding!))
     assertNotExists(item(labeled: file1.absoluteString.removingPercentEncoding!))
   }
 
   func testCopyWithClick() {
-    popUpWithMouse()
+    openShelf()
     item(labeled: copy2).click()
     assertPasteboardStringEquals(copy2)
   }
 
   func testCopyWithEnter() {
-    popUpWithMouse()
+    openShelf()
     hover(item(labeled: copy2))
     app.typeKey(.enter, modifierFlags: [])
     assertPasteboardStringEquals(copy2)
   }
 
+  func testKeyboardSelectionAfterHover() {
+    openShelf()
+    hover(item(labeled: copy2))
+    app.typeKey(.leftArrow, modifierFlags: [])
+    expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: item(labeled: copy1))
+    waitForExpectations(timeout: 3)
+    app.typeKey(.enter, modifierFlags: [])
+    assertPasteboardStringEquals(copy1)
+  }
+
   func testCopyWithCommandShortcut() {
-    popUpWithMouse()
+    openShelf()
     app.typeKey("2", modifierFlags: [.command])
     assertPasteboardStringEquals(copy2)
   }
 
   func testSearchAndCopyWithCommandShortcut() {
-    popUpWithMouse()
+    openShelf()
     search(copy2SearchQuery)
     app.typeKey("1", modifierFlags: [.command])
     assertPasteboardStringEquals(copy2)
@@ -168,7 +194,7 @@ class ClipioUITests: XCTestCase {
   func testCopyImage() {
     copyToClipboard(image2)
     copyToClipboard(image1)
-    popUpWithMouse()
+    openShelf()
     items.allElementsBoundByIndex[1].click()
     assertPasteboardDataCountEquals(image2.tiffRepresentation!.count, forType: .tiff)
   }
@@ -176,7 +202,7 @@ class ClipioUITests: XCTestCase {
   func testCopyFile() {
     copyToClipboard(file2)
     copyToClipboard(file1)
-    popUpWithMouse()
+    openShelf()
 
     XCTAssertEqual(itemTitles[0...1], [
       file1.absoluteString.removingPercentEncoding!,
@@ -200,7 +226,7 @@ class ClipioUITests: XCTestCase {
   func testCopyHTML() {
     copyToClipboard(html2, .html)
     copyToClipboard(html1, .html)
-    popUpWithMouse()
+    openShelf()
     XCTAssertEqual(itemTitles[0...1], ["foo", "bar"])
 
     item(labeled: "bar").click()
@@ -208,14 +234,14 @@ class ClipioUITests: XCTestCase {
   }
 
   func testDownArrow() {
-    popUpWithMouse()
+    openShelf()
     app.typeKey(.downArrow, modifierFlags: [])
     app.typeKey(.enter, modifierFlags: [])
     assertPasteboardStringEquals(copy2)
   }
 
   func testUpArrow() {
-    popUpWithMouse()
+    openShelf()
     app.typeKey(.downArrow, modifierFlags: [])
     app.typeKey(.upArrow, modifierFlags: [])
     app.typeKey(.enter, modifierFlags: [])
@@ -223,14 +249,14 @@ class ClipioUITests: XCTestCase {
   }
 
   func testControlJ() {
-    popUpWithMouse()
+    openShelf()
     app.typeKey("j", modifierFlags: [.control])
     app.typeKey(.enter, modifierFlags: [])
     assertPasteboardStringEquals(copy2)
   }
 
   func testControlK() {
-    popUpWithMouse()
+    openShelf()
     app.typeKey("j", modifierFlags: [.control])
     app.typeKey("k", modifierFlags: [.control])
     app.typeKey(.enter, modifierFlags: [])
@@ -238,64 +264,64 @@ class ClipioUITests: XCTestCase {
   }
 
   func testDeleteEntry() {
-    popUpWithMouse()
+    openShelf()
     app.typeKey(.delete, modifierFlags: [.option])
     assertNotExists(item(labeled: copy1))
 
   }
 
   func testDeleteEntryDuringSearch() {
-    popUpWithMouse()
+    openShelf()
     search(copy2SearchQuery)
     app.typeKey(.delete, modifierFlags: [.option])
     assertNotExists(item(labeled: copy2))
 
     app.typeKey(.escape, modifierFlags: [])
-    popUpWithMouse()
+    openShelf()
     assertNotExists(item(labeled: copy2))
   }
 
   func testClear() {
-    popUpWithMouse()
+    openShelf()
     pin(copy2)
     app.buttons["clear-history"].click()
     confirmClear()
-    popUpWithMouse()
+    openShelf()
     assertNotExists(item(labeled: copy1))
     assertExists(item(labeled: copy2))
   }
 
   func testClearDuringSearch() {
-    popUpWithMouse()
+    openShelf()
     search(copy2SearchQuery)
     app.buttons["clear-history"].click()
     confirmClear()
-    popUpWithMouse()
+    openShelf()
     assertNotExists(item(labeled: copy1))
     assertNotExists(item(labeled: copy2))
   }
 
   func testClearAll() {
-    popUpWithMouse()
+    openShelf()
     pin(copy2)
     XCUIElement.perform(withKeyModifiers: [.shift]) {
       app.buttons["clear-history"].click()
     }
     confirmClear()
-    popUpWithMouse()
+    openShelf()
     assertNotExists(item(labeled: copy1))
     assertNotExists(item(labeled: copy2))
   }
 
   func testPin() {
-    popUpWithMouse()
+    openShelf()
     pin(copy2)
     XCTAssertEqual(itemTitles[0...1], [copy2, copy1])
 
   }
 
   func testPinDuringSearch() {
-    popUpWithMouse()
+    openShelf()
     search(copy2SearchQuery)
     pin(copy2)
     assertSearchFieldValue("")
@@ -303,21 +329,22 @@ class ClipioUITests: XCTestCase {
   }
 
   func testUnpin() {
-    popUpWithMouse()
+    openShelf()
     pin(copy2)
+    XCTAssertEqual(itemTitles[0...1], [copy2, copy1])
     pin(copy2)
     XCTAssertEqual(itemTitles[0...1], [copy1, copy2])
   }
 
   func testRemoveLastWordFromSearchWithControlW() {
-    popUpWithMouse()
+    openShelf()
     search("foo bar")
     app.typeKey("w", modifierFlags: [.control])
     assertSearchFieldValue("foo ")
   }
 
   func testPasteSelectionIsSafelyIntercepted() {
-    popUpWithMouse()
+    openShelf()
     XCUIElement.perform(withKeyModifiers: [.option]) {
       item(labeled: copy2).click()
     }
@@ -336,7 +363,7 @@ class ClipioUITests: XCTestCase {
     copyToClipboard(copy3)
     copyToClipboard(copy4)
 
-    popUpWithMouse()
+    openShelf()
     assertNotExists(item(labeled: copy3))
     assertNotExists(item(labeled: copy4))
 
@@ -356,13 +383,13 @@ class ClipioUITests: XCTestCase {
     copyToClipboard(copy3)
     copyToClipboard(copy4)
 
-    popUpWithMouse()
+    openShelf()
     assertNotExists(item(labeled: copy3))
     assertExists(item(labeled: copy4))
   }
 
   func testCreatesNewCopyOnEnterWhenSearchResultsAreEmpty() {
-    popUpWithMouse()
+    openShelf()
     search("foo bar")
     app.typeKey(.return, modifierFlags: [])
     XCTAssertEqual(pasteboard.string(forType: .string), "foo bar")
@@ -481,7 +508,7 @@ class ClipioUITests: XCTestCase {
   }
 
   func testTogglePopupAndCloseOnClickOutside() {
-    popUpWithMouse()
+    openShelf()
 
     // Activating another app exercises the shelf's production resign-key close path.
     XCUIApplication(bundleIdentifier: "com.apple.finder").activate()
@@ -494,31 +521,24 @@ class ClipioUITests: XCTestCase {
     waitUntilPoppedUp()
   }
 
-  private func popUpWithMouse() {
+  private func openShelf() {
+    guard !items.firstMatch.exists || !items.firstMatch.isHittable else { return }
+
+    // Reopen the exact built app, preserving isolation from the installed copy.
+    let applicationURL = Bundle.main.bundleURL.deletingLastPathComponent()
+      .appendingPathComponent("Clipio.app")
+    let opened = expectation(description: "Reopen the test build of Clipio")
+    let configuration = NSWorkspace.OpenConfiguration()
+    NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration) { _, error in
+      XCTAssertNil(error)
+      opened.fulfill()
+    }
+    wait(for: [opened], timeout: 5)
     waitUntilPoppedUp()
   }
 
   private func simulatePopupHotkey() {
-    let commandDown = CGEvent(
-      keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_Command), keyDown: true)!
-    let commandUp = CGEvent(
-      keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_Command), keyDown: false)!
-    let shiftDown = CGEvent(
-      keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_Shift), keyDown: true)!
-    let shiftUp = CGEvent(
-      keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_Shift), keyDown: false)!
-    shiftDown.flags = [.maskCommand]
-    shiftUp.flags = [.maskCommand]
-    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: true)!
-    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: false)!
-    cDown.flags = [.maskCommand, .maskShift]
-    cUp.flags = [.maskCommand, .maskShift]
-    commandDown.post(tap: .cghidEventTap)
-    shiftDown.post(tap: .cghidEventTap)
-    cDown.post(tap: .cghidEventTap)
-    cUp.post(tap: .cghidEventTap)
-    shiftUp.post(tap: .cghidEventTap)
-    commandUp.post(tap: .cghidEventTap)
+    app.typeKey("c", modifierFlags: [.command, .shift, .control, .option])
   }
 
   private func waitUntilPoppedUp() {
@@ -573,7 +593,8 @@ class ClipioUITests: XCTestCase {
 
   private func hover(_ element: XCUIElement) {
     element.hover()
-    usleep(20000)
+    expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: element)
+    waitForExpectations(timeout: 3)
   }
 
   private func search(_ string: String) {

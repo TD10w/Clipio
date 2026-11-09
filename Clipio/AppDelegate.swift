@@ -178,7 +178,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
       }
       panel.prewarm()
-      if RuntimeEnvironment.isUITesting {
+      if RuntimeEnvironment.isUITesting,
+         CommandLine.arguments.contains("open-ui-testing-shelf") {
         panel.open(height: AppState.shared.popup.height, at: .statusItem)
       }
     }
