@@ -121,6 +121,7 @@ struct CardItemView: View {
     .accessibilityLabel(Text(item.title.isEmpty ? "Image" : item.title))
     .accessibilityValue(Text(item.text))
     .accessibilityAddTraits(.isButton)
+    .accessibilityAddTraits(item.isSelected ? .isSelected : [])
     .accessibilityAction { onSelect() }
   }
 

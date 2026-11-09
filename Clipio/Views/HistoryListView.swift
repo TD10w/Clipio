@@ -2,6 +2,8 @@ import Defaults
 import SwiftUI
 
 struct HistoryListView: View {
+  private static let coordinateSpaceName = "clipboard-shelf"
+
   @Binding var searchQuery: String
   @FocusState.Binding var searchFocused: Bool
   @State private var cardFrames: [UUID: CGRect] = [:]
@@ -44,7 +46,7 @@ struct HistoryListView: View {
             }
             .id(item.id)
             .onGeometryChange(for: CGRect.self) { proxy in
-              proxy.frame(in: .global)
+              proxy.frame(in: .named(Self.coordinateSpaceName))
             } action: { frame in
               if cardFrames[item.id] != frame {
                 cardFrames[item.id] = frame
@@ -67,7 +69,10 @@ struct HistoryListView: View {
       }
     }
     .frame(maxWidth: .infinity)
-    .onContinuousHover(coordinateSpace: .global) { phase in
+    // The shelf unfolds with a parent scale transform. Measure and hit-test inside
+    // the shelf so cached card frames cannot retain an intermediate global scale.
+    .coordinateSpace(name: Self.coordinateSpaceName)
+    .onContinuousHover(coordinateSpace: .named(Self.coordinateSpaceName)) { phase in
       guard case .active(let point) = phase,
             let id = Self.hoveredItemID(at: point, frames: cardFrames) else { return }
       let navigator = appState.navigator
