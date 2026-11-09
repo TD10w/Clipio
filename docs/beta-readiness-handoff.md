@@ -1,12 +1,48 @@
-# Clipio beta handoff
+# Clipio 项目交接
 
-The current beta is `v2.6.1-beta.1` (app version 2.6.1, build 60).
+更新于 2026-11-09。此页汇总当前源码、公开发布包和下一步工作。
 
-- [Public beta checklist](docs/public-beta-checklist.md): verified checks and outstanding work.
-- [Release notes](docs/beta-release-notes.md): bilingual installation steps, testing status, and checksum.
-- [Media notes](docs/media-notes.md): screenshot provenance and remaining media licensing checks.
-- [English README](README.md) / [简体中文](README.zh-CN.md): visitor-facing documentation.
+## 当前源码
 
-The package has passed Apple notarization, stapling, and Gatekeeper validation.
-Independent installation on another Mac and the full UI checklist remain open.
-Keep signing identities, credential configuration, and machine-specific notes outside Git.
+- 主线基准为 `76d263e`，已合并 [PR #1](https://github.com/TD10w/Clipio/pull/1)。2026-11-09 核对时，本地 `master` 与 `origin/master` 一致。
+- 修复了展开动画期间卡片位置缓存失真，导致悬停预览和选中对象不同步的问题。卡片测量和鼠标命中判断使用同一个面板内部坐标空间。
+- 卡片现在向辅助功能接口提供选中状态。回归测试会等待目标卡片选中，再执行回车复制和固定操作。
+- 自动化使用隔离应用标识、内存数据库和命名测试剪贴板，通过正常的应用重开入口打开面板，并使用独立的临时快捷键。
+- 搜索回归使用固定数字样例，避免当前拼音输入法的候选流程影响测试输入。中文输入法交互需要单独验收。
+
+## 本轮验证
+
+验证环境为 macOS 27.2、Xcode 27.2，arm64。证据对应修复提交 `470362b`，随后由 `76d263e` 合入主线。
+
+- 必需的 unsigned Debug 构建通过。
+- 85 项单元测试全部通过。
+- 选取的 14 项界面回归中，13 项通过、1 项跳过、0 项失败。通过项覆盖图片和文件复制、点击和回车复制、数字快捷键、固定和取消固定、搜索、悬停后切换键盘选择、快捷键打开、应用重开、Escape 关闭和失焦关闭。
+- 菜单栏点击专项因 XCTest 无法访问当前会话的菜单栏图标而跳过，仍待人工验收。
+- 完整界面测试集、另一台 Mac 安装和公开发布包的完整验收仍待完成。
+
+## 公开发布包
+
+公开下载仍为 [`v2.6.1-beta.1`](https://github.com/TD10w/Clipio/releases/tag/v2.6.1-beta.1)，发布于 2026-09-05，源码标签指向 `3396981`，应用版本 2.6.1、build 60。该 ZIP 的签名、公证、stapling 和 Gatekeeper 验证记录见发布清单。11 月的源码修复需要后续打包和发布验证。
+
+## 当前工作
+
+1. 对照 Apple 27 设计资源，讨论主面板的颜色、图标和中英文字体。候选和依据见[设计方向记录](design-direction-2026-11-09.md)。视觉方案定稿后再实施。
+2. Dropzone 式文件暂存区在独立工作区讨论，分支为 `feature/dropzone-20261109`。用户已确认入口位于刘海下方、当前剪贴板展开的位置，首版包含文件与网页图片。两个板块分别对应“拖出后消失”和“拖出后保留”。下一步结合用户将提供的开源案例确认唤出方式、保留时长和文件失效后的行为，再实施。
+
+## 后续质量事项
+
+- 菜单栏真实点击、中文输入法组合输入、浅深色和多显示器体验需要人工验收。
+- 数据库加载失败直接退出、部分保存错误被忽略，属于已在代码中确认的恢复能力缺口。磁盘故障场景需要隔离验证。
+- 现有文件卡片拖出使用首个文件，批量文件暂存与拖出需要在 Dropzone 方案中明确。
+- 并发安全编译警告和权限说明的英文硬编码仍在后续维护范围。
+- 发布前继续检查素材来源和另一台 Mac 的安装与权限流程。
+
+## 文档入口
+
+- [公开 beta 发布与验收清单](public-beta-checklist.md)
+- [发布说明](beta-release-notes.md)
+- [素材与来源记录](media-notes.md)
+- [Apple 27 设计方向与字体候选](design-direction-2026-11-09.md)
+- [英文 README](../README.md) / [简体中文 README](../README.zh-CN.md)
+
+签名身份、凭证配置和机器专属信息保存在 Git 之外。

@@ -2,7 +2,13 @@
 
 Assessment date: 2026-09-05. Intended audience: a small group of testers using GitHub distribution. This is not a Mac App Store submission assessment.
 
-## Current result
+## Source follow-up on 2026-11-09
+
+[PR #1](https://github.com/TD10w/Clipio/pull/1) merged the shelf hover-selection correction into `master` at `76d263e`. On macOS 27.2 with Xcode 27.2, the required Debug build and all 85 unit tests passed. Of 14 selected UI regression tests, 13 passed and one menu-bar interaction test was explicitly skipped because XCTest could not access the session's menu extras. Manual menu-bar verification, the complete UI suite, and independent installation remain open.
+
+These results apply to the source revision. The public ZIP below was published on September 5. Current source status, follow-up risks, and the design work are maintained in the [project handoff](beta-readiness-handoff.md).
+
+## Published beta result on 2026-09-05
 
 The first early public beta is published as [`v2.6.1-beta.1`](https://github.com/TD10w/Clipio/releases/tag/v2.6.1-beta.1). It is suitable for collecting tester feedback, with independent installation on another Mac and the full UI checklist explicitly outstanding. The owner authorized publishing it with those limitations disclosed.
 
@@ -53,7 +59,7 @@ Download the Clipio ZIP from this repository's Releases, extract it, move Clipio
 
 Collect concrete reproduction steps through Clipio Issues. Prioritize crash/data-loss reports, paste failures, and capacity behavior before adding features. App Store submission, a website, and an elaborate promotional film are not prerequisites for inviting a small GitHub beta group.
 
-## Verification performed in this review
+## Verification performed for the September release
 
 - Required unsigned Debug `xcodebuild` with scheme `Maccy`: **BUILD SUCCEEDED**.
 - `tests/beta-surface-tests.sh`: passed.
@@ -62,7 +68,7 @@ Collect concrete reproduction steps through Clipio Issues. Prioritize crash/data
 - `git diff --check`: passed.
 - Core unit suite rerun in a clean temporary build directory: 85 tests passed, 0 failures (TEST SUCCEEDED). UI suite and second-Mac installation remain pending. The current candidate has passed Apple notarization and local distribution validation.
 
-## Current local candidate
+## Published beta artifact from 2026-09-05
 
 - App source: release tag `v2.6.1-beta.1` (same app source as the local artifact build); app version `2.6.1`, build `60`.
 - Artifact: `build/Beta/Clipio-2.6.1-beta.1.zip` (ignored by Git).
@@ -74,7 +80,7 @@ Collect concrete reproduction steps through Clipio Issues. Prioritize crash/data
 
 The owner selected dark, transparent screenshots for public presentation. Both README images now use native macOS window PNG captures of the dark appearance with alpha preserved, replacing the earlier light captures. Sample content was visually reviewed.
 
-### UI smoke attempt
+### September UI smoke attempt
 
 The four selected UI tests (search, Enter-copy, image copy, pin) did not execute:
 XCTest reported `Timed out while enabling automation mode.` The run was stopped

@@ -1,0 +1,62 @@
+{
+  "currentIconSource" : "Clipio\/Assets.xcassets\/AppIcon.appiconset\/AppIcon (Big Sur)-1024w.png",
+  "fonts" : [
+    {
+      "bodyFont" : ".SFNS-Regular",
+      "bodySize" : 13,
+      "chineseFont" : ".PingFangUITextSC-Regular",
+      "metadataSize" : 11.5,
+      "titleFont" : ".SFNS-Semibold",
+      "titleSize" : 17,
+      "variant" : "standard"
+    },
+    {
+      "bodyFont" : ".AppleSystemUIFontRounded-Regular",
+      "bodySize" : 13,
+      "chineseFont" : ".PingFangUITextSC-Regular",
+      "metadataSize" : 11.5,
+      "titleFont" : ".AppleSystemUIFontRounded-Semibold",
+      "titleSize" : 17,
+      "variant" : "rounded"
+    },
+    {
+      "bodyFont" : ".NewYork-Regular",
+      "bodySize" : 13,
+      "chineseFont" : "STSongti-SC-Regular",
+      "metadataSize" : 11.5,
+      "titleFont" : ".NewYork-Semibold",
+      "titleSize" : 17,
+      "variant" : "serif"
+    }
+  ],
+  "palette" : {
+    "dark" : {
+      "blue" : "#0091FF",
+      "orange" : "#FF9230",
+      "primary" : "#FFFFFFD8",
+      "secondary" : "#FFFFFF8C",
+      "surface" : "#1E1E1E",
+      "teal" : "#00D2E0"
+    },
+    "light" : {
+      "blue" : "#0088FF",
+      "orange" : "#FF8D28",
+      "primary" : "#000000D8",
+      "secondary" : "#0000007F",
+      "surface" : "#FFFFFF",
+      "teal" : "#00C3D0"
+    }
+  },
+  "platform" : "Version 27.2 (Build 26B7124)",
+  "scale" : 2,
+  "symbols" : [
+    "magnifyingglass",
+    "pin",
+    "trash",
+    "gearshape",
+    "clipboard",
+    "paperclip",
+    "tray.full",
+    "ellipsis"
+  ]
+}

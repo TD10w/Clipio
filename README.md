@@ -95,6 +95,8 @@ open build/LocalRelease/Build/Products/Release/Clipio.app
 
 This locally signed build is not a notarized download for distribution to other Macs. Maintainers should use the [release checklist](docs/public-beta-checklist.md).
 
+Current source verification, outstanding acceptance work, and design follow-up are tracked in the [project handoff](docs/beta-readiness-handoff.md).
+
 ## Demo and credits
 
 The [demo source](Designs/Clipio-Demo/README.md) contains a 20-second reconstructed product animation, not a live recording. A reviewed export is not published yet. Legacy Maccy App Store assets are not demonstrations of the current Clipio UI.
