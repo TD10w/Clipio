@@ -1,5 +1,7 @@
 # Floating Glass Tiles Design QA
 
+This is a historical design review. Its test counts, screenshots, and capture limitations describe that review. Current source verification and design follow-up are recorded in the [project handoff](beta-readiness-handoff.md).
+
 - Source visual truth: `Designs/explorations/clipio-ui-directions/02-floating-tiles.svg`
 - Implementation screenshot: `Designs/explorations/clipio-floating-glass/implementation.jpg`
 - Comparison evidence: `Designs/explorations/clipio-floating-glass/comparison.png`

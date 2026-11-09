@@ -95,6 +95,8 @@ open build/LocalRelease/Build/Products/Release/Clipio.app
 
 这个本地签名版本不是供其他 Mac 下载的公证安装包。维护者发布时请参考[发布检查清单](docs/public-beta-checklist.md)。
 
+当前源码的验证结果、待验收事项和设计进展见[项目交接](docs/beta-readiness-handoff.md)。
+
 ## 演示与致谢
 
 仓库中的[演示工程](Designs/Clipio-Demo/README.md)是一段 20 秒的产品重建动画，并非真实操作录屏，目前尚未发布审核后的导出视频。旧 Maccy App Store 素材不代表当前 Clipio 界面。
