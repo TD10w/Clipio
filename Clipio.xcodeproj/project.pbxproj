@@ -132,6 +132,13 @@
 		DAFE2DDA268A521B00990986 /* String+Shortened.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFE2DD9268A521A00990986 /* String+Shortened.swift */; };
 		DAFE2DE9268A9B1B00990986 /* HistoryItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFE2DE8268A9B1B00990986 /* HistoryItemTests.swift */; };
 		DAFEF0B8249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFEF0B7249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift */; };
+		CD0900000000000000000002 /* CollectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0900000000000000000001 /* CollectionTests.swift */; };
+		CD090000000000000000006E /* CollectionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD090000000000000000000A /* CollectionItem.swift */; };
+		CD090000000000000000006F /* CollectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD090000000000000000000B /* CollectionStore.swift */; };
+		CD0900000000000000000070 /* CollectionImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD090000000000000000000C /* CollectionImporter.swift */; };
+		CD0900000000000000000078 /* CollectionDragSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0900000000000000000014 /* CollectionDragSource.swift */; };
+		CD0900000000000000000079 /* CollectionShelfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0900000000000000000015 /* CollectionShelfView.swift */; };
+		CD090000000000000000007A /* CollectionAccessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0900000000000000000016 /* CollectionAccessController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -528,6 +535,13 @@
 		DAFE2DD9268A521A00990986 /* String+Shortened.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Shortened.swift"; sourceTree = "<group>"; };
 		DAFE2DE8268A9B1B00990986 /* HistoryItemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryItemTests.swift; sourceTree = "<group>"; };
 		DAFEF0B7249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardShortcuts.Name+Shortcuts.swift"; sourceTree = "<group>"; };
+		CD0900000000000000000001 /* CollectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionTests.swift; sourceTree = "<group>"; };
+		CD090000000000000000000A /* CollectionItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionItem.swift; sourceTree = "<group>"; };
+		CD090000000000000000000B /* CollectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionStore.swift; sourceTree = "<group>"; };
+		CD090000000000000000000C /* CollectionImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionImporter.swift; sourceTree = "<group>"; };
+		CD0900000000000000000014 /* CollectionDragSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDragSource.swift; sourceTree = "<group>"; };
+		CD0900000000000000000015 /* CollectionShelfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionShelfView.swift; sourceTree = "<group>"; };
+		CD0900000000000000000016 /* CollectionAccessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionAccessController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -675,6 +689,7 @@
 		DA360DB11E3DF137005C6F6B /* ClipioTests */ = {
 			isa = PBXGroup;
 			children = (
+				CD0900000000000000000001 /* CollectionTests.swift */,
 				DA48AE852A5F0077006D4894 /* Fixtures */,
 				CB0F10000000000000000001 /* FloatingGlassStyleTests.swift */,
 				DA3CE7FF1E44A62500B3AA98 /* ClipboardTests.swift */,
@@ -762,6 +777,12 @@
 		DAEE38451E3DBEB100DD2966 /* Clipio */ = {
 			isa = PBXGroup;
 			children = (
+				CD0900000000000000000016 /* CollectionAccessController.swift */,
+				CD0900000000000000000015 /* CollectionShelfView.swift */,
+				CD0900000000000000000014 /* CollectionDragSource.swift */,
+				CD090000000000000000000C /* CollectionImporter.swift */,
+				CD090000000000000000000B /* CollectionStore.swift */,
+				CD090000000000000000000A /* CollectionItem.swift */,
 				2FBB7A252B5FECBB00C65BBE /* Extensions */,
 				DA68F91F28BD819E007E2F25 /* Intents */,
 				DA05B50F2C234C1C006980FE /* Models */,
@@ -1016,6 +1037,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD0900000000000000000002 /* CollectionTests.swift in Sources */,
 				CB0F10000000000000000002 /* FloatingGlassStyleTests.swift in Sources */,
 				DAFE2DE9268A9B1B00990986 /* HistoryItemTests.swift in Sources */,
 				DA3CE8001E44A62500B3AA98 /* ClipboardTests.swift in Sources */,
@@ -1031,6 +1053,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD090000000000000000007A /* CollectionAccessController.swift in Sources */,
+				CD0900000000000000000079 /* CollectionShelfView.swift in Sources */,
+				CD0900000000000000000078 /* CollectionDragSource.swift in Sources */,
+				CD0900000000000000000070 /* CollectionImporter.swift in Sources */,
+				CD090000000000000000006F /* CollectionStore.swift in Sources */,
+				CD090000000000000000006E /* CollectionItem.swift in Sources */,
 				CB0F10000000000000000004 /* FloatingGlassStyle.swift in Sources */,
 				CB5AFE000000000000000002 /* RuntimeEnvironment.swift in Sources */,
 				DA19691C2C3F3EAC00258481 /* Collection+Surrounding.swift in Sources */,

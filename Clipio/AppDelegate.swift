@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   var panel: FloatingPanel<ContentView>!
   lazy var previewPopup = PreviewPopupPanel()
   private var previewShowWork: DispatchWorkItem?
+  private var collectionAccess: CollectionAccessController?
 
   // Delay before the preview first appears on hover (seconds).
   private let previewHoverDelay: TimeInterval = 0.8
@@ -141,6 +142,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     guard !RuntimeEnvironment.skipsApplicationStartup else { return }
 
     migrateUserDefaults()
+    if Defaults[.migrations]["2026-11-09-collection-shortcuts"] != true {
+      Popup.migrateLegacyDefaultShortcut()
+      Defaults[.migrations]["2026-11-09-collection-shortcuts"] = true
+    }
     disableUnusedGlobalHotkeys()
 
     Defaults.reset(.windowSize)
@@ -157,6 +162,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       onClose: { AppState.shared.popup.reset() }
     ) {
       ContentView()
+    }
+
+    if !RuntimeEnvironment.isTesting {
+      collectionAccess = CollectionAccessController(store: AppState.shared.collection)
     }
 
     // Populate the shelf while Clipio is sitting quietly in the menu bar, rather
@@ -177,6 +186,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
           }
         }
       }
+      if RuntimeEnvironment.isUITesting,
+         ProcessInfo.processInfo.environment["CLIPIO_UI_TEST_COLLECTION_FIXTURE"] == "1" {
+        let store = AppState.shared.collection
+        store.perform {
+          try FileManager.default.createDirectory(at: store.directory, withIntermediateDirectories: true)
+          let fixture = store.directory.appendingPathComponent("collection-fixture.txt")
+          try Data("Synthetic collection fixture".utf8).write(to: fixture)
+          try store.addFile(fixture)
+        }
+      }
       panel.prewarm()
       if RuntimeEnvironment.isUITesting,
          CommandLine.arguments.contains("open-ui-testing-shelf") {
@@ -191,6 +210,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   func applicationWillTerminate(_ notification: Notification) {
+    collectionAccess = nil
+    if RuntimeEnvironment.isUITesting {
+      try? FileManager.default.removeItem(at: AppState.shared.collection.directory)
+    }
     if Defaults[.clearOnQuit] {
       AppState.shared.history.clear()
     }

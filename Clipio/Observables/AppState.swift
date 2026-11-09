@@ -13,12 +13,30 @@ final class AppState {
   var history: History
   var footer: Footer
   var navigator: NavigationManager
+  var collection: CollectionStore
+  var shelfMode: ShelfMode = .clipboard
+
+  var activeSearchQuery: String {
+    get { shelfMode == .clipboard ? history.searchQuery : collection.searchQuery }
+    set {
+      if shelfMode == .clipboard { history.searchQuery = newValue }
+      else { collection.searchQuery = newValue }
+    }
+  }
+
+  func switchShelf(to mode: ShelfMode) {
+    guard shelfMode != mode else { return }
+    appDelegate?.hidePreviewNow()
+    shelfMode = mode
+    if mode == .collection { collection.refreshAvailability() }
+  }
 
   // Drives the pop-out "unfold" animation. FloatingPanel sets this true on open (the shelf
   // unfolds from a chip) and false on close (it collapses). ContentView animates off it.
   var shelfExpanded = false
 
   var searchVisible: Bool {
+    if shelfMode == .collection { return true }
     if !Defaults[.showSearch] { return false }
     switch Defaults[.searchVisibility] {
     case .always: return true
@@ -36,7 +54,8 @@ final class AppState {
   private let about = About()
   private var settingsWindowController: SettingsWindowController?
 
-  init(history: History, footer: Footer) {
+  init(history: History, footer: Footer, collection: CollectionStore = .shared) {
+    self.collection = collection
     self.history = history
     self.footer = footer
     footer.isRendered = false
@@ -46,6 +65,18 @@ final class AppState {
 
   @MainActor
   func select() {
+    if shelfMode == .collection {
+      collection.perform {
+        let export = try collection.prepareExport(ids: collection.selectedIDs)
+        defer { export.endAccess() }
+        let contents = export.urls.map {
+          HistoryItemContent(type: NSPasteboard.PasteboardType.fileURL.rawValue, value: $0.dataRepresentation)
+        }
+        Clipboard.shared.copy(HistoryItem(contents: contents))
+        popup.close()
+      }
+      return
+    }
     if !navigator.selection.isEmpty {
       history.select(navigator.selection.first)
     } else if let item = footer.selectedItem {
@@ -63,6 +94,12 @@ final class AppState {
 
   @MainActor
   func togglePin() {
+    if shelfMode == .collection {
+      collection.perform {
+        for id in collection.selectedIDs { try collection.togglePin(id) }
+      }
+      return
+    }
     withTransaction(Transaction()) {
       navigator.selection.forEach { _, item in
         history.togglePin(item)
@@ -72,6 +109,10 @@ final class AppState {
 
   @MainActor
   func deleteSelection() {
+    if shelfMode == .collection {
+      collection.perform { try collection.remove(ids: collection.selectedIDs) }
+      return
+    }
     guard let leadItem = navigator.leadHistoryItem else { return }
     let nextUnselectedItem = history.visibleItems.nearest(to: leadItem) { !$0.isSelected }
 

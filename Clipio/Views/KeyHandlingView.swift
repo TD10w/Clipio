@@ -26,6 +26,10 @@ struct KeyHandlingView<Content: View>: View {
           }
         }
 
+        if appState.shelfMode == .collection {
+          return handleCollectionKey(KeyChord(NSApp.currentEvent))
+        }
+
         switch KeyChord(NSApp.currentEvent) {
         case .clearHistory:
           if let item = appState.footer.items.first(where: { $0.title == "clear" }),
@@ -151,4 +155,23 @@ struct KeyHandlingView<Content: View>: View {
         return .ignored
       }
   }
+  private func handleCollectionKey(_ chord: KeyChord) -> KeyPress.Result {
+    let store = appState.collection
+    switch chord {
+    case .moveToNext: store.moveSelection(by: 1)
+    case .moveToPrevious: store.moveSelection(by: -1)
+    case .moveToFirst: store.selectedIDs = Set(store.visibleItems.prefix(1).map(\.id))
+    case .moveToLast: store.selectedIDs = Set(store.visibleItems.suffix(1).map(\.id))
+    case .pinOrUnpin: appState.togglePin()
+    case .deleteCurrentItem: appState.deleteSelection()
+    case .clearHistory, .clearHistoryAll: store.showClearConfirmation = true
+    case .clearSearch: searchQuery = ""
+    case .close: appState.popup.close()
+    case .selectCurrentItem: appState.select()
+    case .openPreferences: appState.openPreferences()
+    default: return .ignored
+    }
+    return .handled
+  }
+
 }

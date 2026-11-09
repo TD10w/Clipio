@@ -315,7 +315,7 @@ struct CardItemView: View {
   }
 }
 
-private struct FloatingGlassCardBackground: ViewModifier {
+struct FloatingGlassCardBackground: ViewModifier {
   let isHovered: Bool
 
   func body(content: Content) -> some View {

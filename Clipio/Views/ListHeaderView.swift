@@ -20,7 +20,20 @@ struct ListHeaderView: View {
           .padding(.leading, 2)
       }
 
+      Button {
+        appState.switchShelf(to: appState.shelfMode.other)
+      } label: {
+        Image(systemName: appState.shelfMode.symbol)
+          .font(.system(size: 13, weight: .medium))
+          .frame(width: FloatingGlassStyle.toolbarControlSize, height: FloatingGlassStyle.toolbarControlSize)
+      }
+      .buttonStyle(.plain)
+      .accessibilityIdentifier("switch-shelf")
+      .accessibilityLabel(Text(appState.shelfMode == .clipboard ? "collection_switch_to_collection" : "collection_switch_to_clipboard"))
+      .help(Text("collection_switch_hint"))
+
       SearchFieldView(placeholder: "search_placeholder", query: $searchQuery)
+        .id(appState.shelfMode)
         .focused($searchFocused)
         .frame(maxWidth: .infinity)
         .onChange(of: scenePhase) {

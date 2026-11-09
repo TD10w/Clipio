@@ -12,7 +12,7 @@ struct ContentView: View {
     ZStack {
       trayGlass
 
-      KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
+      KeyHandlingView(searchQuery: $appState.activeSearchQuery, searchFocused: $searchFocused) {
         shelfContent
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -91,13 +91,21 @@ struct ContentView: View {
         searchFocused: $searchFocused
       )
 
-      HistoryListView(
-        searchQuery: $appState.history.searchQuery,
-        searchFocused: $searchFocused
-      )
+      if appState.shelfMode == .collection {
+        CollectionShelfView(store: appState.collection)
+      } else {
+        HistoryListView(
+          searchQuery: $appState.history.searchQuery,
+          searchFocused: $searchFocused
+        )
+      }
     }
     .onAppear {
       searchFocused = true
+    }
+    .onChange(of: appState.shelfMode) {
+      searchFocused = false
+      DispatchQueue.main.async { searchFocused = true }
     }
     .onMouseMove {
       appState.navigator.isKeyboardNavigating = false
