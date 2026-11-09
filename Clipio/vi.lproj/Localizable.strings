@@ -13,3 +13,27 @@
 "clear_alert_cancel" = "Hủy bỏ";
 "clear_alert_confirm" = "Dọn dẹp";
 "screen" = "Màn hình";
+
+/* File collection */
+"collection_open" = "Open File Collection";
+"collection_file_unavailable" = "File unavailable";
+"collection_invalid_image" = "This image could not be saved. Try dragging another image.";
+"collection_invalid_file" = "This item is not a local file.";
+"collection_store_unavailable" = "The collection could not be loaded. Existing data has been kept.";
+"collection_unsupported_drop" = "Drop files, folders or images here.";
+"collection_import_failed" = "%ld item(s) could not be collected.";
+"collection_empty" = "Drop files or images here. Pin items to keep them after dragging out.";
+"collection_no_results" = "No matching files";
+"collection_clear" = "Clear Unpinned Items";
+"collection_clear_confirm" = "Clear unpinned items? Pinned items and original files will be kept.";
+"collection_error_title" = "File Collection";
+"collection_pin" = "Pin for repeated use";
+"collection_unpin" = "Unpin";
+"collection_pinned" = "Pinned";
+"collection_unpinned" = "Removed after a successful drag";
+"collection_remove" = "Remove from Collection";
+"collection_select_all" = "Select All Items";
+"collection_switch_to_collection" = "Switch to File Collection";
+"collection_switch_to_clipboard" = "Switch to Clipboard";
+"collection_switch_hint" = "Switch Clipboard / File Collection (Tab)";
+"collection_drop_hint" = "Drop to collect";

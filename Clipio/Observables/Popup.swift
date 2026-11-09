@@ -49,7 +49,8 @@ class Popup {
 
   init() {
     guard !RuntimeEnvironment.isUnitTesting else { return }
-    KeyboardShortcuts.onKeyDown(for: .popup, action: handleFirstKeyDown)
+    KeyboardShortcuts.onKeyDown(for: .popup) { [weak self] in self?.toggle(mode: .clipboard) }
+    KeyboardShortcuts.onKeyDown(for: .collectionPopup) { [weak self] in self?.toggle(mode: .collection) }
     initEventsMonitor()
   }
 
@@ -79,6 +80,7 @@ class Popup {
   func reset() {
     state = .toggle
     KeyboardShortcuts.enable(.popup)
+    KeyboardShortcuts.enable(.collectionPopup)
   }
 
   func close() {
@@ -105,16 +107,32 @@ class Popup {
     needsResize = false
   }
 
-  private func handleFirstKeyDown() {
-    if isClosed() {
-      open(height: height)
-      state = .opening
-      KeyboardShortcuts.disable(.popup)  // Handle events via eventsMonitor. Re-enable on popup close
+  func prepareToOpen() {
+    KeyboardShortcuts.disable(.popup)
+    KeyboardShortcuts.disable(.collectionPopup)
+    state = .opening
+  }
+
+  func toggle(mode: ShelfMode) {
+    let appState = AppState.shared
+    if !isClosed(), appState.shelfMode == mode {
+      close()
       return
     }
+    appState.switchShelf(to: mode)
+    if isClosed() { open(height: height) }
+  }
 
-    // Maccy was not opened via shortcut. We assume toggle mode and close it
-    close()
+  static func migrateLegacyDefaultShortcut() {
+    let previousDefault = KeyboardShortcuts.Shortcut(.c, modifiers: [.command, .shift])
+    if KeyboardShortcuts.Name.popup.shortcut == previousDefault {
+      KeyboardShortcuts.setShortcut(.init(.v, modifiers: [.command, .shift]), for: .popup)
+    }
+  }
+
+  static func isShelfSwitch(keyCode: UInt16, modifiers: NSEvent.ModifierFlags, composing: Bool) -> Bool {
+    let relevant = modifiers.intersection([.command, .option, .control, .shift])
+    return keyCode == 48 && relevant.isEmpty && !composing
   }
 
   private func handleEvent(_ event: NSEvent) -> NSEvent? {
@@ -129,23 +147,47 @@ class Popup {
   }
 
   private func handleKeyDown(_ event: NSEvent) -> NSEvent? {
-    if isHotKeyCode(Int(event.keyCode)) {
-      if let item = History.shared.pressedShortcutItem {
-        AppState.shared.navigator.select(item: item)
-        Task { @MainActor in
-          AppState.shared.history.select(item)
-        }
+    let appState = AppState.shared
+    guard let panel = appState.appDelegate?.panel, panel.isPresented,
+          NSApp.keyWindow === panel else { return event }
+    let composing = (panel.firstResponder as? NSTextInputClient)?.hasMarkedText() == true
+    if Self.isShelfSwitch(keyCode: event.keyCode, modifiers: event.modifierFlags, composing: composing),
+       !appState.collection.isExporting {
+      appState.switchShelf(to: appState.shelfMode.other)
+      return nil
+    }
+    if !composing, event.keyCode == 53 {
+      close()
+      return nil
+    }
+    if !composing, appState.shelfMode == .collection {
+      switch KeyChord(event) {
+      case .deleteCurrentItem:
+        Task { @MainActor in appState.deleteSelection() }
         return nil
+      case .pinOrUnpin:
+        Task { @MainActor in appState.togglePin() }
+        return nil
+      case .selectCurrentItem:
+        Task { @MainActor in appState.select() }
+        return nil
+      case .moveToNext:
+        appState.collection.moveSelection(by: 1)
+        return nil
+      case .moveToPrevious:
+        appState.collection.moveSelection(by: -1)
+        return nil
+      default: break
       }
-
-      // Plain toggle: pressing the popup hotkey (with its modifiers) while the shelf
-      // is open closes it. Bare key presses (e.g. typing "c" in search) fall through.
-      if isHotKeyModifiers(event.modifierFlags) {
-        close()
+    }
+    for (name, mode) in [(KeyboardShortcuts.Name.popup, ShelfMode.clipboard), (.collectionPopup, .collection)] {
+      if let shortcut = name.shortcut,
+         shortcut.key?.rawValue == Int(event.keyCode),
+         event.modifierFlags.intersection([.command, .shift, .option, .control]) == shortcut.modifiers {
+        toggle(mode: mode)
         return nil
       }
     }
-
     return event
   }
 
@@ -165,23 +207,6 @@ class Popup {
     }
 
     return event
-  }
-
-  private func isHotKeyCode(_ keyCode: Int) -> Bool {
-    guard let shortcut = KeyboardShortcuts.Name.popup.shortcut else {
-      return false
-    }
-
-    return shortcut.key?.rawValue == keyCode
-  }
-
-  private func isHotKeyModifiers(_ modifiers: NSEvent.ModifierFlags) -> Bool {
-    guard let shortcut = KeyboardShortcuts.Name.popup.shortcut else {
-      return false
-    }
-
-    return modifiers.intersection(.deviceIndependentFlagsMask) ==
-      shortcut.modifiers.intersection(.deviceIndependentFlagsMask)
   }
 
   private func allModifiersReleased(_ event: NSEvent) -> Bool {

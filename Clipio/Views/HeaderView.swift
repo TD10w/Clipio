@@ -11,15 +11,27 @@ struct HeaderView: View {
       HStack(alignment: .center, spacing: 0) {
         ListHeaderView(
           searchFocused: $searchFocused,
-          searchQuery: $appState.history.searchQuery
+          searchQuery: $appState.activeSearchQuery
         )
         .padding(.horizontal, Popup.horizontalPadding)
 
-        HeaderClearButton(
-          clearItem: appState.footer.items[0],
-          clearAllItem: appState.footer.items[1]
-        )
-        .padding(.trailing, 5)
+        if appState.shelfMode == .collection {
+          ToolbarButton {
+            appState.collection.showClearConfirmation = true
+          } label: {
+            Image(systemName: "trash").font(.system(size: 13, weight: .medium))
+          }
+          .modifier(HeaderGlassControl())
+          .accessibilityIdentifier("clear-collection")
+          .help(Text("collection_clear"))
+          .padding(.trailing, 5)
+        } else {
+          HeaderClearButton(
+            clearItem: appState.footer.items[0],
+            clearAllItem: appState.footer.items[1]
+          )
+          .padding(.trailing, 5)
+        }
 
         ToolbarButton {
           Task { @MainActor in
@@ -97,6 +109,7 @@ private struct HeaderClearButton: View {
       Button(confirmation.confirm, role: .destructive) {
         item.action()
       }
+      .accessibilityIdentifier("confirm-clear-history")
       Button(confirmation.cancel, role: .cancel) {}
     }
   }

@@ -36,6 +36,10 @@ struct GeneralSettingsPane: View {
           .help(Text("OpenTooltip", tableName: "GeneralSettings"))
       }
 
+      Settings.Section(label: { Text("collection_open") }) {
+        KeyboardShortcuts.Recorder(for: .collectionPopup)
+      }
+
       Settings.Section(label: { Text("Pin", tableName: "GeneralSettings") }) {
         KeyboardShortcuts.Recorder(for: .pin)
           .help(Text("PinTooltip", tableName: "GeneralSettings"))
