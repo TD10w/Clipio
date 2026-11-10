@@ -145,7 +145,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   @discardableResult
   @MainActor
   func add(_ item: HistoryItem) -> HistoryItemDecorator {
-    let previousHighestOrder = all.compactMap { $0.item.manualOrder }.max()
     if #available(macOS 15.0, *) {
       try? insertIntoStorage(item)
     } else {
@@ -175,11 +174,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       Task {
         Notifier.play(sound: .write)
       }
-    }
-
-    if let previousHighestOrder {
-      item.manualOrder = previousHighestOrder + 1
-      try? Storage.shared.context.save()
     }
 
     // Remove exceeding items. Do this after the item is added to avoid removing something
@@ -371,32 +365,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     updateUnpinnedShortcuts()
     if item.isUnpinned {
       AppState.shared.navigator.scrollTarget = item.id
-    }
-  }
-
-  @MainActor
-  func move(_ source: HistoryItemDecorator, relativeTo target: HistoryItemDecorator, after: Bool) {
-    guard source != target, source.isPinned == target.isPinned,
-          let sourceIndex = all.firstIndex(of: source) else { return }
-    var reordered = all
-    reordered.remove(at: sourceIndex)
-    guard let targetIndex = reordered.firstIndex(of: target) else { return }
-    reordered.insert(source, at: targetIndex + (after ? 1 : 0))
-    let previousOrders = reordered.map { $0.item.manualOrder }
-    for (index, item) in reordered.enumerated() {
-      item.item.manualOrder = Double(reordered.count - index)
-    }
-    do {
-      try Storage.shared.context.save()
-      all = reordered
-      let visible = Set(items.map(\.id))
-      items = reordered.filter { visible.contains($0.id) }
-      updateUnpinnedShortcuts()
-    } catch {
-      for (item, previousOrder) in zip(reordered, previousOrders) {
-        item.item.manualOrder = previousOrder
-      }
-      logger.error("Could not save manual clipboard order")
     }
   }
 

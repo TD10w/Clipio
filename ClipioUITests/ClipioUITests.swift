@@ -69,6 +69,11 @@ class ClipioUITests: XCTestCase {
     try? "Hello world".write(to: file1, atomically: true, encoding: .utf8)
     try? "Hello world".write(to: file2, atomically: true, encoding: .utf8)
 
+    app.launchArguments = []
+    if name.contains("testTabKeepsHeaderAndWindowPositionStable") ||
+       name.contains("testClipboardContextMenuRemovesOnlyChosenItem") {
+      app.launchArguments.append("open-ui-testing-shelf")
+    }
     app.launchArguments.append("enable-testing")
     app.launchArguments.append("enable-ui-testing")
     app.launchArguments.append(contentsOf: ["-pasteByDefault", "false"])
@@ -86,6 +91,13 @@ class ClipioUITests: XCTestCase {
     app.launchEnvironment["CLIPIO_UI_TEST_OLDER_ITEM"] = copy2
     app.launchEnvironment["CLIPIO_UI_TEST_NEWER_ITEM"] = copy1
     app.launch()
+    // XCTest otherwise activates this nonactivating menu app at the first key
+    // event by reopening it, which toggles the already-open shelf closed.
+    let applicationURL = Bundle.main.bundleURL.deletingLastPathComponent()
+      .appendingPathComponent("Clipio.app")
+    if let identifier = Bundle(url: applicationURL)?.bundleIdentifier {
+      NSRunningApplication.runningApplications(withBundleIdentifier: identifier).first?.activate()
+    }
   }
 
   override func tearDown() {
@@ -524,6 +536,37 @@ class ClipioUITests: XCTestCase {
     XCUIApplication(bundleIdentifier: "com.apple.finder").activate()
     assertNotExists(item(labeled: copy1))
 
+  }
+
+  func testClipboardContextMenuRemovesOnlyChosenItem() {
+    let chosen = item(labeled: copy2)
+    assertExists(chosen)
+    chosen.rightClick()
+    let remove = app.menuItems["Remove from Clipboard History"]
+    assertExists(remove)
+    remove.click()
+    assertNotExists(chosen)
+    assertExists(item(labeled: copy1))
+  }
+
+  func testTabKeepsHeaderAndWindowPositionStable() {
+    let toggle = app.buttons["switch-shelf"]
+    assertExists(toggle)
+    let headerFrame = toggle.frame
+    let panel = app.dialogs.containing(.button, identifier: "switch-shelf").firstMatch
+    let windowFrame = panel.frame
+    let searchFrame = app.textFields.firstMatch.frame
+    let collected = app.descendants(matching: .any).matching(identifier: "collection-item").firstMatch
+
+    for index in 0..<6 {
+      app.typeKey(.tab, modifierFlags: [])
+      if index.isMultiple(of: 2) { assertExists(collected) }
+      else { assertExists(item(labeled: copy1)) }
+      XCTAssertEqual(toggle.frame.midY, headerFrame.midY, accuracy: 1, "Tab must not move the header vertically")
+      XCTAssertEqual(toggle.frame.midX, headerFrame.midX, accuracy: 1)
+      XCTAssertEqual(app.textFields.firstMatch.frame.minY, searchFrame.minY, accuracy: 1)
+      XCTAssertEqual(panel.frame, windowFrame, "Tab must not move or resize the panel")
+    }
   }
 
   func testCollectionSwitchIconAndTabFromSearch() {

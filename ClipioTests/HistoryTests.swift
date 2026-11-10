@@ -291,26 +291,6 @@ class HistoryTests: XCTestCase {
     XCTAssertEqual(history.items, [bar])
   }
 
-  func testManualOrderSurvivesReloadAndNewCopiesGoFirst() async throws {
-    let first = history.add(historyItem("one"))
-    let second = history.add(historyItem("two"))
-    history.move(first, relativeTo: second, after: false)
-    XCTAssertEqual(history.items.map(\.item.title), ["one", "two"])
-    _ = history.add(historyItem("three"))
-    try await history.load()
-    XCTAssertEqual(history.items.map(\.item.title), ["three", "one", "two"])
-  }
-
-  func testRecopyGoesFirstWithoutScramblingOtherManualOrder() async throws {
-    let first = history.add(historyItem("one"))
-    let second = history.add(historyItem("two"))
-    _ = history.add(historyItem("three"))
-    history.move(first, relativeTo: second, after: false)
-    _ = history.add(historyItem("two"))
-    try await history.load()
-    XCTAssertEqual(history.items.map(\.item.title), ["two", "three", "one"])
-  }
-
   private func historyItem(_ value: String) -> HistoryItem {
     let contents = [
       HistoryItemContent(

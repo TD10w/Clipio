@@ -6,7 +6,7 @@ A native macOS clipboard manager with a horizontal card shelf, built on [Maccy](
 
 Browse copied text, images, files, and color values; search your history and pin items you use often. A second shelf, the **file collection**, holds files and images you drag in until you drag them out where they belong.
 
-**[Download for macOS — 2.7.0-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.7.0-beta.1/Clipio-2.7.0-beta.1.zip)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.7.0-beta.1)
+**[Download for macOS — 2.7.2-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.7.2-beta.1/Clipio-2.7.2-beta.1.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.7.2-beta.1)
 
 macOS 14+ · Apple Silicon & Intel · Signed and notarized by Apple
 
@@ -20,13 +20,13 @@ macOS 14+ · Apple Silicon & Intel · Signed and notarized by Apple
 
 **Early public beta.** This is an independent personal project built on Maccy. No Xcode or terminal commands are needed to use the download.
 
-1. [Download Clipio-2.7.0-beta.1.zip](https://github.com/TD10w/Clipio/releases/download/v2.7.0-beta.1/Clipio-2.7.0-beta.1.zip) and double-click it to extract **Clipio.app**. Choose this ZIP, not GitHub's automatically generated “Source code” archives.
+1. [Download Clipio-2.7.2-beta.1.dmg](https://github.com/TD10w/Clipio/releases/download/v2.7.2-beta.1/Clipio-2.7.2-beta.1.dmg) and double-click it to open the installer. Choose this DMG, not GitHub's automatically generated “Source code” archives.
 2. Drag **Clipio.app** into **Applications**, then open it. Confirm macOS's normal first-open prompt if shown.
 3. Clipio runs in the **menu bar**; press **Shift + Command + V** for the clipboard shelf and **Shift + Command + C** for the file collection. It does not use a normal Dock window.
 4. Copy something in another app to add it to history. Select a card with **Return**, then use **Command + V** in your destination app.
 5. For automatic paste with **Option + Return**, allow Clipio in **System Settings → Privacy & Security → Accessibility**.
 
-The ZIP is universal, Developer ID signed, Apple-notarized, and stapled. **Installation on a second Mac and the full UI checklist are still awaiting independent testing.** Please treat this as an early testing build and report problems.
+The DMG and optional ZIP are universal, Developer ID signed, Apple-notarized, and stapled. **Installation on a second Mac and the full UI checklist are still awaiting independent testing.** Please treat this as an early testing build and report problems.
 
 **Upgrading from 2.6.1:** the clipboard shortcut is now **Shift + Command + V**; Shift + Command + C opens the file collection. Your clipboard history is kept. Both shortcuts can be changed in Settings.
 
@@ -34,7 +34,7 @@ Updates are manual: quit Clipio, download the next release, and replace the app 
 
 If macOS refuses to open the download, check the macOS 14+ requirement and download it again from this repository. Report the exact error in [Issues](https://github.com/TD10w/Clipio/issues/new/choose); do not disable Gatekeeper globally.
 
-Optional checksum verification is documented in the [release notes](https://github.com/TD10w/Clipio/releases/tag/v2.7.0-beta.1).
+Optional checksum verification is documented in the [release notes](https://github.com/TD10w/Clipio/releases/tag/v2.7.2-beta.1).
 
 ## Using Clipio
 
