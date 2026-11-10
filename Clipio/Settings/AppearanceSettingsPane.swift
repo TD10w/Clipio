@@ -75,6 +75,10 @@ struct AppearanceSettingsPane: View {
         .help(Text("glass_appearance_help"))
       }
 
+      Settings.Section(title: "") {
+        GlassTransparencyPreview()
+      }
+
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {
         HStack {
           Picker("", selection: $popupAt) {
@@ -249,4 +253,86 @@ struct AppearanceSettingsPane: View {
 #Preview {
   AppearanceSettingsPane()
     .environment(\.locale, .init(identifier: "en"))
+}
+
+/// Live preview for the transparency slider: a miniature shelf over a sample page with
+/// text, built from the same glass surface and rim as the real shelf. The blur samples
+/// the sample page (within-window) so the effect is visible without opening the shelf.
+private struct GlassTransparencyPreview: View {
+  private static let lines = [
+    "Meeting notes · 会议记录 · Tuesday 10:30",
+    "Ship the collection shelf, then tidy the README",
+    "把这一段文字放在 Clipio 面板后面，看会不会叠字",
+    "The quick brown fox jumps over the lazy dog",
+    "Q4 plan · budget · design review · 设计评审",
+    "Drag files to the top of the screen to collect them"
+  ]
+
+  var body: some View {
+    let page = RoundedRectangle(cornerRadius: 12, style: .continuous)
+    ZStack {
+      LinearGradient(
+        colors: [Color(red: 0.30, green: 0.45, blue: 0.95), Color(red: 0.62, green: 0.38, blue: 0.85),
+                 Color(red: 0.98, green: 0.62, blue: 0.40)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
+      VStack(alignment: .leading, spacing: 5) {
+        ForEach(Self.lines, id: \.self) { line in
+          Text(verbatim: line)
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(.white)
+            .lineLimit(1)
+        }
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 14)
+
+      miniShelf
+    }
+    .frame(width: 360, height: 128)
+    .clipShape(page)
+    .overlay(page.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
+    .accessibilityHidden(true)
+  }
+
+  private var miniShelf: some View {
+    HStack(spacing: 8) {
+      Text(verbatim: "Clipio")
+        .font(.system(size: 13, weight: .semibold))
+        .padding(.trailing, 2)
+      miniCard { Text(verbatim: "Hello, Clipio").font(.system(size: 10)).lineLimit(3) }
+      miniCard {
+        RoundedRectangle(cornerRadius: 6, style: .continuous)
+          .fill(Color(red: 0.45, green: 0.88, blue: 0.80))
+      }
+      miniCard { Text(verbatim: "https://apple.com").font(.system(size: 10)).lineLimit(3) }
+    }
+    .padding(10)
+    .frame(width: 300, height: 84)
+    .background {
+      Color.clear
+        .modifier(ShelfGlassSurface(radius: 20, blending: .withinWindow))
+        .overlay(ShelfGlassRim(radius: 20))
+    }
+  }
+
+  private func miniCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+    let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
+    return content()
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      .padding(7)
+      .frame(width: 62, height: 60)
+      .background(.regularMaterial, in: shape)
+      .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(0.07)).allowsHitTesting(false))
+      .overlay(shape.strokeBorder(
+        LinearGradient(
+          colors: [Color.primary.opacity(0.3), FloatingGlassStyle.rimTint.opacity(0.42),
+                   FloatingGlassStyle.spectralTint.opacity(0.18)],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ),
+        lineWidth: 1
+      ))
+  }
 }
