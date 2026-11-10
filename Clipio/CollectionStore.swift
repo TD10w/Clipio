@@ -200,13 +200,17 @@ final class CollectionStore {
     pruneOldExports()
     let selected = items.filter { ids.contains($0.id) }
     guard !selected.isEmpty else { throw CollectionError.unavailable }
+    // AppKit negotiates one operation for the entire session. In a mixed move,
+    // hand Finder copies of Pin items so their original files cannot be moved.
+    let movesOriginals = selected.contains { !$0.isPinned && $0.ownedFileName == nil }
     var urls: [URL] = []
+    var originals: [UUID: URL] = [:]
     var accessed: [URL] = []
     do {
       for item in selected {
         let url = try resolveURL(for: item.id)
         if url.startAccessingSecurityScopedResource() { accessed.append(url) }
-        if item.ownedFileName != nil {
+        if item.ownedFileName != nil || (movesOriginals && item.isPinned) {
           // Destinations may read a file URL after ending the drag. Keep this outgoing
           // copy alive independently of clear/remove, and let macOS clean its temp storage.
           let outgoing = outgoingDirectory.appendingPathComponent(UUID().uuidString)
@@ -216,20 +220,35 @@ final class CollectionStore {
           urls.append(staged)
         } else {
           urls.append(url)
+          originals[item.id] = url
         }
       }
-      return CollectionExport(ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed)
+      return CollectionExport(
+        ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed,
+        operation: movesOriginals ? .move : .copy, originalURLs: originals,
+        pinnedIDs: Set(selected.filter(\.isPinned).map(\.id))
+      )
     } catch {
       accessed.forEach { $0.stopAccessingSecurityScopedResource() }
       throw error
     }
   }
 
-  func finishExport(_ export: CollectionExport, accepted: Bool) throws {
+  func finishExport(_ export: CollectionExport, operation: NSDragOperation) throws {
     defer { export.endAccess() }
-    guard accepted else { return }
-    let consumed = Set(items.filter { export.ids.contains($0.id) && !$0.isPinned }.map(\.id))
-    try remove(ids: consumed)
+    guard operation == .move || operation == .copy else { return }
+    let consumed = Set(items.filter { item in
+      guard export.ids.contains(item.id), !export.pinnedIDs.contains(item.id), !item.isPinned else { return false }
+      if let original = export.originalURLs[item.id] {
+        // A callback is not proof of a completed filesystem move. Finder can finish
+        // asynchronously or accept a no-op drop. Keep references still at source.
+        // Never implement "move" by deleting an original after a copy callback.
+        return operation == .move && !fileManager.fileExists(atPath: original.path)
+      }
+      return true // Owned web images are exported from independent staged copies.
+    }.map(\.id))
+    if !consumed.isEmpty { try remove(ids: consumed) }
+    refreshAvailability()
   }
 
   func select(_ id: UUID, extending: Bool) {

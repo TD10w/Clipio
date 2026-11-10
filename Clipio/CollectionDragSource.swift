@@ -64,13 +64,13 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
   }
 
   func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
-    context == .outsideApplication ? .copy : []
+    context == .outsideApplication ? (activeExport?.operation ?? []) : []
   }
 
   func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
     guard let export = activeExport else { return }
     activeExport = nil
-    store?.perform { try store?.finishExport(export, accepted: !operation.isEmpty) }
+    store?.perform { try store?.finishExport(export, operation: operation) }
     store?.isExporting = false
     AppState.shared.appDelegate?.panel.isDragging = false
   }

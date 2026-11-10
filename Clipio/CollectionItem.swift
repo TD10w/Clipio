@@ -55,6 +55,9 @@ struct CollectionExport {
   let ids: Set<UUID>
   let urls: [URL]
   let accessedURLs: [URL]
+  let operation: NSDragOperation
+  let originalURLs: [UUID: URL]
+  let pinnedIDs: Set<UUID>
 
   func endAccess() {
     accessedURLs.forEach { $0.stopAccessingSecurityScopedResource() }

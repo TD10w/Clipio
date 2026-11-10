@@ -79,19 +79,87 @@ final class CollectionTests: XCTestCase {
     let pinned = try collection.addFile(source("pinned.txt"))
     try collection.togglePin(pinned)
     let export = try collection.prepareExport(ids: [first, pinned])
-    try collection.finishExport(export, accepted: false)
+    try collection.finishExport(export, operation: [])
     XCTAssertEqual(store().items.count, 2)
   }
 
   func testAcceptedExportRemovesOnlyExportedUnpinnedItems() throws {
     let collection = store()
-    let ordinary = try collection.addFile(source())
+    let original = try source()
+    let ordinary = try collection.addFile(original)
     let pinned = try collection.addFile(source("pinned.txt"))
     let untouched = try collection.addFile(source("untouched.txt"))
     try collection.togglePin(pinned)
     let export = try collection.prepareExport(ids: [ordinary, pinned])
-    try collection.finishExport(export, accepted: true)
+    try FileManager.default.moveItem(at: original, to: root.appendingPathComponent("destination.txt"))
+    try collection.finishExport(export, operation: .move)
     XCTAssertEqual(Set(store().items.map(\.id)), [pinned, untouched])
+  }
+
+  func testAcceptedButUnmovedLocalFileRemainsInCollection() throws {
+    let original = try source()
+    let collection = store()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    try collection.finishExport(export, operation: .move)
+    XCTAssertEqual(store().items.map(\.id), [id])
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+  }
+
+  func testCopyAndLinkCallbacksCannotConsumeOrdinaryReferences() throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    for operation: NSDragOperation in [.copy, .link, .delete, []] {
+      let export = try collection.prepareExport(ids: [id])
+      XCTAssertEqual(export.operation, .move)
+      try collection.finishExport(export, operation: operation)
+      XCTAssertEqual(collection.items.map(\.id), [id])
+      XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+    }
+  }
+
+  func testPinnedOnlyOffersCopyAndKeepsOriginalAfterDestinationCopy() throws {
+    let original = try source()
+    let collection = store()
+    let id = try collection.addFile(original)
+    try collection.togglePin(id)
+    let export = try collection.prepareExport(ids: [id])
+    XCTAssertEqual(export.operation, .copy)
+    try FileManager.default.copyItem(at: XCTUnwrap(export.urls.first), to: root.appendingPathComponent("copy.txt"))
+    try collection.finishExport(export, operation: .copy)
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+  }
+
+  func testMixedMoveStagesPinnedFolderInsteadOfExposingOriginal() throws {
+    let collection = store()
+    let original = try source()
+    let ordinary = try collection.addFile(original)
+    let folder = root.appendingPathComponent("pinned folder")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    try Data("protected".utf8).write(to: folder.appendingPathComponent("child.txt"))
+    let pinned = try collection.addFile(folder)
+    try collection.togglePin(pinned)
+    let export = try collection.prepareExport(ids: [ordinary, pinned])
+    defer { export.endAccess() }
+    let pinnedURL = try XCTUnwrap(export.urls.first { $0.lastPathComponent == "pinned folder" })
+    XCTAssertNotEqual(pinnedURL.resolvingSymlinksInPath(), folder.resolvingSymlinksInPath())
+    XCTAssertEqual(try String(contentsOf: pinnedURL.appendingPathComponent("child.txt"), encoding: .utf8), "protected")
+  }
+
+  func testPartialMoveRetainsOnlyUnmovedOrdinaryReferences() throws {
+    let collection = store()
+    let movedURL = try source("moved.txt")
+    let moved = try collection.addFile(movedURL)
+    let retained = try collection.addFile(source("retained.txt"))
+    let export = try collection.prepareExport(ids: [moved, retained])
+    let target = root.appendingPathComponent("destination")
+    try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+    try FileManager.default.moveItem(at: movedURL, to: target.appendingPathComponent("moved.txt"))
+    try collection.finishExport(export, operation: .move)
+    XCTAssertEqual(store().items.map(\.id), [retained])
+    XCTAssertEqual(try String(contentsOf: target.appendingPathComponent("moved.txt"), encoding: .utf8), "original")
   }
 
   func testOwnedImageExportSurvivesRemovalAndClearProtectsPins() throws {
@@ -109,7 +177,7 @@ final class CollectionTests: XCTestCase {
     try collection.clearUnpinned()
     XCTAssertTrue(FileManager.default.fileExists(atPath: outgoing.path))
     XCTAssertEqual(store().items.map(\.id), [pinned])
-    try collection.finishExport(export, accepted: true)
+    try collection.finishExport(export, operation: .move)
     XCTAssertTrue(FileManager.default.fileExists(atPath: outgoing.path))
   }
 
