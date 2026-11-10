@@ -255,58 +255,51 @@ struct AppearanceSettingsPane: View {
     .environment(\.locale, .init(identifier: "en"))
 }
 
-/// Live preview for the transparency slider: a miniature shelf over an ordinary page of
-/// text. Real glass refraction garbles a tiny in-window sample, so the preview blurs a
-/// copy of the page directly (same 0→1 strength as the shelf's blur) and applies the
-/// shelf's own tint, card and rim styling.
+/// Live preview for the transparency slider: a miniature shelf over a few soft colour
+/// shapes. Left, the shapes show through crisply; right, they melt into a frosted wash.
+/// The blur is drawn directly (same 0→1 strength as the shelf) with the shelf's tint and rim.
 private struct GlassTransparencyPreview: View {
   @Default(.shelfGlassOpacity) private var opacity
   @Environment(\.colorScheme) private var colorScheme
 
+  private static let size = CGSize(width: 360, height: 128)
   private static let shelfSize = CGSize(width: 300, height: 84)
-  private static let maxBlurRadius: CGFloat = 14
-  private static let lines = [
-    "Meeting notes · 会议记录 · Tuesday 10:30",
-    "Ship the collection shelf, then tidy the README",
-    "把这一段文字放在 Clipio 面板后面，看会不会叠字",
-    "The quick brown fox jumps over the lazy dog",
-    "Q4 plan · budget · design review · 设计评审",
-    "Drag files to the top of the screen to collect them"
-  ]
+  private static let maxBlurRadius: CGFloat = 16
 
   var body: some View {
     let frame = RoundedRectangle(cornerRadius: 12, style: .continuous)
     let shelf = RoundedRectangle(cornerRadius: 20, style: .continuous)
     let dark = colorScheme == .dark
     ZStack {
-      samplePage
-      samplePage
-        .blur(radius: Self.maxBlurRadius * FloatingGlassStyle.blurOpacity(opacity), opaque: true)
-        .mask { shelf.frame(width: Self.shelfSize.width, height: Self.shelfSize.height) }
-      shelf
-        .fill((dark ? Color.black : Color.white).opacity(FloatingGlassStyle.tintOpacity(opacity, dark: dark)))
-        .frame(width: Self.shelfSize.width, height: Self.shelfSize.height)
+      backdrop
       miniShelf
+        .background {
+          ZStack {
+            // Same backdrop, same size and centre, so the blurred copy lines up exactly.
+            backdrop
+              .blur(radius: Self.maxBlurRadius * FloatingGlassStyle.blurOpacity(opacity))
+            (dark ? Color.black : Color.white)
+              .opacity(FloatingGlassStyle.tintOpacity(opacity, dark: dark))
+          }
+          .frame(width: Self.size.width, height: Self.size.height)
+        }
+        .clipShape(shelf)
         .overlay(ShelfGlassRim(radius: 20))
     }
-    .frame(width: 360, height: 128)
+    .frame(width: Self.size.width, height: Self.size.height)
     .clipShape(frame)
     .overlay(frame.strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
     .accessibilityHidden(true)
   }
 
-  private var samplePage: some View {
-    VStack(alignment: .leading, spacing: 5) {
-      ForEach(Self.lines, id: \.self) { line in
-        Text(verbatim: line)
-          .font(.system(size: 12))
-          .foregroundStyle(.primary)
-          .lineLimit(1)
-      }
+  private var backdrop: some View {
+    ZStack {
+      Color(nsColor: .textBackgroundColor)
+      Circle().fill(Color(red: 0.35, green: 0.55, blue: 1.0)).frame(width: 96).offset(x: -110, y: -26)
+      Circle().fill(Color(red: 1.0, green: 0.62, blue: 0.38)).frame(width: 110).offset(x: 112, y: 30)
+      Circle().fill(Color(red: 0.45, green: 0.85, blue: 0.62)).frame(width: 64).offset(x: 10, y: -44)
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-    .padding(.horizontal, 14)
-    .background(Color(nsColor: .textBackgroundColor))
+    .frame(width: Self.size.width, height: Self.size.height)
   }
 
   private var miniShelf: some View {
