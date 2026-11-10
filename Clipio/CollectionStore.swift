@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import Darwin
 import Observation
 
 /// Collection metadata is independent of the clipboard database. Call mutations on the main thread.
@@ -27,6 +28,7 @@ final class CollectionStore {
   private let writeManifest: (Data, URL) throws -> Void
   private var canWrite = true
   private let fileManager = FileManager.default
+  @ObservationIgnored private var pendingMoves: [UUID: CollectionMoveObservation] = [:]
 
   private struct Manifest: Codable {
     let version: Int
@@ -204,32 +206,51 @@ final class CollectionStore {
     // hand Finder copies of Pin items so their original files cannot be moved.
     let movesOriginals = selected.contains { !$0.isPinned && $0.ownedFileName == nil }
     var urls: [URL] = []
-    var originals: [UUID: URL] = [:]
     var accessed: [URL] = []
+    var stagedDirectories: [URL] = []
     do {
-      for item in selected {
-        let url = try resolveURL(for: item.id)
-        if url.startAccessingSecurityScopedResource() { accessed.append(url) }
+      let resolved = try selected.map { (item: $0, url: try resolveURL(for: $0.id)) }
+      for entry in resolved {
+        if entry.url.startAccessingSecurityScopedResource() { accessed.append(entry.url) }
+      }
+      let protectedURLs = items.filter { $0.isPinned && $0.ownedFileName == nil }.compactMap { item -> URL? in
+        // Missing/unavailable pins cannot be handed to a destination, but shouldn't
+        // prevent unrelated files from exporting.
+        try? resolveURL(for: item.id)
+      }
+      // Moving a parent also moves descendants, even if a child is pinned. Reject
+      // overlapping batches before staging or giving any URL to a destination.
+      for parent in resolved where !parent.item.isPinned && parent.item.ownedFileName == nil {
+        let prefix = parent.url.resolvingSymlinksInPath().path + "/"
+        if resolved.contains(where: {
+          $0.item.id != parent.item.id && $0.url.resolvingSymlinksInPath().path.hasPrefix(prefix)
+        }) || protectedURLs.contains(where: { $0.resolvingSymlinksInPath().path.hasPrefix(prefix) }) {
+          throw CollectionError.overlappingFiles
+        }
+      }
+      for (item, url) in resolved {
         if item.ownedFileName != nil || (movesOriginals && item.isPinned) {
           // Destinations may read a file URL after ending the drag. Keep this outgoing
           // copy alive independently of clear/remove, and let macOS clean its temp storage.
           let outgoing = outgoingDirectory.appendingPathComponent(UUID().uuidString)
           try fileManager.createDirectory(at: outgoing, withIntermediateDirectories: true)
+          stagedDirectories.append(outgoing)
           let staged = outgoing.appendingPathComponent(item.name)
           try fileManager.copyItem(at: url, to: staged)
           urls.append(staged)
         } else {
           urls.append(url)
-          originals[item.id] = url
         }
       }
       return CollectionExport(
         ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed,
-        operation: movesOriginals ? .move : .copy, originalURLs: originals,
-        pinnedIDs: Set(selected.filter(\.isPinned).map(\.id))
+        operation: movesOriginals ? .move : .copy,
+        pinnedIDs: Set(selected.filter(\.isPinned).map(\.id)),
+        exportedURLs: Dictionary(uniqueKeysWithValues: zip(selected.map(\.id), urls))
       )
     } catch {
       accessed.forEach { $0.stopAccessingSecurityScopedResource() }
+      stagedDirectories.forEach { try? fileManager.removeItem(at: $0) }
       throw error
     }
   }
@@ -237,18 +258,39 @@ final class CollectionStore {
   func finishExport(_ export: CollectionExport, operation: NSDragOperation) throws {
     defer { export.endAccess() }
     guard operation == .move || operation == .copy else { return }
-    let consumed = Set(items.filter { item in
-      guard export.ids.contains(item.id), !export.pinnedIDs.contains(item.id), !item.isPinned else { return false }
-      if let original = export.originalURLs[item.id] {
-        // A callback is not proof of a completed filesystem move. Finder can finish
-        // asynchronously or accept a no-op drop. Keep references still at source.
-        // Never implement "move" by deleting an original after a copy callback.
-        return operation == .move && !fileManager.fileExists(atPath: original.path)
+    var consumed: Set<UUID> = []
+    for item in items where export.ids.contains(item.id) && !export.pinnedIDs.contains(item.id) && !item.isPinned {
+      if operation == .move, let source = export.exportedURLs[item.id] {
+        if !fileManager.fileExists(atPath: source.path) {
+          consumed.insert(item.id)
+        } else {
+          // Finder may return before completing a long/cross-volume operation.
+          // Watch the source, with no idle polling, until it actually leaves.
+          pendingMoves[item.id] = CollectionMoveObservation(url: source, onChange: { [weak self] in
+            self?.reconcileMove(id: item.id, source: source)
+          }, onExpire: { [weak self] in
+            self?.pendingMoves[item.id] = nil
+          })
+          // Close the race between the existence check and installing the watch.
+          if !fileManager.fileExists(atPath: source.path) { consumed.insert(item.id) }
+        }
+      } else if operation == .copy && item.ownedFileName != nil {
+        consumed.insert(item.id)
       }
-      return true // Owned web images are exported from independent staged copies.
-    }.map(\.id))
+      // A copy callback must never consume an ordinary local reference.
+    }
     if !consumed.isEmpty { try remove(ids: consumed) }
     refreshAvailability()
+  }
+
+  private func reconcileMove(id: UUID, source: URL) {
+    guard !fileManager.fileExists(atPath: source.path) else { return }
+    guard let item = items.first(where: { $0.id == id }), !item.isPinned else {
+      pendingMoves[id] = nil
+      return
+    }
+    // Only metadata / owned images are removed here. Never remove a local original.
+    perform { try remove(ids: [id]) }
   }
 
   func select(_ id: UUID, extending: Bool) {
@@ -277,7 +319,43 @@ final class CollectionStore {
     let data = try JSONEncoder().encode(Manifest(version: 1, items: updated))
     try writeManifest(data, directory.appendingPathComponent("items.json"))
     items = updated
+    pendingMoves = pendingMoves.filter { id, _ in updated.contains { $0.id == id && !$0.isPinned } }
     selectedIDs.formIntersection(Set(updated.map(\.id)))
     unavailableIDs.formIntersection(Set(updated.map(\.id)))
+  }
+}
+
+/// One event source per delayed move. Disappears with the store/item, without a
+/// repeating timer. Scope stays alive until Finder completes or the item is removed.
+private final class CollectionMoveObservation {
+  private let source: DispatchSourceFileSystemObject
+  private var expiry: DispatchWorkItem?
+
+  init?(url: URL, onChange: @escaping () -> Void, onExpire: @escaping () -> Void) {
+    let accessed = url.startAccessingSecurityScopedResource()
+    let descriptor = open(url.path, O_EVTONLY)
+    guard descriptor >= 0 else {
+      if accessed { url.stopAccessingSecurityScopedResource() }
+      return nil
+    }
+    source = DispatchSource.makeFileSystemObjectSource(
+      fileDescriptor: descriptor, eventMask: [.rename, .delete], queue: .main
+    )
+    source.setEventHandler(handler: onChange)
+    source.setCancelHandler {
+      Darwin.close(descriptor)
+      if accessed { url.stopAccessingSecurityScopedResource() }
+    }
+    source.resume()
+    // A receiver may report move for a no-op. Bound descriptor/scope retention;
+    // if a transfer takes longer, keep its card rather than infer completion.
+    let expiry = DispatchWorkItem(block: onExpire)
+    self.expiry = expiry
+    DispatchQueue.main.asyncAfter(deadline: .now() + 30 * 60, execute: expiry)
+  }
+
+  deinit {
+    expiry?.cancel()
+    source.cancel()
   }
 }

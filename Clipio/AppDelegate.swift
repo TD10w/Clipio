@@ -164,7 +164,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       ContentView()
     }
 
-    if !RuntimeEnvironment.isTesting {
+    if !RuntimeEnvironment.isTesting || ProcessInfo.processInfo.environment["CLIPIO_UI_TEST_COLLECTION_ENTRY"] == "1" {
       collectionAccess = CollectionAccessController(store: AppState.shared.collection)
     }
 

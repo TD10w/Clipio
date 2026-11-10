@@ -29,11 +29,18 @@
 "collection_error_title" = "文件收集";
 "collection_pin" = "Pin，长期保留";
 "collection_unpin" = "取消 Pin";
-"collection_pinned" = "已 Pin";
-"collection_unpinned" = "成功拖出后移除";
+"collection_pinned" = "Pinned · Copy on drag";
+"collection_unpinned" = "Move original on drag";
 "collection_remove" = "从收集区移除";
 "collection_select_all" = "选择全部内容";
 "collection_switch_to_collection" = "切换到文件收集";
 "collection_switch_to_clipboard" = "切换到剪贴板";
 "collection_switch_hint" = "切换剪贴板／文件收集（Tab）";
 "collection_drop_hint" = "拖入收集区";
+
+// Native shelf material
+"glass_appearance" = "Glass material";
+"glass_system" = "Follow System";
+"glass_clear" = "More Transparent";
+"glass_appearance_help" = "System follows macOS Liquid Glass settings. Reduce Transparency always takes priority.";
+"collection_overlapping_files" = "Drag the folder and its contained items separately to protect pinned originals.";

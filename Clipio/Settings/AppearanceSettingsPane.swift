@@ -4,6 +4,7 @@ import Defaults
 import Settings
 
 struct AppearanceSettingsPane: View {
+  @Default(.shelfGlassAppearance) private var shelfGlassAppearance
   @Default(.appearanceMode) private var appearanceMode
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
@@ -60,6 +61,18 @@ struct AppearanceSettingsPane: View {
         .labelsHidden()
         .frame(width: 141, alignment: .leading)
         .help(Text("Light, Dark, or follow the system."))
+      }
+
+      Settings.Section(label: { Text("glass_appearance") }) {
+        Picker("glass_appearance", selection: $shelfGlassAppearance) {
+          ForEach(ShelfGlassAppearance.allCases) { appearance in
+            Text(LocalizedStringKey(appearance.label)).tag(appearance)
+          }
+        }
+        .labelsHidden()
+        .frame(width: 141, alignment: .leading)
+        .help(Text("glass_appearance_help"))
+        .accessibilityIdentifier("glass-appearance-picker")
       }
 
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {

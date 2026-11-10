@@ -56,8 +56,8 @@ struct CollectionExport {
   let urls: [URL]
   let accessedURLs: [URL]
   let operation: NSDragOperation
-  let originalURLs: [UUID: URL]
   let pinnedIDs: Set<UUID>
+  let exportedURLs: [UUID: URL]
 
   func endAccess() {
     accessedURLs.forEach { $0.stopAccessingSecurityScopedResource() }
@@ -65,7 +65,7 @@ struct CollectionExport {
 }
 
 enum CollectionError: LocalizedError {
-  case unavailable, invalidImage, invalidFile, unreadableStore, unsupportedDrop
+  case unavailable, invalidImage, invalidFile, unreadableStore, unsupportedDrop, overlappingFiles
 
   var errorDescription: String? {
     let key: String
@@ -75,6 +75,7 @@ enum CollectionError: LocalizedError {
     case .invalidFile: key = "collection_invalid_file"
     case .unreadableStore: key = "collection_store_unavailable"
     case .unsupportedDrop: key = "collection_unsupported_drop"
+    case .overlappingFiles: key = "collection_overlapping_files"
     }
     return NSLocalizedString(key, comment: "")
   }

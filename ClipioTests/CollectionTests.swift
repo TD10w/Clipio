@@ -1,6 +1,7 @@
 import AppKit
 import KeyboardShortcuts
 import XCTest
+import SwiftUI
 @testable import Clipio
 
 final class CollectionTests: XCTestCase {
@@ -130,6 +131,79 @@ final class CollectionTests: XCTestCase {
     try collection.finishExport(export, operation: .copy)
     XCTAssertEqual(collection.items.map(\.id), [id])
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+  }
+
+  func testMovingParentProtectsUnselectedPinnedChild() throws {
+    let collection = store()
+    let parent = root.appendingPathComponent("parent")
+    try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+    let child = parent.appendingPathComponent("pin.txt")
+    try Data("protected".utf8).write(to: child)
+    let parentID = try collection.addFile(parent)
+    let childID = try collection.addFile(child)
+    try collection.togglePin(childID)
+    XCTAssertThrowsError(try collection.prepareExport(ids: [parentID]))
+    XCTAssertEqual(try String(contentsOf: child, encoding: .utf8), "protected")
+  }
+
+  func testPartialMixedMoveKeepsUnmovedOwnedImage() throws {
+    let collection = store()
+    let original = try source()
+    let ordinary = try collection.addFile(original)
+    let bitmap = try XCTUnwrap(NSBitmapImageRep(
+      bitmapDataPlanes: nil, pixelsWide: 2, pixelsHigh: 2, bitsPerSample: 8,
+      samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+    ))
+    let image = try collection.addImage(data: XCTUnwrap(bitmap.representation(using: .png, properties: [:])), name: "web")
+    let export = try collection.prepareExport(ids: [ordinary, image])
+    try FileManager.default.moveItem(at: original, to: root.appendingPathComponent("destination.txt"))
+    try collection.finishExport(export, operation: .move)
+    XCTAssertEqual(collection.items.map(\.id), [image])
+    XCTAssertNoThrow(try collection.resolveURL(for: image))
+  }
+
+  func testMoveCompletingAfterCallbackIsReconciled() throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    try collection.finishExport(export, operation: .move)
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    try FileManager.default.moveItem(at: original, to: root.appendingPathComponent("destination.txt"))
+    let removed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in collection.items.isEmpty }, object: nil)
+    XCTAssertEqual(XCTWaiter.wait(for: [removed], timeout: 2), .completed)
+    XCTAssertTrue(store().items.isEmpty)
+  }
+
+  func testOldMouseReleaseCannotEndNewPanelDrag() throws {
+    let panel = FloatingPanel(contentRect: NSRect(x: 0, y: 0, width: 100, height: 100), onClose: {}) { EmptyView() }
+    panel.isDragging = true
+    let released = try XCTUnwrap(NSEvent.mouseEvent(
+      with: .leftMouseUp, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+      windowNumber: panel.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 0
+    ))
+    NSApp.postEvent(released, atStart: true)
+    let checked = expectation(description: "old release cannot clear a new drag")
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { panel.isDragging = true }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+      XCTAssertTrue(panel.isDragging)
+      checked.fulfill()
+    }
+    wait(for: [checked], timeout: 2)
+  }
+
+  func testMovingParentCannotAlsoExportItsPinnedChild() throws {
+    let collection = store()
+    let folder = root.appendingPathComponent("parent")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let child = folder.appendingPathComponent("pinned.txt")
+    try Data("protected".utf8).write(to: child)
+    let parentID = try collection.addFile(folder)
+    let childID = try collection.addFile(child)
+    try collection.togglePin(childID)
+    XCTAssertThrowsError(try collection.prepareExport(ids: [parentID, childID]))
+    XCTAssertEqual(collection.items.count, 2)
+    XCTAssertEqual(try String(contentsOf: child, encoding: .utf8), "protected")
   }
 
   func testMixedMoveStagesPinnedFolderInsteadOfExposingOriginal() throws {

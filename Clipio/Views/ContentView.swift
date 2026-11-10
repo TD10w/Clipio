@@ -66,18 +66,8 @@ struct ContentView: View {
     }
   }
 
-  // The tray itself is one native Liquid Glass lozenge that refracts the desktop.
-  // SwiftUI glass keeps the tray in the native Liquid Glass rendering system.
-  @ViewBuilder
   private var trayGlass: some View {
-    let shape = RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
-    if #available(macOS 26.0, *) {
-      Color.clear
-        .glassEffect(.regular, in: shape)
-    } else {
-      VisualEffectView()
-        .clipShape(shape)
-    }
+    Color.clear.modifier(ShelfGlassSurface(radius: FloatingGlassStyle.trayRadius))
   }
 
   // Native frosted cards keep text and badges clear within the glass shelf.

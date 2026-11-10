@@ -1,0 +1,46 @@
+# November 10 acceptance repair evidence
+
+Base: PR #3 preview `842e22f`; branch `fix/acceptance-feedback-20261110`.
+Authority: [November 9 feedback](acceptance-feedback-2026-11-09.md). Changes are local, not merged or released.
+
+## Implemented behavior
+
+- Ordinary local file/folder exports offer a native **move** operation. Finder/destination owns filesystem operations. Clipio never deletes original local files after a callback.
+- Pin-only exports offer **copy**. Mixed move batches stage copies of Pin files/folders so their originals are never exposed to the batch's move operation. Web images always use independent staged exports.
+- An ordinary reference is removed only after a move callback and its captured source path no longer exists. Cancelled, rejected, copy, link, delete, no-op, and partially completed moves retain unaffected references. If a move callback arrives first, an event-driven source watch reconciles later source disappearance. It expires after 30 minutes without inferring success; a slower/unobservable transfer leaves its card for manual cleanup.
+- Selecting a moving parent and a contained child, or a parent containing any pinned local item in the collection (even unselected), is rejected before handoff.
+- Copy-only destinations cannot accept ordinary local references in this mode. Pin first for copy/upload workflows. This is intentional: no silent fallback that misrepresents a copy as the requested move.
+- The entry has no number, uses a stable native drop/hosting view with glass-rim insets, reveals a larger hint below the notch during supported external drags, and unfolds when the pointer approaches the shelf footprint. Release work is cancelled on a new drag; entry positioning follows the pointer's screen.
+- Appearance settings offer Follow System and More Transparent native glass. System Reduce Transparency takes priority. Foreground opacity is unchanged. System fonts and original icon are preserved.
+
+## Evidence and limits
+
+- Three added regression tests failed against the previous implementation: unmoved-item consumption, mixed Pin original exposure, partial batch consumption. They passed after the fix. Full initial unit run: 115/115, `/tmp/clipio-nov10-green.log`.
+- Nested parent/Pin-child rejection was separately observed RED in `/tmp/clipio-nov10-nested-red.log` before implementation.
+- Native CUA inspected the icon-only entry with a complete rounded edge, opened the collection, confirmed a cancelled drag retained the synthetic item, and selected More Transparent then restored Follow System in the actual built settings pane.
+- Native Finder drop verification did **not** complete reliably. CUA began drag sessions, but drops did not yield a successful operation; cancellation returned an empty operation. Two experimental XCTest Finder-drop cases (`testFinderMovesOrdinaryCollectionFile`, `testFinderCopiesPinnedCollectionFile`) timed out waiting for destination files in `/tmp/clipio-nov10-finder-ui.log`. They are diagnostic attempts, not passing evidence or shipped regression cases. The experiment was removed from the normal test suite. A previous manual-acceptance app was also found with an overlapping panel and was collapsed before further CUA attempts; its data was not edited.
+- Finder actual move/copy, collision prompts, same-folder drops, cross-volume movement, browser imports, restart-scoped access, and visual behavior under system appearance/accessibility settings remain owner/device acceptance gates. Do not claim these passed from unit tests, simulated FileManager moves, or source masks.
+- Independent final review found four Important issues: unselected pinned descendants, partial mixed owned-image consumption, delayed move reconciliation, and stale FloatingPanel mouse-release timers. Each was reproduced RED, then fixed; the full unit suite passed **120/120** in `/tmp/clipio-nov10-review-green.log`.
+- First affected UI run: 10/13 passed; `testCollectionClearKeepsPinnedItem`, `testSearch`, `testUnpin` failed at the existing “Clipio did not pop up” launch gate. Log: `/tmp/clipio-nov10-final-regressions.log`. Final rerun and focused rechecks are recorded below.
+- Deferred review minors: the shelf does not follow an already-open drag across displays; the generic ordinary-item caption also applies to owned web images; staging a large pinned folder in a mixed move is synchronous. These are not represented as accepted behavior.
+
+## References
+
+- Apple [drag source operation masks](https://developer.apple.com/documentation/appkit/nsdraggingsource/draggingsession(_:sourceoperationmaskfor:)) describe allowed operation negotiation.
+- Apple [dragging files](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/DragandDrop/Tasks/DraggingFiles.html) describes URL-based file handoff and sandbox scope.
+- Apple [materials](https://developer.apple.com/design/human-interface-guidelines/materials) describes system preferences and accessibility adaptation; [NSGlassEffectView](https://developer.apple.com/documentation/appkit/nsglasseffectview) exposes regular/clear variants.
+
+## Build and artifact verification
+
+The required unsigned Debug command completed with **BUILD SUCCEEDED** (`/tmp/clipio-nov10-final-build.log`). The separately prepared manual Debug bundle also built successfully (`/tmp/clipio-nov10-manual-build.log`) and passed `codesign --verify --deep --strict`. Its identifier is `com.clipio.app.manualacceptancenov10`; it has not been launched or installed. All 31 main localization tables **inside the built app** contain the five added keys. Synthetic source/destination folders are supplied beside the app.
+
+Final fresh-container verification re-ran all 120 unit tests successfully. Of 13 affected UI cases, 11 passed and two failed: `testCollectionDeleteDoesNotDeleteClipboardHistory` at “Clipio did not pop up”, and `testCollectionHasSeparateShortcutAndClipboardShortcutRoutesBack` waiting for a collection card. Log: `/tmp/clipio-nov10-fresh-final.log`. This is not an all-green UI result. Earlier UI reruns also had variable startup, hover and image-copy failures; logs remain `/tmp/clipio-nov10-ui-final.log` and `/tmp/clipio-nov10-final-regressions.log`.
+
+## Implementation rulings
+
+- Keep source-file operations under Finder/destination ownership; Clipio never cleans up a copy by deleting a local original.
+- Ordinary-local move sessions intentionally reject copy-only destinations; Pin first to copy instead.
+- Delayed-move observation is event-driven and capped at 30 minutes. After expiry or an unavailable watch, preserve the collection entry rather than infer success.
+- Retain all manual acceptance gates and the three review minors above; no merge or release in this task.
+
+The two failing UI cases were compared against untouched PR #3 `842e22f` in an archived source copy, using another isolated bundle ID: **2/2 passed** (`/tmp/clipio-nov10-baseline-comparison.log`). The same two cases were then rerun on the current unchanged repair tree: **2/2 passed** (`/tmp/clipio-nov10-ui-targeted-recheck.log`). The final evidence is 11 UI cases passed in the group plus 2 focused recheck passes, with earlier failures retained; this is not a claim of one clean 13-case run or a proof that the intermittent launch behavior is fixed.

@@ -29,11 +29,18 @@
 "collection_error_title" = "File Collection";
 "collection_pin" = "Pin for repeated use";
 "collection_unpin" = "Unpin";
-"collection_pinned" = "Pinned";
-"collection_unpinned" = "Removed after a successful drag";
+"collection_pinned" = "Pinned · Copy on drag";
+"collection_unpinned" = "Move original on drag";
 "collection_remove" = "Remove from Collection";
 "collection_select_all" = "Select All Items";
 "collection_switch_to_collection" = "Switch to File Collection";
 "collection_switch_to_clipboard" = "Switch to Clipboard";
 "collection_switch_hint" = "Switch Clipboard / File Collection (Tab)";
 "collection_drop_hint" = "Drop to collect";
+
+// Native shelf material
+"glass_appearance" = "Glass material";
+"glass_system" = "Follow System";
+"glass_clear" = "More Transparent";
+"glass_appearance_help" = "System follows macOS Liquid Glass settings. Reduce Transparency always takes priority.";
+"collection_overlapping_files" = "Drag the folder and its contained items separately to protect pinned originals.";
