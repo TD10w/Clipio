@@ -491,6 +491,81 @@ final class CollectionTests: XCTestCase {
     _ = await task.result
   }
 
+
+  // MARK: Stacks (same-drop batches)
+
+  func testOneMultiItemDropFormsOneStackInDropOrderAndNextDropStaysSeparate() async throws {
+    let collection = store()
+    let names = (1...7).map { "photo\($0).txt" }
+    let urls = try names.map { try source($0) }
+    await CollectionImporter.collect(urls.map { NSItemProvider(item: $0 as NSURL, typeIdentifier: "public.file-url") }, into: collection)
+    let later = try source("later.txt")
+    await CollectionImporter.collect([NSItemProvider(item: later as NSURL, typeIdentifier: "public.file-url")], into: collection)
+
+    XCTAssertEqual(collection.items.count, 8)
+    XCTAssertNil(collection.items[0].batchID, "a single-item drop is never a Stack")
+    let entries = collection.visibleEntries
+    XCTAssertEqual(entries.count, 2)
+    guard case .stack(let batch, let members) = entries[1] else { return XCTFail("expected a Stack") }
+    XCTAssertEqual(members.map(\.name), names)
+    XCTAssertEqual(members.count, 7)
+
+    collection.toggleExpanded(batch)
+    let expanded = collection.visibleEntries
+    XCTAssertEqual(expanded.count, 1 + 1 + 7)
+    guard case .collapseHandle(_, 7) = expanded[1] else { return XCTFail("expected collapse handle") }
+  }
+
+  func testStacksSurviveRestartAndLegacyManifestStillLoads() throws {
+    let batch = UUID()
+    let collection = store()
+    try collection.addFile(source("a.txt"), batch: batch)
+    try collection.addFile(source("b.txt"), batch: batch)
+    XCTAssertEqual(store().items.map(\.batchID), [batch, batch])
+
+    // A manifest written before Stacks existed has no batchID key.
+    let manifest = directory.appendingPathComponent("items.json")
+    var json = try JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as! [String: Any]
+    json["items"] = (json["items"] as! [[String: Any]]).map { $0.filter { $0.key != "batchID" } }
+    try JSONSerialization.data(withJSONObject: json).write(to: manifest)
+    let legacy = store()
+    XCTAssertEqual(legacy.items.count, 2)
+    XCTAssertNil(legacy.lastError)
+    XCTAssertTrue(legacy.items.allSatisfy { $0.batchID == nil })
+  }
+
+  func testSearchHitShowsWholeStackAndLastMemberBecomesOrdinaryCard() throws {
+    let batch = UUID()
+    let collection = store()
+    let a = try collection.addFile(source("alpha.txt"), batch: batch)
+    try collection.addFile(source("beta.txt"), batch: batch)
+    try collection.addFile(source("gamma.txt"))
+    collection.searchQuery = "beta"
+    XCTAssertEqual(Set(collection.visibleItems.map(\.name)), ["alpha.txt", "beta.txt"])
+
+    collection.searchQuery = ""
+    try collection.remove(ids: [a])
+    XCTAssertTrue(collection.visibleEntries.allSatisfy { if case .single = $0 { true } else { false } })
+  }
+
+  func testStackPinActsOnWholeGroupAndKeyboardTreatsStackAsOneStop() throws {
+    let batch = UUID()
+    let collection = store()
+    let a = try collection.addFile(source("a.txt"), batch: batch)
+    let b = try collection.addFile(source("b.txt"), batch: batch)
+    let single = try collection.addFile(source("c.txt"))
+    try collection.togglePin(a)
+    try collection.togglePin(ids: [a, b])
+    XCTAssertTrue(collection.items.filter { $0.batchID == batch }.allSatisfy(\.isPinned), "partly pinned group pins all")
+    try collection.togglePin(ids: [a, b])
+    XCTAssertTrue(collection.items.allSatisfy { !$0.isPinned })
+
+    collection.moveSelection(by: 1)
+    XCTAssertEqual(collection.selectedIDs, [single])
+    collection.moveSelection(by: 1)
+    XCTAssertEqual(collection.selectedIDs, [a, b])
+  }
+
 }
 
 private final class CollectionImageURLProtocol: URLProtocol, @unchecked Sendable {

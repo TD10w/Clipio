@@ -189,6 +189,7 @@ final class CollectionAccessController {
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 1
     queue.qualityOfService = .utility
+    let batch = receivers.count > 1 ? UUID() : nil
     for receiver in receivers {
       receiver.receivePromisedFiles(atDestination: destination, options: [:], operationQueue: queue) { [weak self] url, error in
         let image = Result { () throws -> CollectionImage in
@@ -198,7 +199,7 @@ final class CollectionAccessController {
         DispatchQueue.main.async {
           guard let self else { return }
           self.store.perform {
-            try self.store.addImage(image.get())
+            try self.store.addImage(image.get(), batch: batch)
           }
           try? FileManager.default.removeItem(at: url)
         }

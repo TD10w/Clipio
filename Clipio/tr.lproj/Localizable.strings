@@ -47,3 +47,6 @@
 "glass_classic" = "Classic (2.6.1)";
 "glass_crystal" = "Crystal";
 "glass_aurora" = "Aurora";
+"collection_stack_count" = "%d items";
+"collection_stack_expand" = "Expand";
+"collection_stack_collapse" = "Collapse";

@@ -15,6 +15,8 @@ final class CollectionStore {
   private(set) var items: [CollectionItem] = []
   private(set) var unavailableIDs: Set<UUID> = []
   var selectedIDs: Set<UUID> = []
+  /// Stacks the user has opened. Session-only: Stacks come back collapsed after relaunch.
+  var expandedBatches: Set<UUID> = []
   var searchQuery = "" {
     didSet { selectedIDs.formIntersection(Set(visibleItems.map(\.id))) }
   }
@@ -62,12 +64,56 @@ final class CollectionStore {
     }
   }
 
+  /// A search hit on any Stack member shows the whole Stack.
   var visibleItems: [CollectionItem] {
-    items.filter { searchQuery.isEmpty || $0.name.localizedCaseInsensitiveContains(searchQuery) }
+    guard !searchQuery.isEmpty else { return items }
+    let matches = { (item: CollectionItem) in item.name.localizedCaseInsensitiveContains(self.searchQuery) }
+    let matchedBatches = Set(items.filter(matches).compactMap(\.batchID))
+    return items.filter { matches($0) || ($0.batchID.map(matchedBatches.contains) ?? false) }
+  }
+
+  /// Visible items grouped for display. A batch with fewer than two members left is
+  /// shown as an ordinary card.
+  var visibleEntries: [CollectionEntry] {
+    let visible = visibleItems
+    var members: [UUID: [CollectionItem]] = [:]
+    for item in visible { if let batch = item.batchID { members[batch, default: []].append(item) } }
+    var emitted: Set<UUID> = []
+    var entries: [CollectionEntry] = []
+    for item in visible {
+      guard let batch = item.batchID, let group = members[batch], group.count > 1 else {
+        entries.append(.single(item))
+        continue
+      }
+      guard emitted.insert(batch).inserted else { continue }
+      if expandedBatches.contains(batch) {
+        entries.append(.collapseHandle(batch, group.count))
+        entries.append(contentsOf: group.map(CollectionEntry.single))
+      } else {
+        entries.append(.stack(batch, group))
+      }
+    }
+    return entries
+  }
+
+  func toggleExpanded(_ batch: UUID) {
+    if !expandedBatches.insert(batch).inserted { expandedBatches.remove(batch) }
+  }
+
+  /// New items go first, except later members of a batch, which follow their batch so
+  /// a Stack keeps the order it was dropped in.
+  private func inserting(_ item: CollectionItem) -> [CollectionItem] {
+    var updated = items
+    if let batch = item.batchID, let last = updated.lastIndex(where: { $0.batchID == batch }) {
+      updated.insert(item, at: last + 1)
+    } else {
+      updated.insert(item, at: 0)
+    }
+    return updated
   }
 
   @discardableResult
-  func addFile(_ url: URL) throws -> UUID {
+  func addFile(_ url: URL, batch: UUID? = nil) throws -> UUID {
     guard url.isFileURL else { throw CollectionError.invalidFile }
     let accessed = url.startAccessingSecurityScopedResource()
     defer { if accessed { url.stopAccessingSecurityScopedResource() } }
@@ -84,9 +130,9 @@ final class CollectionStore {
     )
     let item = CollectionItem(
       id: UUID(), name: url.lastPathComponent, addedAt: Date(), isPinned: false,
-      bookmark: bookmark, ownedFileName: nil
+      bookmark: bookmark, ownedFileName: nil, batchID: batch
     )
-    try commit([item] + items)
+    try commit(inserting(item))
     return item.id
   }
 
@@ -96,7 +142,7 @@ final class CollectionStore {
   }
 
   @discardableResult
-  func addImage(_ image: CollectionImage) throws -> UUID {
+  func addImage(_ image: CollectionImage, batch: UUID? = nil) throws -> UUID {
     guard canWrite else { throw CollectionError.unreadableStore }
     let id = UUID()
     let fileName = "\(id.uuidString).\(image.fileExtension)"
@@ -107,10 +153,10 @@ final class CollectionStore {
     let stem = URL(fileURLWithPath: image.name).deletingPathExtension().lastPathComponent
     let item = CollectionItem(
       id: id, name: (stem.isEmpty ? "Image" : stem) + "." + image.fileExtension, addedAt: Date(),
-      isPinned: false, bookmark: nil, ownedFileName: fileName
+      isPinned: false, bookmark: nil, ownedFileName: fileName, batchID: batch
     )
     do {
-      try commit([item] + items)
+      try commit(inserting(item))
     } catch {
       try? fileManager.removeItem(at: url)
       throw error
@@ -159,11 +205,14 @@ final class CollectionStore {
     try togglePin(ids: [id])
   }
 
+  /// Pins every item when any of them is unpinned, otherwise unpins them all, so a
+  /// partly pinned selection or Stack never flips member by member.
   func togglePin(ids: Set<UUID>) throws {
     let indices = items.indices.filter { ids.contains(items[$0].id) }
     guard !indices.isEmpty else { return }
+    let pin = indices.contains { !items[$0].isPinned }
     var updated = items
-    for index in indices { updated[index].isPinned.toggle() }
+    for index in indices { updated[index].isPinned = pin }
     try commit(updated)
   }
 
@@ -301,12 +350,18 @@ final class CollectionStore {
     }
   }
 
+  /// Keyboard moves step over shelf slots: a collapsed Stack is one stop.
   func moveSelection(by offset: Int) {
-    let visible = visibleItems
-    guard !visible.isEmpty else { return }
-    let current = visible.firstIndex { selectedIDs.contains($0.id) } ?? (offset > 0 ? -1 : visible.count)
-    let next = min(max(current + offset, 0), visible.count - 1)
-    selectedIDs = [visible[next].id]
+    let slots = visibleEntries.map(\.itemIDs).filter { !$0.isEmpty }
+    guard !slots.isEmpty else { return }
+    let current = slots.firstIndex { !$0.isDisjoint(with: selectedIDs) } ?? (offset > 0 ? -1 : slots.count)
+    let next = min(max(current + offset, 0), slots.count - 1)
+    selectedIDs = slots[next]
+  }
+
+  func selectEdge(last: Bool) {
+    let slots = visibleEntries.map(\.itemIDs).filter { !$0.isEmpty }
+    selectedIDs = (last ? slots.last : slots.first) ?? []
   }
 
   func perform(_ operation: () throws -> Void) {
@@ -321,6 +376,7 @@ final class CollectionStore {
     items = updated
     pendingMoves = pendingMoves.filter { id, _ in updated.contains { $0.id == id && !$0.isPinned } }
     selectedIDs.formIntersection(Set(updated.map(\.id)))
+    expandedBatches.formIntersection(Set(updated.compactMap(\.batchID)))
     unavailableIDs.formIntersection(Set(updated.map(\.id)))
   }
 }

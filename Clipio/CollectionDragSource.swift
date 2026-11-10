@@ -1,26 +1,30 @@
 import AppKit
 import SwiftUI
 
+/// `ids` is one card's items: a single item, or every member of a collapsed Stack.
+/// `onClick` replaces plain-click selection (a Stack expands instead).
 struct CollectionDragSource: NSViewRepresentable {
-  let id: UUID
+  let ids: [UUID]
   let store: CollectionStore
+  var onClick: (() -> Void)?
 
   func makeNSView(context: Context) -> CollectionDragNSView {
     let view = CollectionDragNSView()
-    view.itemID = id
-    view.store = store
+    updateNSView(view, context: context)
     return view
   }
 
   func updateNSView(_ view: CollectionDragNSView, context: Context) {
-    view.itemID = id
+    view.itemIDs = Set(ids)
     view.store = store
+    view.onClick = onClick
   }
 }
 
 final class CollectionDragNSView: NSView, NSDraggingSource {
-  var itemID: UUID?
+  var itemIDs: Set<UUID> = []
   var store: CollectionStore?
+  var onClick: (() -> Void)?
   private var mouseDownPoint = NSPoint.zero
   private var activeExport: CollectionExport?
   private var didDrag = false
@@ -28,24 +32,31 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
   override func mouseDown(with event: NSEvent) {
     mouseDownPoint = event.locationInWindow
     didDrag = false
-    guard let store, let itemID else { return }
+    guard let store, !itemIDs.isEmpty else { return }
     let extending = !event.modifierFlags.isDisjoint(with: [.command, .shift])
-    if extending || !store.selectedIDs.contains(itemID) {
-      store.select(itemID, extending: extending)
+    if extending {
+      if itemIDs.isSubset(of: store.selectedIDs) {
+        store.selectedIDs.subtract(itemIDs)
+      } else {
+        store.selectedIDs.formUnion(itemIDs)
+      }
+    } else if !itemIDs.isSubset(of: store.selectedIDs) {
+      store.selectedIDs = itemIDs
     }
   }
 
   override func mouseUp(with event: NSEvent) {
-    guard !didDrag, event.modifierFlags.isDisjoint(with: [.command, .shift]), let itemID else { return }
-    store?.select(itemID, extending: false)
+    guard !didDrag, event.modifierFlags.isDisjoint(with: [.command, .shift]), !itemIDs.isEmpty else { return }
+    store?.selectedIDs = itemIDs
+    onClick?()
   }
 
   override func mouseDragged(with event: NSEvent) {
-    guard !didDrag, let store, let itemID,
+    guard !didDrag, let store, !itemIDs.isEmpty,
           hypot(event.locationInWindow.x - mouseDownPoint.x, event.locationInWindow.y - mouseDownPoint.y) > 4 else { return }
     didDrag = true
     do {
-      let ids = store.selectedIDs.contains(itemID) ? store.selectedIDs : [itemID]
+      let ids = itemIDs.isSubset(of: store.selectedIDs) ? store.selectedIDs : itemIDs
       let export = try store.prepareExport(ids: ids)
       let draggingItems = export.urls.map { url in
         let item = NSDraggingItem(pasteboardWriter: url as NSURL)

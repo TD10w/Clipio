@@ -160,8 +160,8 @@ struct KeyHandlingView<Content: View>: View {
     switch chord {
     case .moveToNext: store.moveSelection(by: 1)
     case .moveToPrevious: store.moveSelection(by: -1)
-    case .moveToFirst: store.selectedIDs = Set(store.visibleItems.prefix(1).map(\.id))
-    case .moveToLast: store.selectedIDs = Set(store.visibleItems.suffix(1).map(\.id))
+    case .moveToFirst: store.selectEdge(last: false)
+    case .moveToLast: store.selectEdge(last: true)
     case .pinOrUnpin: appState.togglePin()
     case .deleteCurrentItem: appState.deleteSelection()
     case .clearHistory, .clearHistoryAll: store.showClearConfirmation = true

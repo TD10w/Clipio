@@ -47,3 +47,6 @@
 "glass_classic" = "日用版（2.6.1）";
 "glass_crystal" = "水晶";
 "glass_aurora" = "极光";
+"collection_stack_count" = "%d 项";
+"collection_stack_expand" = "展开";
+"collection_stack_collapse" = "收起";

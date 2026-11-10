@@ -10,6 +10,34 @@ struct CollectionItem: Codable, Identifiable, Equatable {
   var isPinned: Bool
   var bookmark: Data?
   let ownedFileName: String?
+  /// Items added by one drop share a batch and render as a Stack. Optional so manifests
+  /// written before Stacks existed (and by older builds) decode unchanged.
+  var batchID: UUID?
+}
+
+/// One slot in the collection shelf: a single card, a collapsed Stack, or the collapse
+/// handle that leads an expanded Stack's members.
+enum CollectionEntry: Identifiable {
+  case single(CollectionItem)
+  case stack(UUID, [CollectionItem])
+  case collapseHandle(UUID, Int)
+
+  var id: String {
+    switch self {
+    case .single(let item): return item.id.uuidString
+    case .stack(let batch, _): return "stack-" + batch.uuidString
+    case .collapseHandle(let batch, _): return "collapse-" + batch.uuidString
+    }
+  }
+
+  /// Item ids that selecting/dragging this slot acts on.
+  var itemIDs: Set<UUID> {
+    switch self {
+    case .single(let item): return [item.id]
+    case .stack(_, let members): return Set(members.map(\.id))
+    case .collapseHandle: return []
+    }
+  }
 }
 
 /// Validated image bytes, prepared off the UI thread for browser imports.

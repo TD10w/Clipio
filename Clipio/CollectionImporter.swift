@@ -8,21 +8,23 @@ enum CollectionImporter {
   static func collect(_ providers: [NSItemProvider], into store: CollectionStore) async {
     store.importingCount += providers.count
     var failures = 0
+    // Everything delivered by one drop forms one Stack.
+    let batch = providers.count > 1 ? UUID() : nil
     for provider in providers {
       do {
         if let file = await loadURL(from: provider, type: UTType.fileURL.identifier), file.isFileURL {
-          try store.addFile(file)
+          try store.addFile(file, batch: batch)
         } else if let image = await imageData(from: provider) {
           let name = provider.suggestedName ?? "Image"
           let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: image, name: name) }.value
-          try store.addImage(prepared)
+          try store.addImage(prepared, batch: batch)
         } else if let url = await loadURL(from: provider, type: UTType.url.identifier) {
           if url.isFileURL {
-            try store.addFile(url)
+            try store.addFile(url, batch: batch)
           } else {
             let data = try await downloadImage(url)
             let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: data, name: url.lastPathComponent) }.value
-            try store.addImage(prepared)
+            try store.addImage(prepared, batch: batch)
           }
         } else {
           throw CollectionError.unsupportedDrop
