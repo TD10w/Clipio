@@ -47,3 +47,5 @@
 "collection_stack_collapse" = "收起";
 "glass_more_clear" = "通透";
 "glass_more_opaque" = "模糊";
+
+"clipboard_remove" = "從剪貼簿歷史記錄移除";

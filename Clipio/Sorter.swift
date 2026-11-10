@@ -24,6 +24,17 @@ class Sorter {
   }
 
   func sort(_ items: [HistoryItem], by: By = Defaults[.sortBy]) -> [HistoryItem] {
+    if items.contains(where: { $0.manualOrder != nil }) {
+      return items.sorted { lhs, rhs in
+        if (lhs.pin == nil) != (rhs.pin == nil) { return byPinned(lhs, rhs) }
+        switch (lhs.manualOrder, rhs.manualOrder) {
+        case let (left?, right?): return left > right
+        case (_?, nil): return true
+        case (nil, _?): return false
+        case (nil, nil): return bySortingAlgorithm(lhs, rhs, by)
+        }
+      }
+    }
     return items
       .sorted(by: { return bySortingAlgorithm($0, $1, by) })
       .sorted(by: byPinned)

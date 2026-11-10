@@ -6,9 +6,9 @@ import UniformTypeIdentifiers
 
 struct CardItemView: View {
   let item: HistoryItemDecorator
+  let isHovered: Bool
   let onSelect: () -> Void
 
-  @State private var isHovered = false
   @State private var selectionPopEpoch = 0
 
   static let cardWidth = FloatingGlassStyle.cardWidth
@@ -19,6 +19,11 @@ struct CardItemView: View {
   @MainActor
   static func togglePin(_ item: HistoryItemDecorator, in history: History) {
     history.togglePin(item)
+  }
+
+  @MainActor
+  static func remove(_ item: HistoryItemDecorator, from history: History) {
+    history.delete(item)
   }
 
   private static let relativeDateTimeFormatter: RelativeDateTimeFormatter = {
@@ -86,20 +91,12 @@ struct CardItemView: View {
     .overlay(alignment: .topTrailing) {
       pinControl
     }
-    // A single onHover drives both the preview popup and the selection highlight.
-    // Two stacked onHover modifiers over the same frame each install their own
-    // AppKit tracking area; under fast pointer movement or list reordering they
-    // can fall out of sync with each other, leaving the highlight on a different
-    // card than the preview (or the hover state itself).
-    .onHover { hovering in
-      isHovered = hovering
-      if hovering {
-        AppState.shared.appDelegate?.showPreview(for: item)
-      } else {
-        AppState.shared.appDelegate?.hidePreviewSoon(for: item)
+    .onTapGesture { onSelect() }
+    .contextMenu {
+      Button("clipboard_remove", role: .destructive) {
+        Self.remove(item, from: AppState.shared.history)
       }
     }
-    .onTapGesture { onSelect() }
     .onDrag {
       dragProvider()
     } preview: {

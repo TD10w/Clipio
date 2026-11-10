@@ -63,6 +63,25 @@ final class MenuIconPresentationTests: XCTestCase {
 
 @MainActor
 final class ShelfBehaviorTests: XCTestCase {
+  func testLongPressReordersButImmediateDragExports() {
+    var drag = ShelfDragArbitration()
+    drag.begin(at: .zero, time: 1)
+    XCTAssertEqual(drag.move(to: CGPoint(x: 1, y: 0), time: 1.1), .wait)
+    XCTAssertEqual(drag.move(to: CGPoint(x: 30, y: 0), time: 1.6), .reorder)
+    drag.begin(at: .zero, time: 2)
+    XCTAssertEqual(drag.move(to: CGPoint(x: 30, y: 0), time: 2.1), .export)
+    XCTAssertEqual(drag.move(to: CGPoint(x: 50, y: 0), time: 3), .export)
+  }
+  func testClipboardRemoveTargetsTheChosenCard() {
+    final class RecordingHistory: History {
+      var deletedItem: HistoryItemDecorator?
+      override func delete(_ item: HistoryItemDecorator?) { deletedItem = item }
+    }
+    let history = RecordingHistory()
+    let item = HistoryItemDecorator(HistoryItem())
+    CardItemView.remove(item, from: history)
+    XCTAssertIdentical(history.deletedItem, item)
+  }
   func testCardPinActionUsesHistoryOwner() {
     final class RecordingHistory: History {
       var toggledItem: HistoryItemDecorator?

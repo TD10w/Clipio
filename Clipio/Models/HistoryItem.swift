@@ -63,6 +63,7 @@ class HistoryItem {
   var firstCopiedAt: Date = Date.now
   var lastCopiedAt: Date = Date.now
   var numberOfCopies: Int = 1
+  var manualOrder: Double?
   var pin: String?
   var title = ""
 

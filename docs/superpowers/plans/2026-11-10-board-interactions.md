@@ -9,5 +9,5 @@
 - [ ] Reproduce stale geometry and hover changes with isolated tests; correct the identified cause and verify hover with a running app.
 - [ ] Add an explicit clipboard remove action backed by existing deletion; test targeted removal.
 - [ ] Implement persistent clipboard ordering with new copies first, preserving pins and existing data; test restart and duplicates.
-- [ ] Implement persistent collection ordering including stacks without initiating a file export; test persistence, cancellation and file safety.
+- [ ] Collection ordering is deferred at the owner's request after the isolated manual test did not pass. The experimental collection changes were removed; existing file drag behavior remains in place.
 - [ ] Build, run relevant isolated tests, and provide one consolidated experience checklist.
