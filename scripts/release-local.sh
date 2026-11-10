@@ -45,6 +45,9 @@ while (( $# > 0 )); do
   shift
 done
 
+# Local installs are ad-hoc signed. With Hardened Runtime on, library validation makes
+# dyld refuse the separately ad-hoc-signed Sparkle.framework and the app dies at launch.
+# Only the notarized beta build (scripts/release-beta.sh) needs Hardened Runtime.
 print "Building Clipio Release..."
 xcodebuild \
   -project "$project_dir/Clipio.xcodeproj" \
@@ -53,6 +56,7 @@ xcodebuild \
   -derivedDataPath "$derived_data" \
   CODE_SIGN_IDENTITY=- \
   CODE_SIGNING_ALLOWED=YES \
+  ENABLE_HARDENED_RUNTIME=NO \
   build
 
 app_bundle="$derived_data/Build/Products/Release/Clipio.app"
@@ -94,3 +98,11 @@ if $backup_created; then
   print "Previous app backup: $backup_bundle"
 fi
 open "$destination"
+
+# A valid signature does not prove the app can load its frameworks; confirm it stays up.
+sleep 3
+if ! pgrep -f "$destination/Contents/MacOS/Clipio" >/dev/null; then
+  print -u2 "Clipio did not stay running after launch. Previous app backup: ${backup_bundle:-none}"
+  exit 1
+fi
+print "Clipio is running."
