@@ -36,6 +36,8 @@ struct StorageType {
 }
 
 extension Defaults.Keys {
+  /// 0 = most transparent, 1 = most opaque. The default reproduces the 2.6.1 shelf.
+  static let shelfGlassOpacity = Key<Double>("shelfGlassOpacity", default: FloatingGlassStyle.defaultGlassOpacity)
   static let appearanceMode = Key<AppearanceMode>("appearanceMode", default: .system)
   static let clearOnQuit = Key<Bool>("clearOnQuit", default: false)
   static let clearSystemClipboard = Key<Bool>("clearSystemClipboard", default: false)

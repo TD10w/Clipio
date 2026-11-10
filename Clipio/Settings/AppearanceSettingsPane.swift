@@ -4,6 +4,7 @@ import Defaults
 import Settings
 
 struct AppearanceSettingsPane: View {
+  @Default(.shelfGlassOpacity) private var shelfGlassOpacity
   @Default(.appearanceMode) private var appearanceMode
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
@@ -60,6 +61,18 @@ struct AppearanceSettingsPane: View {
         .labelsHidden()
         .frame(width: 141, alignment: .leading)
         .help(Text("Light, Dark, or follow the system."))
+      }
+
+      Settings.Section(label: { Text("glass_appearance") }) {
+        HStack(spacing: 8) {
+          Text("glass_more_clear").font(.caption).foregroundStyle(.secondary)
+          Slider(value: $shelfGlassOpacity, in: 0...1)
+            .frame(width: 160)
+            .accessibilityLabel(Text("glass_appearance"))
+            .accessibilityIdentifier("glass-opacity-slider")
+          Text("glass_more_opaque").font(.caption).foregroundStyle(.secondary)
+        }
+        .help(Text("glass_appearance_help"))
       }
 
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {

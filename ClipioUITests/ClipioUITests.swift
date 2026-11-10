@@ -7,6 +7,7 @@ class ClipioUITests: XCTestCase {
   let app = XCUIApplication()
   let pasteboard = NSPasteboard(name: .init("com.clipio.ui-tests"))
   var generalPasteboardChangeCount = 0
+  private var originalInputSource: TISInputSource?
 
   let copy1 = UUID().uuidString
   let copy2 = UUID().uuidString
@@ -59,6 +60,9 @@ class ClipioUITests: XCTestCase {
     super.setUp()
 
     continueAfterFailure = false
+    originalInputSource = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+    let asciiSource = TISCopyCurrentASCIICapableKeyboardLayoutInputSource().takeRetainedValue()
+    XCTAssertEqual(TISSelectInputSource(asciiSource), noErr)
     generalPasteboardChangeCount = NSPasteboard.general.changeCount
     pasteboard.clearContents()
 
@@ -71,8 +75,13 @@ class ClipioUITests: XCTestCase {
     // Keep the test hotkey separate from the owner's installed clipboard manager.
     app.launchArguments.append(contentsOf: [
       "-KeyboardShortcuts_popup",
-      #""{\"carbonKeyCode\":\#(kVK_ANSI_C),\"carbonModifiers\":\#(cmdKey | shiftKey | controlKey | optionKey)}""#
+      #""{\"carbonKeyCode\":\#(kVK_ANSI_J),\"carbonModifiers\":\#(cmdKey | shiftKey | controlKey | optionKey)}""#
     ])
+    app.launchArguments.append(contentsOf: [
+      "-KeyboardShortcuts_collectionPopup",
+      #""{\"carbonKeyCode\":\#(kVK_ANSI_K),\"carbonModifiers\":\#(cmdKey | shiftKey | controlKey | optionKey)}""#
+    ])
+    app.launchEnvironment["CLIPIO_UI_TEST_COLLECTION_FIXTURE"] = "1"
     app.launchEnvironment["CLIPIO_UI_TEST_MODE"] = "1"
     app.launchEnvironment["CLIPIO_UI_TEST_OLDER_ITEM"] = copy2
     app.launchEnvironment["CLIPIO_UI_TEST_NEWER_ITEM"] = copy1
@@ -88,6 +97,7 @@ class ClipioUITests: XCTestCase {
       generalPasteboardChangeCount,
       "UI tests must never read from or write to the personal clipboard"
     )
+    if let originalInputSource { TISSelectInputSource(originalInputSource) }
     usleep(500_000)
     super.tearDown()
   }
@@ -398,14 +408,14 @@ class ClipioUITests: XCTestCase {
 
   func testOpenAndClose() throws {
     // Simulate the popup hotkey press (Cmd + Shift + C).
-    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: true)!
+    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: true)!
     cDown.flags = [.maskCommand, .maskShift]
     cDown.post(tap: .cghidEventTap)
 
     waitUntilPoppedUp()
 
     // Release the 'C' key but keep the popup open.
-    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: false)!
+    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: false)!
     cUp.flags = [.maskCommand, .maskShift]
     cUp.post(tap: .cghidEventTap)
 
@@ -434,13 +444,13 @@ class ClipioUITests: XCTestCase {
 
   func testOpenAndSelectSecondItem() throws {
     // Simulate the popup hotkey press (Cmd + Shift + C).
-    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: true)!
+    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: true)!
     cDown.flags = [.maskCommand, .maskShift]
     cDown.post(tap: .cghidEventTap)
 
     waitUntilPoppedUp()
 
-    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: false)!
+    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: false)!
     cUp.flags = [.maskCommand, .maskShift]
     cUp.post(tap: .cghidEventTap)
 
@@ -460,13 +470,13 @@ class ClipioUITests: XCTestCase {
     copyToClipboard(copy3)
 
     // Simulate the popup hotkey press (Cmd + Shift + C).
-    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: true)!
+    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: true)!
     cDown.flags = [.maskCommand, .maskShift]
     cDown.post(tap: .cghidEventTap)
 
     waitUntilPoppedUp()
 
-    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: false)!
+    let cUp = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: false)!
     cUp.flags = [.maskCommand, .maskShift]
     cUp.post(tap: .cghidEventTap)
 
@@ -488,7 +498,7 @@ class ClipioUITests: XCTestCase {
     copyToClipboard(copy3)
 
     // Simulate the popup hotkey press (Cmd + Shift + C).
-    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_C), keyDown: true)!
+    let cDown = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(kVK_ANSI_J), keyDown: true)!
     cDown.flags = [.maskCommand, .maskShift]
     cDown.post(tap: .cghidEventTap)
 
@@ -516,6 +526,65 @@ class ClipioUITests: XCTestCase {
 
   }
 
+  func testCollectionSwitchIconAndTabFromSearch() {
+    openShelf()
+    search(copy2SearchQuery)
+    app.buttons["switch-shelf"].click()
+    let collected = app.descendants(matching: .any).matching(identifier: "collection-item").firstMatch
+    assertExists(collected)
+    let attachment = XCTAttachment(screenshot: app.dialogs.firstMatch.screenshot())
+    attachment.name = "collection-provisional-shelf"
+    attachment.lifetime = .keepAlways
+    add(attachment)
+    XCTAssertEqual(app.textFields.firstMatch.value as? String, "")
+    app.typeKey(.tab, modifierFlags: [])
+    assertExists(item(labeled: copy2))
+    assertSearchFieldValue(copy2SearchQuery)
+    app.typeKey(.tab, modifierFlags: [])
+    assertExists(collected)
+  }
+
+  func testCollectionHasSeparateShortcutAndClipboardShortcutRoutesBack() {
+    openShelf()
+    app.typeKey("k", modifierFlags: [.command, .shift, .control, .option])
+    let collected = app.descendants(matching: .any).matching(identifier: "collection-item").firstMatch
+    assertExists(collected)
+    simulatePopupHotkey()
+    assertExists(item(labeled: copy1))
+    app.typeKey("k", modifierFlags: [.command, .shift, .control, .option])
+    assertExists(collected)
+    app.typeKey(.escape, modifierFlags: [])
+    assertNotExists(collected)
+  }
+
+  func testCollectionClearKeepsPinnedItem() {
+    openShelf()
+    app.buttons["switch-shelf"].click()
+    let collected = app.descendants(matching: .any).matching(identifier: "collection-item").firstMatch
+    assertExists(collected)
+    collected.click()
+    collected.hover()
+    let pin = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "collection-pin-")).firstMatch
+    assertExists(pin)
+    pin.click()
+    app.buttons["clear-collection"].click()
+    confirmClear()
+    assertExists(collected)
+  }
+
+  func testCollectionDeleteDoesNotDeleteClipboardHistory() {
+    openShelf()
+    app.buttons["switch-shelf"].click()
+    let collected = app.descendants(matching: .any).matching(identifier: "collection-item").firstMatch
+    assertExists(collected)
+    collected.click()
+    app.typeKey(.delete, modifierFlags: [.option])
+    assertNotExists(collected)
+    app.typeKey(.tab, modifierFlags: [])
+    assertExists(item(labeled: copy1))
+    assertExists(item(labeled: copy2))
+  }
+
   private func popUpWithHotkey() {
     simulatePopupHotkey()
     waitUntilPoppedUp()
@@ -538,7 +607,7 @@ class ClipioUITests: XCTestCase {
   }
 
   private func simulatePopupHotkey() {
-    app.typeKey("c", modifierFlags: [.command, .shift, .control, .option])
+    app.typeKey("j", modifierFlags: [.command, .shift, .control, .option])
   }
 
   private func waitUntilPoppedUp() {
@@ -672,7 +741,9 @@ class ClipioUITests: XCTestCase {
   }
 
   private func confirmClear() {
-    let button = app.dialogs.firstMatch.buttons.firstMatch
+    let button = app.buttons.matching(NSPredicate(
+      format: "identifier IN %@", ["confirm-clear-history", "confirm-clear-collection"]
+    )).firstMatch
     expectation(for: NSPredicate(format: "isHittable = 1"), evaluatedWith: button)
     waitForExpectations(timeout: 3)
     button.click()

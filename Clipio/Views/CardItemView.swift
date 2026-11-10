@@ -1,4 +1,5 @@
 import AppKit
+import Defaults
 import SwiftHEXColors
 import SwiftUI
 import UniformTypeIdentifiers
@@ -73,7 +74,7 @@ struct CardItemView: View {
     .overlay(alignment: .topLeading) {
       if let label = shortcutBadgeLabel {
         Text(label)
-          .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+          .font(.system(size: 10.5, weight: .semibold))
           .foregroundStyle(.white.opacity(0.9))
           .padding(.horizontal, 6)
           .padding(.vertical, 2)
@@ -155,7 +156,7 @@ struct CardItemView: View {
           Image(systemName: "pin")
             .font(.system(size: 9, weight: .semibold))
           Text("⌥P")
-            .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+            .font(.system(size: 9.5, weight: .semibold))
         }
         .foregroundStyle(.white.opacity(0.9))
         .padding(.horizontal, 6)
@@ -197,12 +198,12 @@ struct CardItemView: View {
         .frame(height: Self.cardHeight - Self.footerHeight - 26)
       Text(item.title)
         .font(.system(size: 10, weight: .semibold, design: .monospaced))
-        .foregroundStyle(.white.opacity(0.9))
+        .foregroundStyle(.primary)
         .lineLimit(1)
         .padding(.horizontal, 6)
         .frame(height: 26, alignment: .center)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.black.opacity(0.26))
+        .background(.regularMaterial)
     }
     .frame(maxHeight: .infinity, alignment: .top)
   }
@@ -210,7 +211,7 @@ struct CardItemView: View {
   @ViewBuilder
   private var textCard: some View {
     Text(item.text)
-      .font(.system(size: 11.5))
+      .font(.system(size: FloatingGlassStyle.cardBodyFontSize))
       .foregroundStyle(.primary)
       .lineLimit(5)
       .multilineTextAlignment(.leading)
@@ -224,7 +225,7 @@ struct CardItemView: View {
     HStack(spacing: 4) {
       AppImageView(appImage: item.applicationImage, size: NSSize(width: 13, height: 13))
       Text(timeString)
-        .font(.system(size: 10))
+        .font(.system(size: FloatingGlassStyle.metadataFontSize))
         .foregroundStyle(.secondary)
         .lineLimit(1)
       Spacer()
@@ -316,30 +317,57 @@ struct CardItemView: View {
   }
 }
 
-private struct FloatingGlassCardBackground: ViewModifier {
+struct FloatingGlassCardBackground: ViewModifier {
   let isHovered: Bool
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
 
-    // Solid frosted material (not glass): adapts to light/dark, renders fast, and
-    // gives text + badges an opaque surface to stay crisp against.
-    content
-      .background(.regularMaterial, in: shape)
-      .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.14 : 0.07)))
-      .modifier(FloatingGlassRim(isHovered: isHovered))
+    if reduceTransparency {
+      content
+        .background(.regularMaterial, in: shape)
+        .modifier(NeutralGlassRim(isHovered: isHovered))
+    } else {
+      // The 2.6.1 frosted card with a cool tint wash.
+      content
+        .background(.regularMaterial, in: shape)
+        .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.14 : 0.07)).allowsHitTesting(false))
+        .modifier(SpectralGlassRim(isHovered: isHovered))
+    }
   }
 }
 
-private struct FloatingGlassRim: ViewModifier {
+private struct NeutralGlassRim: ViewModifier {
+  let isHovered: Bool
+
+  func body(content: Content) -> some View {
+    let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
+    content
+      .overlay {
+        shape.strokeBorder(
+          Color.primary.opacity(isHovered ? 0.2 : 0.08),
+          lineWidth: 1
+        )
+      }
+      .shadow(
+        color: .black.opacity(isHovered ? 0.16 : 0.08),
+        radius: isHovered ? 10 : 6,
+        x: 0,
+        y: 4
+      )
+  }
+}
+
+/// The original (2.6.1) card rim: gloss-to-cyan-to-pink gradient, soft drop shadow and a
+/// cool glow that blooms on the hovered card only.
+private struct SpectralGlassRim: ViewModifier {
   let isHovered: Bool
 
   @Environment(\.colorScheme) private var colorScheme
 
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
-    // In dark mode: white gloss highlights read as glass. In light mode: use lower-opacity
-    // primary (near-black) so the rim is actually visible against a light frosted card.
     let isDark = colorScheme == .dark
     let leadOpacity: Double = isDark ? (isHovered ? 0.92 : 0.68) : (isHovered ? 0.28 : 0.18)
     let trailOpacity: Double = isDark ? 0.18 : 0.10
@@ -358,18 +386,14 @@ private struct FloatingGlassRim: ViewModifier {
           ),
           lineWidth: isHovered ? 1.5 : 1
         )
+        .allowsHitTesting(false)
       }
-      // Soft neutral drop shadow lifts the card off the tray...
       .shadow(
         color: Color(red: 0.05, green: 0.07, blue: 0.10).opacity(isHovered ? 0.26 : 0.18),
         radius: isHovered ? 12 : 9,
         x: 0,
         y: isHovered ? 8 : 6
       )
-      // ...plus a cool luminous glow that blooms on hover, like the reference edges.
-      // Resting glow is off (radius/opacity 0): a second blurred shadow on every
-      // card was recomposited each scroll frame for little visible gain. The glow
-      // still blooms on the single hovered card, which costs nothing while scrolling.
       .shadow(
         color: FloatingGlassStyle.rimTint.opacity(isHovered ? 0.5 : 0),
         radius: isHovered ? 10 : 0

@@ -28,14 +28,11 @@ final class FloatingGlassStyleTests: XCTestCase {
     XCTAssertTrue(environment.skipsApplicationStartup)
   }
 
-  func testSelectedDirectionUsesCrystalLensMetrics() {
+  func testNativeGlassDirectionPreservesShelfGeometry() {
     XCTAssertEqual(FloatingGlassStyle.cardWidth, 138)
     XCTAssertEqual(FloatingGlassStyle.cardHeight, 150)
     XCTAssertEqual(FloatingGlassStyle.cardRadius, 26)
     XCTAssertEqual(FloatingGlassStyle.cardSpacing, 12)
-    XCTAssertEqual(FloatingGlassStyle.trayScrimOpacity, 0.06)
-    XCTAssertEqual(FloatingGlassStyle.cardFillOpacity, 0.055)
-    XCTAssertEqual(FloatingGlassStyle.cardTintOpacity, 0.10)
     XCTAssertEqual(FloatingGlassStyle.trayRadius, 30)
     XCTAssertEqual(FloatingGlassStyle.searchHeight, 32)
     XCTAssertEqual(FloatingGlassStyle.toolbarControlSize, 28)
@@ -126,5 +123,15 @@ final class ShelfBehaviorTests: XCTestCase {
 
     XCTAssertEqual(navigator.leadHistoryItem, item)
     XCTAssertNil(footer.selectedItem)
+  }
+
+  func testTransparencySliderDefaultMatchesDailyLookAndEndsAreOrdered() {
+    let d = FloatingGlassStyle.defaultGlassOpacity
+    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(d, dark: false), 0.55, accuracy: 0.0001)
+    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(d, dark: true), 0, accuracy: 0.0001)
+    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(0, dark: false), 0)
+    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(1, dark: false), FloatingGlassStyle.maxLightScrim, accuracy: 0.0001)
+    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(1, dark: true), FloatingGlassStyle.maxDarkScrim, accuracy: 0.0001)
+    XCTAssertLessThan(FloatingGlassStyle.scrimOpacity(0.3, dark: false), FloatingGlassStyle.scrimOpacity(0.9, dark: false))
   }
 }

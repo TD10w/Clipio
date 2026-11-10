@@ -28,7 +28,10 @@ struct FloatingPanelAnimationState {
 // https://stackoverflow.com/questions/46023769/how-to-show-a-window-without-stealing-focus-on-macos
 class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   var isPresented: Bool = false
-  var isDragging: Bool = false
+  private var dragGeneration = 0
+  var isDragging: Bool = false {
+    didSet { dragGeneration += 1 }
+  }
   var statusBarButton: NSStatusBarButton?
   let onClose: () -> Void
   private var isPrewarming = false
@@ -151,11 +154,19 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     // close the panel again right after a drag ends.
     NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
       guard let self, self.isDragging else { return }
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.isDragging = false }
+      let generation = self.dragGeneration
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        guard let self, self.dragGeneration == generation else { return }
+        self.isDragging = false
+      }
     }
     NSEvent.addLocalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] event in
       if let self, self.isDragging {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.isDragging = false }
+        let generation = self.dragGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+          guard let self, self.dragGeneration == generation else { return }
+          self.isDragging = false
+        }
       }
       return event
     }
@@ -170,6 +181,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
+    AppState.shared.popup.prepareToOpen()
     animationState.didOpen()
     // Cancel any in-progress close animation so we start clean.
     isAnimatingClose = false

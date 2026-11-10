@@ -13,3 +13,37 @@
 "clear_alert_cancel" = "取消";
 "clear_alert_confirm" = "清除";
 "screen" = "屏幕";
+
+/* File collection */
+"collection_open" = "打开文件收集";
+"collection_file_unavailable" = "文件不可用";
+"collection_invalid_image" = "无法保存这张图片，请尝试拖入其他图片。";
+"collection_invalid_file" = "这项内容不是本地文件。";
+"collection_store_unavailable" = "无法读取收集记录，现有数据已保留。";
+"collection_unsupported_drop" = "请拖入文件、文件夹或图片。";
+"collection_import_failed" = "有 %ld 项未能收集。";
+"collection_empty" = "拖入文件或图片，Pin 后可反复取用。";
+"collection_no_results" = "没有匹配的文件";
+"collection_clear" = "清空未 Pin 的内容";
+"collection_clear_confirm" = "清空未 Pin 的内容？已 Pin 的内容和原文件会保留。";
+"collection_error_title" = "文件收集";
+"collection_pin" = "Pin，长期保留";
+"collection_unpin" = "取消 Pin";
+"collection_pinned" = "已 Pin · 拖出复制";
+"collection_unpinned" = "拖出移动原件";
+"collection_remove" = "从收集区移除";
+"collection_select_all" = "选择全部内容";
+"collection_switch_to_collection" = "切换到文件收集";
+"collection_switch_to_clipboard" = "切换到剪贴板";
+"collection_switch_hint" = "切换剪贴板／文件收集（Tab）";
+"collection_drop_hint" = "拖入收集区";
+
+// Native shelf material
+"glass_appearance" = "透明度";
+"glass_appearance_help" = "向左更通透，向右更不透明。系统的“降低透明度”始终优先。";
+"collection_overlapping_files" = "请分别拖出文件夹和它里面的项目，避免连同已 Pin 的原件一起移动。";
+"collection_stack_count" = "%d 项";
+"collection_stack_expand" = "展开";
+"collection_stack_collapse" = "收起";
+"glass_more_clear" = "通透";
+"glass_more_opaque" = "不透明";

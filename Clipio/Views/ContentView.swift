@@ -6,21 +6,13 @@ struct ContentView: View {
   @State private var modifierFlags = ModifierFlags()
   @State private var scenePhase: ScenePhase = .background
 
-  @Environment(\.colorScheme) private var colorScheme
   @FocusState private var searchFocused: Bool
 
   var body: some View {
     ZStack {
       trayGlass
 
-      // In light mode the "clear" glass has no visual body — the desktop shows straight
-      // through, leaving cards floating on nothing. A white scrim gives the shelf mass.
-      if colorScheme == .light {
-        RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
-          .fill(Color.white.opacity(0.55))
-      }
-
-      KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
+      KeyHandlingView(searchQuery: $appState.activeSearchQuery, searchFocused: $searchFocused) {
         shelfContent
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -32,24 +24,8 @@ struct ContentView: View {
         value: appState.shelfExpanded
       )
     }
-    // A single restrained perimeter reads the tray as one continuous lens of glass.
-    // Color.primary adapts: white in dark mode (gloss), near-black in light mode (visible edge).
-    .overlay(
-      RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
-        .strokeBorder(
-          LinearGradient(
-            colors: [
-              Color.primary.opacity(0.22),
-              FloatingGlassStyle.rimTint.opacity(0.26),
-              FloatingGlassStyle.spectralTint.opacity(0.16)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-          ),
-          lineWidth: 1
-        )
-        .allowsHitTesting(false)
-    )
+    // A semantic edge keeps the material legible across system appearances.
+    .overlay(ShelfGlassRim(radius: FloatingGlassStyle.trayRadius))
     // The glass body unfolds from a small chip at the top-center into the full shelf.
     // scaleEffect is a GPU transform (no relayout) and settles to identity, so it can't
     // shift AppKit hit-testing the way the removed window-layer scale did.
@@ -86,23 +62,11 @@ struct ContentView: View {
     }
   }
 
-  // The tray itself is one native Liquid Glass lozenge that refracts the desktop.
-  // SwiftUI glass keeps the tray in the native Liquid Glass rendering system.
-  @ViewBuilder
   private var trayGlass: some View {
-    let shape = RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
-    if #available(macOS 26.0, *) {
-      Color.clear
-        .glassEffect(.clear, in: shape)
-    } else {
-      VisualEffectView()
-        .clipShape(shape)
-    }
+    Color.clear.modifier(ShelfGlassSurface(radius: FloatingGlassStyle.trayRadius))
   }
 
-  // The header + card row. Cards and controls are solid material now (not glass),
-  // so there is no GlassEffectContainer — that keeps text/badges crisp and the
-  // shelf lightweight, with the tray as the single glass surface.
+  // Native frosted cards keep text and badges clear within the glass shelf.
   private var shelfContent: some View {
     shelfStack
   }
@@ -113,13 +77,21 @@ struct ContentView: View {
         searchFocused: $searchFocused
       )
 
-      HistoryListView(
-        searchQuery: $appState.history.searchQuery,
-        searchFocused: $searchFocused
-      )
+      if appState.shelfMode == .collection {
+        CollectionShelfView(store: appState.collection)
+      } else {
+        HistoryListView(
+          searchQuery: $appState.history.searchQuery,
+          searchFocused: $searchFocused
+        )
+      }
     }
     .onAppear {
       searchFocused = true
+    }
+    .onChange(of: appState.shelfMode) {
+      searchFocused = false
+      DispatchQueue.main.async { searchFocused = true }
     }
     .onMouseMove {
       appState.navigator.isKeyboardNavigating = false
