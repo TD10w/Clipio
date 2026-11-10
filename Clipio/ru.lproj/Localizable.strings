@@ -40,13 +40,10 @@
 
 // Native shelf material
 "glass_appearance" = "Glass material";
-"glass_system" = "Follow System";
-"glass_clear" = "More Transparent";
 "glass_appearance_help" = "System follows macOS Liquid Glass settings. Reduce Transparency always takes priority.";
 "collection_overlapping_files" = "Drag the folder and its contained items separately to protect pinned originals.";
-"glass_classic" = "Classic (2.6.1)";
-"glass_crystal" = "Crystal";
-"glass_aurora" = "Aurora";
 "collection_stack_count" = "%d items";
 "collection_stack_expand" = "Expand";
 "collection_stack_collapse" = "Collapse";
+"glass_more_clear" = "Clear";
+"glass_more_opaque" = "Opaque";

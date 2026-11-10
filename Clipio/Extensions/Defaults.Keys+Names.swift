@@ -26,16 +26,6 @@ enum AppearanceMode: String, CaseIterable, Identifiable, Defaults.Serializable {
   }
 }
 
-/// Shelf glass styles. `system`/`clear` keep their original raw values so stored
-/// preferences survive. The spectral styles share the original Clipio cyan→pink rim
-/// and dark badges; `classic` reproduces the 2.6.1 daily-driver look.
-enum ShelfGlassAppearance: String, CaseIterable, Identifiable, Defaults.Serializable {
-  case classic, system, clear, crystal, aurora
-  var id: Self { self }
-  var label: String { "glass_\(rawValue)" }
-  var isSpectral: Bool { self == .classic || self == .crystal || self == .aurora }
-}
-
 struct StorageType {
   static let files = StorageType(types: [.fileURL])
   static let images = StorageType(types: [.png, .tiff])
@@ -46,7 +36,8 @@ struct StorageType {
 }
 
 extension Defaults.Keys {
-  static let shelfGlassAppearance = Key<ShelfGlassAppearance>("shelfGlassAppearance", default: .classic)
+  /// 0 = most transparent, 1 = most opaque. The default reproduces the 2.6.1 shelf.
+  static let shelfGlassOpacity = Key<Double>("shelfGlassOpacity", default: FloatingGlassStyle.defaultGlassOpacity)
   static let appearanceMode = Key<AppearanceMode>("appearanceMode", default: .system)
   static let clearOnQuit = Key<Bool>("clearOnQuit", default: false)
   static let clearSystemClipboard = Key<Bool>("clearSystemClipboard", default: false)

@@ -4,7 +4,7 @@ import Defaults
 import Settings
 
 struct AppearanceSettingsPane: View {
-  @Default(.shelfGlassAppearance) private var shelfGlassAppearance
+  @Default(.shelfGlassOpacity) private var shelfGlassOpacity
   @Default(.appearanceMode) private var appearanceMode
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
@@ -64,15 +64,15 @@ struct AppearanceSettingsPane: View {
       }
 
       Settings.Section(label: { Text("glass_appearance") }) {
-        Picker("glass_appearance", selection: $shelfGlassAppearance) {
-          ForEach(ShelfGlassAppearance.allCases) { appearance in
-            Text(LocalizedStringKey(appearance.label)).tag(appearance)
-          }
+        HStack(spacing: 8) {
+          Text("glass_more_clear").font(.caption).foregroundStyle(.secondary)
+          Slider(value: $shelfGlassOpacity, in: 0...1)
+            .frame(width: 160)
+            .accessibilityLabel(Text("glass_appearance"))
+            .accessibilityIdentifier("glass-opacity-slider")
+          Text("glass_more_opaque").font(.caption).foregroundStyle(.secondary)
         }
-        .labelsHidden()
-        .frame(width: 141, alignment: .leading)
         .help(Text("glass_appearance_help"))
-        .accessibilityIdentifier("glass-appearance-picker")
       }
 
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {

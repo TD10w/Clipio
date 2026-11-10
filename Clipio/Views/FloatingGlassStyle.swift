@@ -13,11 +13,27 @@ enum FloatingGlassStyle {
   static let metadataFontSize: CGFloat = 11.5
   static let wordmarkFontSize: CGFloat = 17
 
-  // Spectral palette from the original (2.6.1) shelf, shared by the spectral glass styles.
+  // Spectral palette from the original (2.6.1) shelf.
   static let cardTint = Color(red: 0.82, green: 0.94, blue: 1.0)
   static let rimTint = Color(red: 0.72, green: 0.95, blue: 1.0)
   static let spectralTint = Color(red: 1.0, green: 0.72, blue: 0.92)
-  static let auroraTint = Color(red: 0.55, green: 0.62, blue: 1.0)
+
+  /// Transparency slider position (0 = clearest, 1 = most opaque) matching the 2.6.1
+  /// look: a 0.55 white scrim in light mode, bare clear glass in dark mode.
+  static let defaultGlassOpacity = 0.65
+  static let maxLightScrim = 0.85
+  static let maxDarkScrim = 0.55
+
+  /// Scrim layered over the clear glass for a slider position. Piecewise linear so the
+  /// default position lands exactly on the 2.6.1 values.
+  static func scrimOpacity(_ position: Double, dark: Bool) -> Double {
+    let v = min(max(position, 0), 1)
+    let pivot = defaultGlassOpacity
+    if dark {
+      return v <= pivot ? 0 : (v - pivot) / (1 - pivot) * maxDarkScrim
+    }
+    return v <= pivot ? v / pivot * 0.55 : 0.55 + (v - pivot) / (1 - pivot) * (maxLightScrim - 0.55)
+  }
 
   // Pop-out "unfold" animation tunables — one-line changes to dial in the feel.
   // The shelf scales up from this seed (anchored top-center) into full size. Because the

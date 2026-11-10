@@ -41,85 +41,48 @@ struct GlassEffectView: NSViewRepresentable {
 
 /// Native glass retains system appearance/accessibility behavior. Never adjust the
 /// whole window's alpha: that would also fade text, icons and drop affordances.
+/// Opacity comes from a scrim over clear glass, set by the transparency slider.
 struct ShelfGlassSurface: ViewModifier {
   let radius: CGFloat
-  @Default(.shelfGlassAppearance) private var appearance
+  @Default(.shelfGlassOpacity) private var opacity
   @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   @Environment(\.colorScheme) private var colorScheme
 
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+    let dark = colorScheme == .dark
+    let scrim = shape.fill((dark ? Color.black : Color.white)
+      .opacity(FloatingGlassStyle.scrimOpacity(opacity, dark: dark)))
     if reduceTransparency {
       content.background(Color(nsColor: .windowBackgroundColor), in: shape)
     } else if #available(macOS 26.0, *) {
       content
-        .background { tint(shape) }
-        .glassEffect(glass, in: shape)
+        .background { scrim }
+        .glassEffect(.clear, in: shape)
     } else {
-      content.background(VisualEffectView().clipShape(shape))
-    }
-  }
-
-  @available(macOS 26.0, *)
-  private var glass: Glass {
-    switch appearance {
-    case .system: return .regular
-    case .classic, .clear, .crystal: return .clear
-    case .aurora: return .regular.tint(FloatingGlassStyle.auroraTint.opacity(colorScheme == .dark ? 0.22 : 0.16))
-    }
-  }
-
-  @ViewBuilder
-  private func tint(_ shape: RoundedRectangle) -> some View {
-    switch appearance {
-    case .classic:
-      // In light mode clear glass has no body; a white scrim gives the shelf mass.
-      if colorScheme == .light { shape.fill(Color.white.opacity(0.55)) }
-    case .crystal:
-      shape.fill(colorScheme == .light ? Color.white.opacity(0.22) : Color.black.opacity(0.10))
-    case .aurora:
-      shape.fill(
-        LinearGradient(
-          colors: [
-            FloatingGlassStyle.rimTint.opacity(0.14),
-            FloatingGlassStyle.auroraTint.opacity(0.08),
-            FloatingGlassStyle.spectralTint.opacity(0.12)
-          ],
-          startPoint: .topLeading,
-          endPoint: .bottomTrailing
-        )
-      )
-    case .system, .clear:
-      EmptyView()
+      content.background { ZStack { VisualEffectView().clipShape(shape); scrim } }
     }
   }
 }
 
-/// Perimeter of the tray / entry pill. Spectral styles use the original cyan→pink lens rim.
+/// Perimeter of the tray / entry pill: the original cyan→pink lens rim.
 struct ShelfGlassRim: View {
   let radius: CGFloat
-  @Default(.shelfGlassAppearance) private var appearance
 
   var body: some View {
-    let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
-    Group {
-      if appearance.isSpectral {
-        shape.strokeBorder(
-          LinearGradient(
-            colors: [
-              Color.primary.opacity(appearance == .aurora ? 0.16 : 0.22),
-              FloatingGlassStyle.rimTint.opacity(0.26),
-              FloatingGlassStyle.spectralTint.opacity(0.16)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-          ),
-          lineWidth: 1
-        )
-      } else {
-        shape.strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
-      }
-    }
-    .allowsHitTesting(false)
+    RoundedRectangle(cornerRadius: radius, style: .continuous)
+      .strokeBorder(
+        LinearGradient(
+          colors: [
+            Color.primary.opacity(0.22),
+            FloatingGlassStyle.rimTint.opacity(0.26),
+            FloatingGlassStyle.spectralTint.opacity(0.16)
+          ],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ),
+        lineWidth: 1
+      )
+      .allowsHitTesting(false)
   }
 }
