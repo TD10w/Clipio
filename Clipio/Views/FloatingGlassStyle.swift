@@ -18,21 +18,21 @@ enum FloatingGlassStyle {
   static let rimTint = Color(red: 0.72, green: 0.95, blue: 1.0)
   static let spectralTint = Color(red: 1.0, green: 0.72, blue: 0.92)
 
-  /// Transparency slider position (0 = clearest, 1 = most opaque) matching the 2.6.1
-  /// look: a 0.55 white scrim in light mode, bare clear glass in dark mode.
-  static let defaultGlassOpacity = 0.65
-  static let maxLightScrim = 0.85
-  static let maxDarkScrim = 0.55
+  /// Transparency slider: 0 = clearest liquid glass (the 2.6.1 look; background text
+  /// stays readable through it), 1 = fully frosted (background reduced to soft colour so
+  /// Clipio's own text never collides with it). Same rule in light and dark appearance.
+  static let defaultGlassOpacity = 0.5
 
-  /// Scrim layered over the clear glass for a slider position. Piecewise linear so the
-  /// default position lands exactly on the 2.6.1 values.
-  static func scrimOpacity(_ position: Double, dark: Bool) -> Double {
+  /// Opacity of the behind-window blur layered on the clear glass.
+  static func blurOpacity(_ position: Double) -> Double {
+    min(max(position, 0), 1)
+  }
+
+  /// Light/dark wash over the blur. Light keeps 2.6.1's white body; both deepen toward
+  /// the frosted end so text contrast keeps rising.
+  static func tintOpacity(_ position: Double, dark: Bool) -> Double {
     let v = min(max(position, 0), 1)
-    let pivot = defaultGlassOpacity
-    if dark {
-      return v <= pivot ? 0 : (v - pivot) / (1 - pivot) * maxDarkScrim
-    }
-    return v <= pivot ? v / pivot * 0.55 : 0.55 + (v - pivot) / (1 - pivot) * (maxLightScrim - 0.55)
+    return dark ? 0.30 * v : 0.20 + 0.30 * v
   }
 
   // Pop-out "unfold" animation tunables — one-line changes to dial in the feel.

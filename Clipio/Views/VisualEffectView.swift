@@ -14,6 +14,8 @@ struct VisualEffectView: NSViewRepresentable {
   func updateNSView(_ view: NSVisualEffectView, context: Context) {
     visualEffectView.material = material
     visualEffectView.blendingMode = blendingMode
+    // The shelf is a non-activating panel; without this the blur goes flat grey.
+    visualEffectView.state = .active
   }
 }
 
@@ -51,16 +53,23 @@ struct ShelfGlassSurface: ViewModifier {
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
     let dark = colorScheme == .dark
-    let scrim = shape.fill((dark ? Color.black : Color.white)
-      .opacity(FloatingGlassStyle.scrimOpacity(opacity, dark: dark)))
+    // Clear glass keeps the liquid edges; a behind-window blur fades in toward the
+    // frosted end, then a light/dark wash lifts text contrast.
+    let frost = ZStack {
+      VisualEffectView()
+        .clipShape(shape)
+        .opacity(FloatingGlassStyle.blurOpacity(opacity))
+      shape.fill((dark ? Color.black : Color.white)
+        .opacity(FloatingGlassStyle.tintOpacity(opacity, dark: dark)))
+    }
     if reduceTransparency {
       content.background(Color(nsColor: .windowBackgroundColor), in: shape)
     } else if #available(macOS 26.0, *) {
       content
-        .background { scrim }
+        .background { frost }
         .glassEffect(.clear, in: shape)
     } else {
-      content.background { ZStack { VisualEffectView().clipShape(shape); scrim } }
+      content.background { ZStack { VisualEffectView().clipShape(shape); frost } }
     }
   }
 }

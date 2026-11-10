@@ -40,10 +40,10 @@
 
 // Native shelf material
 "glass_appearance" = "透明度";
-"glass_appearance_help" = "向左更通透，向右更不透明。系统的“降低透明度”始终优先。";
+"glass_appearance_help" = "向左更通透，向右更模糊、文字更清楚。系统的“降低透明度”始终优先。";
 "collection_overlapping_files" = "请分别拖出文件夹和它里面的项目，避免连同已 Pin 的原件一起移动。";
 "collection_stack_count" = "%d 项";
 "collection_stack_expand" = "展开";
 "collection_stack_collapse" = "收起";
 "glass_more_clear" = "通透";
-"glass_more_opaque" = "不透明";
+"glass_more_opaque" = "模糊";
