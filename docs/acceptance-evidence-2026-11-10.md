@@ -56,3 +56,5 @@ On November 10 the owner reported item 1 (ordinary move) and item 2 (Pin copy) p
 ### Observed same-name test outcome
 
 After the owner said the test was done, read-only inspection found the source path absent, the original target contents unchanged, and an additional `冲突测试 copy.txt` containing the source contents. The November 10 manual bundle's persisted collection manifest had no matching collision-test item. Both contents survive, but this is a completed move with a second name, not evidence of cancellation. The actual dialog button selected remains unconfirmed; do not mark conflict cancellation passed or diagnose a cancellation bug without that answer. Two app copies were running; no files were restored or app data changed during inspection.
+
+The owner subsequently confirmed **“keep both”**. The observed completed move with a renamed second file therefore passes the Keep Both case. Conflict cancellation remains untested; the earlier button-confirmation question is resolved.
