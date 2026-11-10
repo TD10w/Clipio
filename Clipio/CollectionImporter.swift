@@ -13,7 +13,7 @@ enum CollectionImporter {
     for provider in providers {
       do {
         if let file = await loadURL(from: provider, type: UTType.fileURL.identifier), file.isFileURL {
-          try store.addFile(file, batch: batch)
+          try await addFile(file, provider: provider, batch: batch, into: store)
         } else if let image = await imageData(from: provider) {
           let name = provider.suggestedName ?? "Image"
           let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: image, name: name) }.value
@@ -40,6 +40,47 @@ enum CollectionImporter {
         + "\n" + (store.lastError ?? "")
     }
     store.refreshAvailability()
+  }
+
+  /// Apps like Messages drag a URL into their own private storage alongside the image
+  /// bytes. Such a URL is unreadable from the sandbox, and referencing it would let a
+  /// later drag-out move the file out of that app's storage. Keep a copy of the bytes
+  /// instead; ordinary user files stay references.
+  private static func addFile(_ file: URL, provider: NSItemProvider, batch: UUID?, into store: CollectionStore) async throws {
+    if !isAppPrivate(file) {
+      do {
+        try store.addFile(file, batch: batch)
+        return
+      } catch {
+        guard let image = await imageData(from: provider) else { throw error }
+        try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
+        return
+      }
+    }
+    guard let image = await imageData(from: provider) else { throw CollectionError.unavailable }
+    try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
+  }
+
+  private static func addOwnedImage(_ data: Data, name: String, batch: UUID?, into store: CollectionStore) async throws {
+    let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: data, name: name) }.value
+    try store.addImage(prepared, batch: batch)
+  }
+
+  /// Home whose ~/Library counts as app-private. Tests point it at a scratch folder.
+  static var appPrivateHome = realHomeDirectory
+
+  /// Inside the real user's ~/Library (Messages, Mail, other apps' containers…): places
+  /// that belong to an app, not to the user's documents.
+  static func isAppPrivate(_ url: URL, home: String? = nil) -> Bool {
+    let home = URL(fileURLWithPath: home ?? appPrivateHome).resolvingSymlinksInPath().path
+    let path = url.standardizedFileURL.resolvingSymlinksInPath().path
+    return path.hasPrefix(home + "/Library/")
+  }
+
+  /// The user's actual home, not the sandbox container that NSHomeDirectory() reports.
+  nonisolated static var realHomeDirectory: String {
+    if let entry = getpwuid(getuid()), let dir = entry.pointee.pw_dir { return String(cString: dir) }
+    return NSHomeDirectory()
   }
 
   private static func loadURL(from provider: NSItemProvider, type: String) async -> URL? {

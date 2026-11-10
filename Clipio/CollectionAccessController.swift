@@ -359,7 +359,23 @@ private final class CollectionEntryDropView: NSView {
   override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
     let pasteboard = sender.draggingPasteboard
     if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty {
-      onDrop?(urls.map { NSItemProvider(item: $0 as NSURL, typeIdentifier: UTType.fileURL.identifier) })
+      // Carry any image bytes on the same item too, so a URL into another app's private
+      // storage (e.g. Messages) can fall back to a copy of the image.
+      let items = pasteboard.pasteboardItems ?? []
+      onDrop?(urls.enumerated().map { index, url in
+        let provider = NSItemProvider(item: url as NSURL, typeIdentifier: UTType.fileURL.identifier)
+        if items.count == urls.count {
+          let item = items[index]
+          for type in item.types where UTType(type.rawValue)?.conforms(to: .image) == true {
+            guard let data = item.data(forType: type) else { continue }
+            provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
+              completion(data, nil)
+              return nil
+            }
+          }
+        }
+        return provider
+      })
       return true
     }
     if let receivers = pasteboard.readObjects(forClasses: [NSFilePromiseReceiver.self]) as? [NSFilePromiseReceiver], !receivers.isEmpty {
