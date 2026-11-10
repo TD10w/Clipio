@@ -11,9 +11,13 @@ final class CollectionTests: XCTestCase {
   override func setUpWithError() throws {
     root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    // Under the sandbox the test temp folder itself sits in ~/Library/Containers; keep
+    // ordinary fixtures from being classed as another app's private storage.
+    MainActor.assumeIsolated { CollectionImporter.appPrivateHome = "/nonexistent-clipio-test-home" }
   }
 
   override func tearDownWithError() throws {
+    MainActor.assumeIsolated { CollectionImporter.appPrivateHome = CollectionImporter.realHomeDirectory }
     try FileManager.default.removeItem(at: root)
   }
 
@@ -491,6 +495,72 @@ final class CollectionTests: XCTestCase {
     _ = await task.result
   }
 
+
+  // MARK: Drops from apps' private storage (Messages)
+
+  private func pngData() throws -> Data {
+    let bitmap = try XCTUnwrap(NSBitmapImageRep(
+      bitmapDataPlanes: nil, pixelsWide: 2, pixelsHigh: 2, bitsPerSample: 8,
+      samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+    ))
+    return try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+  }
+
+  private func provider(url: URL, image: Data?) -> NSItemProvider {
+    let provider = NSItemProvider(item: url as NSURL, typeIdentifier: "public.file-url")
+    if let image {
+      provider.registerDataRepresentation(forTypeIdentifier: "public.png", visibility: .all) { completion in
+        completion(image, nil)
+        return nil
+      }
+    }
+    return provider
+  }
+
+  @MainActor
+  func testAppPrivateLocationsAreDetected() {
+    let home = "/Users/someone"
+    XCTAssertTrue(CollectionImporter.isAppPrivate(
+      URL(fileURLWithPath: "/Users/someone/Library/Messages/Attachments/84/04/x/photo.png"), home: home))
+    XCTAssertFalse(CollectionImporter.isAppPrivate(URL(fileURLWithPath: "/Users/someone/Desktop/photo.png"), home: home))
+    XCTAssertFalse(CollectionImporter.isAppPrivate(URL(fileURLWithPath: "/Volumes/Disk/photo.png"), home: home))
+  }
+
+  func testUnreadableURLWithImageBytesBecomesOwnedImageCopy() async throws {
+    let collection = store()
+    let missing = root.appendingPathComponent("Messages/Attachments/clipio-warm.png")
+    await CollectionImporter.collect([provider(url: missing, image: try pngData())], into: collection)
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertNotNil(collection.items[0].ownedFileName, "kept as Clipio's own copy, not a reference")
+    XCTAssertEqual(collection.items[0].name, "clipio-warm.png")
+    XCTAssertNil(collection.lastError)
+  }
+
+  @MainActor
+  func testAppPrivateURLIsCopiedEvenWhenReadableAndOriginalStays() async throws {
+    let collection = store()
+    // A readable file in an app's ~/Library storage must not become a movable reference.
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let attachments = root.appendingPathComponent("Library/Messages/Attachments")
+    try FileManager.default.createDirectory(at: attachments, withIntermediateDirectories: true)
+    let file = attachments.appendingPathComponent("photo.png")
+    try pngData().write(to: file)
+    XCTAssertTrue(CollectionImporter.isAppPrivate(file))
+    await CollectionImporter.collect([provider(url: file, image: try pngData())], into: collection)
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertNotNil(collection.items[0].ownedFileName)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+  }
+
+  func testOrdinaryFileStaysAReferenceEvenWithImageBytes() async throws {
+    let collection = store()
+    let file = try source("photo.png")
+    await CollectionImporter.collect([provider(url: file, image: try pngData())], into: collection)
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertNil(collection.items[0].ownedFileName)
+  }
 
   // MARK: Stacks (same-drop batches)
 
