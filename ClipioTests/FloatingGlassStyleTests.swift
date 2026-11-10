@@ -63,6 +63,16 @@ final class MenuIconPresentationTests: XCTestCase {
 
 @MainActor
 final class ShelfBehaviorTests: XCTestCase {
+  func testClipboardRemoveTargetsTheChosenCard() {
+    final class RecordingHistory: History {
+      var deletedItem: HistoryItemDecorator?
+      override func delete(_ item: HistoryItemDecorator?) { deletedItem = item }
+    }
+    let history = RecordingHistory()
+    let item = HistoryItemDecorator(HistoryItem())
+    CardItemView.remove(item, from: history)
+    XCTAssertIdentical(history.deletedItem, item)
+  }
   func testCardPinActionUsesHistoryOwner() {
     final class RecordingHistory: History {
       var toggledItem: HistoryItemDecorator?
@@ -107,6 +117,15 @@ final class ShelfBehaviorTests: XCTestCase {
       HistoryListView.hoveredItemID(at: CGPoint(x: 164, y: 80), frames: frames),
       second
     )
+  }
+
+  func testDisappearedCardCannotWinHoverAfterScrolling() {
+    let old = UUID()
+    let visible = UUID()
+    let rect = CGRect(x: 14, y: 10, width: 138, height: 150)
+    var frames = [old: rect, visible: rect]
+    HistoryListView.removeFrame(for: old, from: &frames)
+    XCTAssertEqual(HistoryListView.hoveredItemID(at: CGPoint(x: 30, y: 30), frames: frames), visible)
   }
 
   func testNavigationDoesNotEnterFooterWhenFooterIsNotRendered() {

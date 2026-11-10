@@ -2,11 +2,12 @@ import Defaults
 import SwiftUI
 
 struct HistoryListView: View {
-  private static let coordinateSpaceName = "clipboard-shelf"
+  static let coordinateSpaceName = "clipboard-shelf"
 
   @Binding var searchQuery: String
   @FocusState.Binding var searchFocused: Bool
   @State private var cardFrames: [UUID: CGRect] = [:]
+  @State private var hoveredID: UUID?
 
   @Environment(AppState.self) private var appState
   @Environment(\.scenePhase) private var scenePhase
@@ -36,12 +37,16 @@ struct HistoryListView: View {
     frames.first { $0.value.contains(point) }?.key
   }
 
+  static func removeFrame(for id: UUID, from frames: inout [UUID: CGRect]) {
+    frames.removeValue(forKey: id)
+  }
+
   var body: some View {
     ScrollView(.horizontal, showsIndicators: false) {
       ScrollViewReader { proxy in
         LazyHStack(spacing: FloatingGlassStyle.cardSpacing) {
           ForEach(orderedItems) { item in
-            CardItemView(item: item) {
+            CardItemView(item: item, isHovered: hoveredID == item.id) {
               Task { appState.history.select(item) }
             }
             .id(item.id)
@@ -51,6 +56,9 @@ struct HistoryListView: View {
               if cardFrames[item.id] != frame {
                 cardFrames[item.id] = frame
               }
+            }
+            .onDisappear {
+              Self.removeFrame(for: item.id, from: &cardFrames)
             }
           }
         }
@@ -73,8 +81,22 @@ struct HistoryListView: View {
     // the shelf so cached card frames cannot retain an intermediate global scale.
     .coordinateSpace(name: Self.coordinateSpaceName)
     .onContinuousHover(coordinateSpace: .named(Self.coordinateSpaceName)) { phase in
-      guard case .active(let point) = phase,
-            let id = Self.hoveredItemID(at: point, frames: cardFrames) else { return }
+      let id: UUID?
+      if case .active(let point) = phase {
+        id = Self.hoveredItemID(at: point, frames: cardFrames)
+      } else {
+        id = nil
+      }
+      if hoveredID != id {
+        if let old = hoveredID, let item = orderedItems.first(where: { $0.id == old }) {
+          appState.appDelegate?.hidePreviewSoon(for: item)
+        }
+        hoveredID = id
+        if let id, let item = orderedItems.first(where: { $0.id == id }) {
+          appState.appDelegate?.showPreview(for: item)
+        }
+      }
+      guard let id else { return }
       let navigator = appState.navigator
       if !navigator.isKeyboardNavigating && !navigator.isMultiSelectInProgress {
         navigator.selectWithoutScrolling(id: id)

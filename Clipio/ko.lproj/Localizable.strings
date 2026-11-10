@@ -47,3 +47,5 @@
 "collection_stack_collapse" = "Collapse";
 "glass_more_clear" = "Clear";
 "glass_more_opaque" = "Frosted";
+
+"clipboard_remove" = "Remove from Clipboard History";

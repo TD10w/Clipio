@@ -15,7 +15,10 @@ struct ContentView: View {
       KeyHandlingView(searchQuery: $appState.activeSearchQuery, searchFocused: $searchFocused) {
         shelfContent
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
+      // Both modes share the same top edge. Collection has a fixed-height row,
+      // while clipboard's ScrollView fills the available height; centering their
+      // intrinsic stacks made the header jump when switching modes.
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       // Header + cards appear only once the glass has unfolded.
       .opacity(appState.shelfExpanded ? 1 : 0)
       .animation(
