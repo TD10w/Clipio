@@ -62,3 +62,7 @@ The owner subsequently confirmed **“keep both”**. The observed completed mov
 ### Subsequent owner acceptance
 
 The owner subsequently reported same-name Cancel/Stop passed (“1. 没问题”), then ordinary-plus-Pin mixed batch drag-out passed (“2. 测试没问题”) after the operation was explained. Parent/child Pin protection remains a separate untested case. A new same-drop Stack grouping/expansion request is recorded for design, with hover versus click undecided; no implementation or acceptance is claimed for it.
+
+### Final four owner-reported checks
+
+The owner confirmed the next four cases passed: parent/child Pin protection, app quit/relaunch persistence and reuse, basic shortcuts/Tab/search/text-and-image clipboard behavior, and browser-image import/export/opening. The attached [parent/child protection screenshot](screenshots/2026-11-10-parent-pin-protection.png) shows the protective alert; disk safety for this case remains owner-reported rather than independently inferred from the screenshot. Cross-volume remains untested. App relaunch does not establish OS restart, another machine, all browser/sites, or release-artifact acceptance. Previously reported UI issues remain open.
