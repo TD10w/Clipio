@@ -46,8 +46,6 @@ struct GlassEffectView: NSViewRepresentable {
 /// Opacity comes from a scrim over clear glass, set by the transparency slider.
 struct ShelfGlassSurface: ViewModifier {
   let radius: CGFloat
-  /// `.withinWindow` lets the Settings preview blur its own sample page instead of the desktop.
-  var blending: NSVisualEffectView.BlendingMode = .behindWindow
   @Default(.shelfGlassOpacity) private var opacity
   @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   @Environment(\.colorScheme) private var colorScheme
@@ -58,7 +56,7 @@ struct ShelfGlassSurface: ViewModifier {
     // Clear glass keeps the liquid edges; a behind-window blur fades in toward the
     // frosted end, then a light/dark wash lifts text contrast.
     let frost = ZStack {
-      VisualEffectView(blendingMode: blending)
+      VisualEffectView()
         .clipShape(shape)
         .opacity(FloatingGlassStyle.blurOpacity(opacity))
       shape.fill((dark ? Color.black : Color.white)

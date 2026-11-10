@@ -255,10 +255,16 @@ struct AppearanceSettingsPane: View {
     .environment(\.locale, .init(identifier: "en"))
 }
 
-/// Live preview for the transparency slider: a miniature shelf over a sample page with
-/// text, built from the same glass surface and rim as the real shelf. The blur samples
-/// the sample page (within-window) so the effect is visible without opening the shelf.
+/// Live preview for the transparency slider: a miniature shelf over an ordinary page of
+/// text. Real glass refraction garbles a tiny in-window sample, so the preview blurs a
+/// copy of the page directly (same 0→1 strength as the shelf's blur) and applies the
+/// shelf's own tint, card and rim styling.
 private struct GlassTransparencyPreview: View {
+  @Default(.shelfGlassOpacity) private var opacity
+  @Environment(\.colorScheme) private var colorScheme
+
+  private static let shelfSize = CGSize(width: 300, height: 84)
+  private static let maxBlurRadius: CGFloat = 14
   private static let lines = [
     "Meeting notes · 会议记录 · Tuesday 10:30",
     "Ship the collection shelf, then tidy the README",
@@ -269,31 +275,38 @@ private struct GlassTransparencyPreview: View {
   ]
 
   var body: some View {
-    let page = RoundedRectangle(cornerRadius: 12, style: .continuous)
+    let frame = RoundedRectangle(cornerRadius: 12, style: .continuous)
+    let shelf = RoundedRectangle(cornerRadius: 20, style: .continuous)
+    let dark = colorScheme == .dark
     ZStack {
-      LinearGradient(
-        colors: [Color(red: 0.30, green: 0.45, blue: 0.95), Color(red: 0.62, green: 0.38, blue: 0.85),
-                 Color(red: 0.98, green: 0.62, blue: 0.40)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-      )
-      VStack(alignment: .leading, spacing: 5) {
-        ForEach(Self.lines, id: \.self) { line in
-          Text(verbatim: line)
-            .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(.white)
-            .lineLimit(1)
-        }
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, 14)
-
+      samplePage
+      samplePage
+        .blur(radius: Self.maxBlurRadius * FloatingGlassStyle.blurOpacity(opacity), opaque: true)
+        .mask { shelf.frame(width: Self.shelfSize.width, height: Self.shelfSize.height) }
+      shelf
+        .fill((dark ? Color.black : Color.white).opacity(FloatingGlassStyle.tintOpacity(opacity, dark: dark)))
+        .frame(width: Self.shelfSize.width, height: Self.shelfSize.height)
       miniShelf
+        .overlay(ShelfGlassRim(radius: 20))
     }
     .frame(width: 360, height: 128)
-    .clipShape(page)
-    .overlay(page.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
+    .clipShape(frame)
+    .overlay(frame.strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
     .accessibilityHidden(true)
+  }
+
+  private var samplePage: some View {
+    VStack(alignment: .leading, spacing: 5) {
+      ForEach(Self.lines, id: \.self) { line in
+        Text(verbatim: line)
+          .font(.system(size: 12))
+          .foregroundStyle(.primary)
+          .lineLimit(1)
+      }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .padding(.horizontal, 14)
+    .background(Color(nsColor: .textBackgroundColor))
   }
 
   private var miniShelf: some View {
@@ -309,12 +322,7 @@ private struct GlassTransparencyPreview: View {
       miniCard { Text(verbatim: "https://apple.com").font(.system(size: 10)).lineLimit(3) }
     }
     .padding(10)
-    .frame(width: 300, height: 84)
-    .background {
-      Color.clear
-        .modifier(ShelfGlassSurface(radius: 20, blending: .withinWindow))
-        .overlay(ShelfGlassRim(radius: 20))
-    }
+    .frame(width: Self.shelfSize.width, height: Self.shelfSize.height)
   }
 
   private func miniCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
