@@ -44,3 +44,7 @@ Final fresh-container verification re-ran all 120 unit tests successfully. Of 13
 - Retain all manual acceptance gates and the three review minors above; no merge or release in this task.
 
 The two failing UI cases were compared against untouched PR #3 `842e22f` in an archived source copy, using another isolated bundle ID: **2/2 passed** (`/tmp/clipio-nov10-baseline-comparison.log`). The same two cases were then rerun on the current unchanged repair tree: **2/2 passed** (`/tmp/clipio-nov10-ui-targeted-recheck.log`). The final evidence is 11 UI cases passed in the group plus 2 focused recheck passes, with earlier failures retained; this is not a claim of one clean 13-case run or a proof that the intermittent launch behavior is fixed.
+
+## Later owner feedback on November 10
+
+The owner reported oversized drag expansion, failure to dismiss on leaving/cancelling, an unsatisfactory Liquid Glass appearance, and Menu Bar movement during Tab switching. See [the source-faithful follow-up](acceptance-feedback-2026-11-10.md). Visual appearance is **not accepted**; the owner will arrange a different agent for the UI later. The tested running build is not yet identified. These are recorded reports, not reproduced root causes or accepted file-transfer outcomes. The revised checklist prioritizes file/data behavior and excludes repeated acceptance of these known unfixed UI items.

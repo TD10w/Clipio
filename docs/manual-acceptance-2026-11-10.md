@@ -1,16 +1,21 @@
-# November 10 focused manual acceptance
+# Clipio 当前集中验收清单
 
-Local app: `../build/人工验收-20261110/Clipio测试版.app`. Synthetic files and separate source/destination folders are beside it in `测试素材/`.
+更新于 2026-11-10 追加反馈后。小型拖入面板、移出/取消后收起、Liquid Glass 外观和 Tab 导致顶部 Menu Bar 晃动均已记录为待处理，见[追加反馈](acceptance-feedback-2026-11-10.md)。现在不用反复测试这些已知 UI 问题，先确认文件和基本操作是否正确。
 
-Use the November 10 local build, not yesterday's preview. Exit the old Clipio first so panels and shortcuts cannot overlap. This is a local Debug build, not a public installer. Use disposable files in two test folders; never start with valuable originals.
+## 准备
 
-1. Drag a test folder from Finder toward the top-center region. The welcoming entry should appear **below the notch** during the drag; approaching the card shelf should unfold it without entering the menu bar. Drop it into the collection.
-2. Open a different Finder folder and drag the ordinary collected folder there. Confirm the **original source is gone**, destination contents are intact, and the collection item disappears only after the move. Do not infer movement from the card disappearing.
-3. Import another test folder, Pin it, then drag out. Confirm source and destination both exist with identical contents and the Pin item remains in the collection.
-4. Try a mixed ordinary/Pin batch. Only the ordinary original should move; Pin originals stay. Parent-folder/contained-child selections, including an unselected Pin child already in the collection, should instead display a clear instruction to drag them separately.
-5. Cancel a drag with Escape, drop onto an invalid target, and cancel Finder's duplicate-name prompt. Originals and uncompleted collection items must remain. Check same-folder drops and a disposable folder on another disk separately.
-6. Check the compact tray entry has no count and a complete lower-right edge, opens when clicked, and returns after closing the collection.
-7. In Settings → Appearance → Glass material, compare Follow System and More Transparent. Check text remains readable; system Reduce Transparency must override the clearer option. Compare light/dark and Reduce Motion. These system preference changes are user actions, not automated in this run.
-8. Check both shortcuts, switching with Tab, search and normal clipboard copying. Test browser images separately from local file movement; imported images are saved/staged copies.
+先退出其他 Clipio，只打开本工作区 `build/人工验收-20261110/Clipio测试版.app`。与昨天的包同名，需核对完整路径；容器标识为 `com.clipio.app.manualacceptancenov10`。此前报告的体验对应哪个运行包尚未核实。
 
-Report “item number + what happened + what you expected.” Steps 2–5 require real Finder results; they have not been accepted by the automated run. Verification details: [evidence](acceptance-evidence-2026-11-10.md).
+旁边 `测试素材/来源/`、`测试素材/目标/` 提供一次性示例。只用可丢弃的测试文件；一个来源文件夹、一个目标文件夹，便于同时核对。这里的“预期”是验收目标，不是已经实测成功的结论。
+
+## 一次走完
+
+1. **普通文件夹移动。** 把来源中的普通文件夹拖入收集区，再从收集区拖到目标。预期：来源位置不再有原文件夹，目标中的内容完整，收集卡片移除。必须看来源与目标，不能只看卡片消失。
+2. **Pin 后复制。** 换一个测试文件夹，收集后先 Pin，再拖到目标。预期：来源与目标各有一份、内容相同，Pin 卡片仍保留。
+3. **取消及失败的数据保护。** 用新的普通项分别测试 Escape 取消、拖到不接受文件的位置、在 Finder 同名冲突提示里取消。预期：未完成移动的原件和收集项都还在，没有丢内容。当前取消后 UI 不收起另记为已知问题，不影响本项对文件是否安全的判断。若没有出现冲突提示，标未测，不通过覆盖或替换来制造结果。
+4. **批量与 Pin 保护。** 选一个普通项和一个 Pin 项一起拖到目标，核对普通项移动、Pin 原件保留。另将父文件夹及其内部文件分别收集，把内部文件 Pin，再只拖父文件夹：预期提示分别处理，不连带移动 Pin 原件。
+5. **退出重开后的可用性。** 留一个普通项、一个 Pin 项，退出并重新打开同一测试版。预期：两项都在，仍可拖出。需要时另测 Mac 重启，不能把仅重开 app 算作系统重启通过。
+6. **基本操作有没有退步。** 两个快捷键分别打开剪贴板和文件收集；Tab 能来回切换，搜索词互不串；复制中文、图片后，在常用应用中粘贴正确。Tab 的菜单栏晃动已有记录，本项只确认切换功能；自动粘贴未授权时先验证手动粘贴，不临时扩大权限。
+7. **有条件再做：跨磁盘与网页图片。** 有另一个磁盘时用新测试项重复普通移动/Pin 复制；没有就标未测。另从常用 Safari／Chrome 拖一张允许保存的网页图片入收集区，再拖到目标，确认图片可打开；不把网页图片当作本地原件移动来判断。
+
+每项反馈“第几项 + 通过／未通过／未测 + 实际发生什么”即可。普通移动、Pin 复制和取消/失败保护最优先。真实 Finder 与跨磁盘结果不能由单元测试替代，现有验证范围见[修复证据](acceptance-evidence-2026-11-10.md)。
