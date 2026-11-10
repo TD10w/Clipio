@@ -125,13 +125,13 @@ final class ShelfBehaviorTests: XCTestCase {
     XCTAssertNil(footer.selectedItem)
   }
 
-  func testTransparencySliderDefaultMatchesDailyLookAndEndsAreOrdered() {
-    let d = FloatingGlassStyle.defaultGlassOpacity
-    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(d, dark: false), 0.55, accuracy: 0.0001)
-    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(d, dark: true), 0, accuracy: 0.0001)
-    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(0, dark: false), 0)
-    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(1, dark: false), FloatingGlassStyle.maxLightScrim, accuracy: 0.0001)
-    XCTAssertEqual(FloatingGlassStyle.scrimOpacity(1, dark: true), FloatingGlassStyle.maxDarkScrim, accuracy: 0.0001)
-    XCTAssertLessThan(FloatingGlassStyle.scrimOpacity(0.3, dark: false), FloatingGlassStyle.scrimOpacity(0.9, dark: false))
+  func testTransparencySliderGoesFromClearToFrostedInBothAppearances() {
+    XCTAssertEqual(FloatingGlassStyle.defaultGlassOpacity, 0.5)
+    XCTAssertEqual(FloatingGlassStyle.blurOpacity(0), 0)
+    XCTAssertEqual(FloatingGlassStyle.blurOpacity(1), 1)
+    for dark in [false, true] {
+      XCTAssertLessThan(FloatingGlassStyle.tintOpacity(0.2, dark: dark), FloatingGlassStyle.tintOpacity(0.8, dark: dark))
+    }
+    XCTAssertLessThan(FloatingGlassStyle.blurOpacity(0.2), FloatingGlassStyle.blurOpacity(0.8))
   }
 }

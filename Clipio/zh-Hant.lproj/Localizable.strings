@@ -40,10 +40,10 @@
 
 // Native shelf material
 "glass_appearance" = "透明度";
-"glass_appearance_help" = "向左更通透，向右更不透明。系統的「降低透明度」始終優先。";
+"glass_appearance_help" = "向左更通透，向右更模糊、文字更清楚。系統的「降低透明度」始終優先。";
 "collection_overlapping_files" = "Drag the folder and its contained items separately to protect pinned originals.";
 "collection_stack_count" = "%d 項";
 "collection_stack_expand" = "展開";
 "collection_stack_collapse" = "收起";
 "glass_more_clear" = "通透";
-"glass_more_opaque" = "不透明";
+"glass_more_opaque" = "模糊";

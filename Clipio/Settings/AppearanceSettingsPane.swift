@@ -75,6 +75,10 @@ struct AppearanceSettingsPane: View {
         .help(Text("glass_appearance_help"))
       }
 
+      Settings.Section(title: "") {
+        GlassTransparencyPreview()
+      }
+
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {
         HStack {
           Picker("", selection: $popupAt) {
@@ -249,4 +253,87 @@ struct AppearanceSettingsPane: View {
 #Preview {
   AppearanceSettingsPane()
     .environment(\.locale, .init(identifier: "en"))
+}
+
+/// Live preview for the transparency slider: a miniature shelf over a few soft colour
+/// shapes. Left, the shapes show through crisply; right, they melt into a frosted wash.
+/// The blur is drawn directly (same 0→1 strength as the shelf) with the shelf's tint and rim.
+private struct GlassTransparencyPreview: View {
+  @Default(.shelfGlassOpacity) private var opacity
+  @Environment(\.colorScheme) private var colorScheme
+
+  private static let size = CGSize(width: 360, height: 128)
+  private static let shelfSize = CGSize(width: 300, height: 84)
+  private static let maxBlurRadius: CGFloat = 16
+
+  var body: some View {
+    let frame = RoundedRectangle(cornerRadius: 12, style: .continuous)
+    let shelf = RoundedRectangle(cornerRadius: 20, style: .continuous)
+    let dark = colorScheme == .dark
+    ZStack {
+      backdrop
+      miniShelf
+        .background {
+          ZStack {
+            // Same backdrop, same size and centre, so the blurred copy lines up exactly.
+            backdrop
+              .blur(radius: Self.maxBlurRadius * FloatingGlassStyle.blurOpacity(opacity))
+            (dark ? Color.black : Color.white)
+              .opacity(FloatingGlassStyle.tintOpacity(opacity, dark: dark))
+          }
+          .frame(width: Self.size.width, height: Self.size.height)
+        }
+        .clipShape(shelf)
+        .overlay(ShelfGlassRim(radius: 20))
+    }
+    .frame(width: Self.size.width, height: Self.size.height)
+    .clipShape(frame)
+    .overlay(frame.strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
+    .accessibilityHidden(true)
+  }
+
+  private var backdrop: some View {
+    ZStack {
+      Color(nsColor: .textBackgroundColor)
+      Circle().fill(Color(red: 0.35, green: 0.55, blue: 1.0)).frame(width: 96).offset(x: -110, y: -26)
+      Circle().fill(Color(red: 1.0, green: 0.62, blue: 0.38)).frame(width: 110).offset(x: 112, y: 30)
+      Circle().fill(Color(red: 0.45, green: 0.85, blue: 0.62)).frame(width: 64).offset(x: 10, y: -44)
+    }
+    .frame(width: Self.size.width, height: Self.size.height)
+  }
+
+  private var miniShelf: some View {
+    HStack(spacing: 8) {
+      Text(verbatim: "Clipio")
+        .font(.system(size: 13, weight: .semibold))
+        .padding(.trailing, 2)
+      miniCard { Text(verbatim: "Hello, Clipio").font(.system(size: 10)).lineLimit(3) }
+      miniCard {
+        RoundedRectangle(cornerRadius: 6, style: .continuous)
+          .fill(Color(red: 0.45, green: 0.88, blue: 0.80))
+      }
+      miniCard { Text(verbatim: "https://apple.com").font(.system(size: 10)).lineLimit(3) }
+    }
+    .padding(10)
+    .frame(width: Self.shelfSize.width, height: Self.shelfSize.height)
+  }
+
+  private func miniCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+    let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
+    return content()
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      .padding(7)
+      .frame(width: 62, height: 60)
+      .background(.regularMaterial, in: shape)
+      .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(0.07)).allowsHitTesting(false))
+      .overlay(shape.strokeBorder(
+        LinearGradient(
+          colors: [Color.primary.opacity(0.3), FloatingGlassStyle.rimTint.opacity(0.42),
+                   FloatingGlassStyle.spectralTint.opacity(0.18)],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ),
+        lineWidth: 1
+      ))
+  }
 }

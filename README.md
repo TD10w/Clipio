@@ -51,7 +51,7 @@ Clipio runs in the menu bar. Copy something in another app, then open its shelf.
 | Option + P | Pin or unpin the selected item |
 | Escape | Close the shelf |
 
-These are default settings. Enabling “paste by default” changes Return behavior. Hover over a card for a preview. Settings also control appearance (including a **Transparency** slider, clearer to the left and more opaque to the right), history size, ignored apps, and search behavior.
+These are default settings. Enabling “paste by default” changes Return behavior. Hover over a card for a preview. Settings also control appearance (including a **Transparency** slider, clearer to the left, more frosted to the right), history size, ignored apps, and search behavior.
 
 ### File collection
 

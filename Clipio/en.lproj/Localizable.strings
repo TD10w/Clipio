@@ -40,10 +40,10 @@
 
 // Native shelf material
 "glass_appearance" = "Transparency";
-"glass_appearance_help" = "Left is more transparent, right is more opaque. Reduce Transparency always takes priority.";
+"glass_appearance_help" = "Left is clearer; right frosts the background so text stays easy to read. Reduce Transparency always takes priority.";
 "collection_overlapping_files" = "Drag the folder and its contained items separately to protect pinned originals.";
 "collection_stack_count" = "%d items";
 "collection_stack_expand" = "Expand";
 "collection_stack_collapse" = "Collapse";
 "glass_more_clear" = "Clear";
-"glass_more_opaque" = "Opaque";
+"glass_more_opaque" = "Frosted";
