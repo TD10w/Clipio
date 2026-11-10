@@ -10,13 +10,13 @@ final class CollectionAccessController {
   private let store: CollectionStore
   private let panel: NSPanel
   private let dropView = CollectionEntryDropView(frame: .zero)
-  private let hosting = NSHostingView(rootView: CollectionEntryLabel(dragging: false, action: {}))
+  private let hosting = NSHostingView(rootView: CollectionEntryLabel(dragging: false, targeted: false, action: {}))
   private var releaseWork: DispatchWorkItem?
   private var monitors: [Any] = []
   private var screenObserver: NSObjectProtocol?
   private var dragChangeCount = -1
   private var showingDrag = false
-  private var openedForDrag = false
+  private var dropTargeted = false
   private let dragPasteboard = NSPasteboard(name: .drag)
 
   init(store: CollectionStore) {
@@ -32,7 +32,11 @@ final class CollectionAccessController {
     hosting.autoresizingMask = [.width, .height]
     dropView.addSubview(hosting)
     panel.contentView = dropView
-    dropView.onEnter = { [weak self] in self?.openCollection(forDrag: true) }
+    dropView.onTargetChange = { [weak self] targeted in
+      guard let self, self.dropTargeted != targeted else { return }
+      self.dropTargeted = targeted
+      self.updateEntry()
+    }
     dropView.onDrop = { [weak self] providers in
       guard let self, !self.store.isExporting else { return }
       Task { await CollectionImporter.collect(providers, into: self.store) }
@@ -88,27 +92,25 @@ final class CollectionAccessController {
                 || NSFilePromiseReceiver.readableDraggedTypes.contains(type.rawValue)
             }) == true else { return }
       releaseWork?.cancel()
-      let pointerScreen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) }
-      if !showingDrag || panel.screen != pointerScreen {
-        showingDrag = true
+      // The compact drop pill only lives while the pointer is near the top-center of
+      // its screen, and never while the full shelf is already open (the shelf is then
+      // the drop target). Leaving the zone with the button still held collapses it.
+      let mouse = NSEvent.mouseLocation
+      let pointerScreen = NSScreen.screens.first { $0.frame.contains(mouse) }
+      let inZone = !AppState.shared.shelfExpanded
+        && (pointerScreen.map { Self.dropZone(on: $0).contains(mouse) } ?? false)
+      if inZone != showingDrag || (inZone && panel.screen != pointerScreen) {
+        showingDrag = inZone
+        if !inZone { dropTargeted = false }
         updateEntry()
-      }
-      // Welcome immediately; unfold as the pointer approaches the shelf's actual
-      // footprint below the notch. No trip through the menu bar is required.
-      if !openedForDrag, let screen = NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) }) {
-        let top = screen.frame.maxY - max(screen.safeAreaInsets.top, NSStatusBar.system.thickness)
-        let approach = NSRect(x: screen.frame.midX - 410, y: top - 260, width: 820, height: 260)
-        if approach.contains(NSEvent.mouseLocation) { openCollection(forDrag: true) }
       }
     case .leftMouseUp:
       releaseWork?.cancel()
+      guard showingDrag || dropTargeted else { return }
       let work = DispatchWorkItem { [weak self] in
         guard let self else { return }
         self.showingDrag = false
-        if self.openedForDrag {
-          AppState.shared.appDelegate?.panel.isDragging = false
-          self.openedForDrag = false
-        }
+        self.dropTargeted = false
         self.updateEntry()
       }
       releaseWork = work
@@ -117,9 +119,23 @@ final class CollectionAccessController {
     }
   }
 
+  /// Top-center band (including the menu bar) where the compact drop pill appears.
+  static func dropZone(on screen: NSScreen) -> NSRect {
+    let topInset = max(screen.safeAreaInsets.top, NSStatusBar.system.thickness)
+    let width: CGFloat = 520
+    let depth: CGFloat = 170
+    return NSRect(
+      x: screen.frame.midX - width / 2,
+      y: screen.frame.maxY - topInset - depth,
+      width: width,
+      height: depth + topInset
+    )
+  }
+
   private func updateEntry() {
-    let collectionIsOpen = AppState.shared.shelfExpanded && AppState.shared.shelfMode == .collection
-    guard (showingDrag || !store.items.isEmpty), !openedForDrag, !collectionIsOpen else {
+    // The idle entry's visibility deliberately ignores which shelf tab is active, so
+    // switching Clipboard/Collection with Tab never makes the menu bar area jump.
+    guard showingDrag || !store.items.isEmpty else {
       panel.orderOut(nil)
       return
     }
@@ -127,8 +143,8 @@ final class CollectionAccessController {
       ?? NSScreen.main
     guard let screen else { return }
     let topInset = max(screen.safeAreaInsets.top, NSStatusBar.system.thickness)
-    let height: CGFloat = showingDrag ? 52 : min(30, topInset)
-    let width: CGFloat = showingDrag ? 220 : 44
+    let height: CGFloat = showingDrag ? (dropTargeted ? 58 : 52) : min(30, topInset)
+    let width: CGFloat = showingDrag ? (dropTargeted ? 240 : 220) : 44
     let notchRight = screen.auxiliaryTopRightArea?.minX ?? (screen.frame.midX + 80)
     let target = NSRect(
       x: showingDrag ? screen.frame.midX - width / 2 : min(notchRight + 6, screen.frame.maxX - width - 12),
@@ -136,42 +152,34 @@ final class CollectionAccessController {
         : screen.frame.maxY - topInset + (topInset - height) / 2,
       width: width, height: height
     )
-    hosting.rootView = CollectionEntryLabel(dragging: showingDrag) { [weak self] in
-      self?.openCollection(forDrag: false)
+    hosting.rootView = CollectionEntryLabel(dragging: showingDrag, targeted: dropTargeted) { [weak self] in
+      self?.openCollection()
     }
     // The host and registered drop view live for the controller's lifetime.
     // Insets leave room for the native glass rim instead of clipping it at the
     // borderless window's lower-right edge.
     let animate = panel.isVisible && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
       && screen.frame.contains(panel.frame.origin)
-    if animate {
-      NSAnimationContext.runAnimationGroup { context in
-        context.duration = 0.18
-        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        panel.animator().setFrame(target, display: true)
+    if panel.frame != target {
+      if animate {
+        NSAnimationContext.runAnimationGroup { context in
+          context.duration = 0.18
+          context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+          panel.animator().setFrame(target, display: true)
+        }
+      } else {
+        panel.setFrame(target, display: true)
       }
-    } else {
-      panel.setFrame(target, display: true)
     }
     hosting.frame = dropView.bounds
-    panel.orderFrontRegardless()
+    if !panel.isVisible { panel.orderFrontRegardless() }
   }
 
-  private func openCollection(forDrag: Bool) {
+  private func openCollection() {
     guard !store.isExporting else { return }
     let state = AppState.shared
     state.switchShelf(to: .collection)
-    if forDrag {
-      openedForDrag = true
-      state.appDelegate?.panel.isDragging = true
-    }
     if state.popup.isClosed() { state.popup.open(height: state.popup.height) }
-    if forDrag, let screen = NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) }),
-       let shelf = state.appDelegate?.panel {
-      let top = screen.frame.maxY - max(screen.safeAreaInsets.top, NSStatusBar.system.thickness)
-      shelf.setFrameOrigin(NSPoint(x: screen.frame.midX - shelf.frame.width / 2, y: top - shelf.frame.height))
-    }
-    panel.orderOut(nil)
   }
 
   private func receivePromises(_ receivers: [NSFilePromiseReceiver]) {
@@ -201,6 +209,7 @@ final class CollectionAccessController {
 
 private struct CollectionEntryLabel: View {
   let dragging: Bool
+  let targeted: Bool
   let action: () -> Void
 
   var body: some View {
@@ -208,6 +217,7 @@ private struct CollectionEntryLabel: View {
       HStack(spacing: 8) {
         Image(systemName: dragging ? "tray.and.arrow.down.fill" : "tray")
           .foregroundStyle(dragging ? Color.accentColor : .primary)
+          .scaleEffect(targeted ? 1.15 : 1)
         if dragging { Text("collection_drop_hint") }
       }
       .font(.system(size: dragging ? 13 : 11, weight: .medium))
@@ -231,7 +241,7 @@ private struct CollectionEntrySurface: ViewModifier {
 }
 
 private final class CollectionEntryDropView: NSView {
-  var onEnter: (() -> Void)?
+  var onTargetChange: ((Bool) -> Void)?
   var onDrop: (([NSItemProvider]) -> Void)?
   var onPromises: (([NSFilePromiseReceiver]) -> Void)?
 
@@ -246,8 +256,16 @@ private final class CollectionEntryDropView: NSView {
 
   override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
     guard !AppState.shared.collection.isExporting else { return [] }
-    onEnter?()
+    onTargetChange?(true)
     return .copy
+  }
+
+  override func draggingExited(_ sender: NSDraggingInfo?) {
+    onTargetChange?(false)
+  }
+
+  override func draggingEnded(_ sender: NSDraggingInfo) {
+    onTargetChange?(false)
   }
 
   override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
