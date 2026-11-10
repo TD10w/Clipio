@@ -25,11 +25,7 @@ struct ContentView: View {
       )
     }
     // A semantic edge keeps the material legible across system appearances.
-    .overlay(
-      RoundedRectangle(cornerRadius: FloatingGlassStyle.trayRadius, style: .continuous)
-        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
-        .allowsHitTesting(false)
-    )
+    .overlay(ShelfGlassRim(radius: FloatingGlassStyle.trayRadius))
     // The glass body unfolds from a small chip at the top-center into the full shelf.
     // scaleEffect is a GPU transform (no relayout) and settles to identity, so it can't
     // shift AppKit hit-testing the way the removed window-layer scale did.

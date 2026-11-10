@@ -236,6 +236,7 @@ private struct CollectionEntrySurface: ViewModifier {
   func body(content: Content) -> some View {
     content.background {
       Color.clear.modifier(ShelfGlassSurface(radius: 24))
+        .overlay(ShelfGlassRim(radius: 24))
     }
   }
 }

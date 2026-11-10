@@ -13,6 +13,12 @@ enum FloatingGlassStyle {
   static let metadataFontSize: CGFloat = 11.5
   static let wordmarkFontSize: CGFloat = 17
 
+  // Spectral palette from the original (2.6.1) shelf, shared by the spectral glass styles.
+  static let cardTint = Color(red: 0.82, green: 0.94, blue: 1.0)
+  static let rimTint = Color(red: 0.72, green: 0.95, blue: 1.0)
+  static let spectralTint = Color(red: 1.0, green: 0.72, blue: 0.92)
+  static let auroraTint = Color(red: 0.55, green: 0.62, blue: 1.0)
+
   // Pop-out "unfold" animation tunables — one-line changes to dial in the feel.
   // The shelf scales up from this seed (anchored top-center) into full size. Because the
   // whole view scales, the 30pt tray radius scales with it, giving the chip its pill shape.

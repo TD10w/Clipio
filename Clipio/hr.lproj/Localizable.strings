@@ -44,3 +44,6 @@
 "glass_clear" = "More Transparent";
 "glass_appearance_help" = "System follows macOS Liquid Glass settings. Reduce Transparency always takes priority.";
 "collection_overlapping_files" = "Drag the folder and its contained items separately to protect pinned originals.";
+"glass_classic" = "Classic (2.6.1)";
+"glass_crystal" = "Crystal";
+"glass_aurora" = "Aurora";

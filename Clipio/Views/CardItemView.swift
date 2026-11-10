@@ -1,4 +1,5 @@
 import AppKit
+import Defaults
 import SwiftHEXColors
 import SwiftUI
 import UniformTypeIdentifiers
@@ -9,6 +10,9 @@ struct CardItemView: View {
 
   @State private var isHovered = false
   @State private var selectionPopEpoch = 0
+  @Default(.shelfGlassAppearance) private var glassStyle
+
+  private var spectral: Bool { glassStyle.isSpectral }
 
   static let cardWidth = FloatingGlassStyle.cardWidth
   static let cardHeight = FloatingGlassStyle.cardHeight
@@ -66,18 +70,19 @@ struct CardItemView: View {
     .overlay {
       if item.isSelected {
         RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous)
-          .strokeBorder(Color.accentColor.opacity(0.95), lineWidth: 2)
+          .strokeBorder(Color.accentColor.opacity(0.95), lineWidth: spectral ? 2.5 : 2)
+          .shadow(color: Color.accentColor.opacity(spectral ? 0.45 : 0), radius: spectral ? 5 : 0)
       }
     }
     .overlay(alignment: .topLeading) {
       if let label = shortcutBadgeLabel {
         Text(label)
           .font(.system(size: 10.5, weight: .semibold))
-          .foregroundStyle(.primary)
+          .foregroundStyle(spectral ? AnyShapeStyle(Color.white.opacity(0.9)) : AnyShapeStyle(.primary))
           .padding(.horizontal, 6)
           .padding(.vertical, 2)
-          .background(Color.primary.opacity(0.08), in: Capsule())
-          .overlay(Capsule().strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5))
+          .background(spectral ? Color.black.opacity(0.4) : Color.primary.opacity(0.08), in: Capsule())
+          .overlay(Capsule().strokeBorder(spectral ? Color.white.opacity(0.16) : Color.primary.opacity(0.08), lineWidth: 0.5))
           .padding(6)
       }
     }
@@ -137,9 +142,9 @@ struct CardItemView: View {
       } label: {
         Image(systemName: "pin.fill")
           .font(.system(size: 9, weight: .semibold))
-          .foregroundStyle(Color.accentColor)
+          .foregroundStyle(spectral ? Color(red: 1, green: 0.83, blue: 0.47) : Color.accentColor)
           .frame(width: 22, height: 22)
-          .background(isHovered ? Color.primary.opacity(0.08) : .clear, in: Circle())
+          .background(isHovered ? (spectral ? Color.black.opacity(0.28) : Color.primary.opacity(0.08)) : .clear, in: Circle())
       }
       .buttonStyle(.plain)
       .help("Unpin (⌥P)")
@@ -156,11 +161,11 @@ struct CardItemView: View {
           Text("⌥P")
             .font(.system(size: 9.5, weight: .semibold))
         }
-        .foregroundStyle(.primary)
+        .foregroundStyle(spectral ? AnyShapeStyle(Color.white.opacity(0.9)) : AnyShapeStyle(.primary))
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
-        .background(Color.primary.opacity(0.08), in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5))
+        .background(spectral ? Color.black.opacity(0.4) : Color.primary.opacity(0.08), in: Capsule())
+        .overlay(Capsule().strokeBorder(spectral ? Color.white.opacity(0.16) : Color.primary.opacity(0.08), lineWidth: 0.5))
       }
       .buttonStyle(.plain)
       .help("Pin (⌥P)")
@@ -317,18 +322,65 @@ struct CardItemView: View {
 
 struct FloatingGlassCardBackground: ViewModifier {
   let isHovered: Bool
+  @Default(.shelfGlassAppearance) private var appearance
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
   func body(content: Content) -> some View {
     let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
 
-    // System material adapts to the appearance and keeps content readable.
-    content
-      .background(.regularMaterial, in: shape)
-      .modifier(FloatingGlassRim(isHovered: isHovered))
+    if reduceTransparency || !appearance.isSpectral {
+      // System material adapts to the appearance and keeps content readable.
+      content
+        .background(.regularMaterial, in: shape)
+        .modifier(NeutralGlassRim(isHovered: isHovered))
+    } else {
+      switch appearance {
+      case .crystal:
+        crystal(content, shape)
+          .modifier(SpectralGlassRim(isHovered: isHovered))
+      case .aurora:
+        content
+          .background {
+            ZStack {
+              shape.fill(.regularMaterial)
+              shape.fill(
+                LinearGradient(
+                  colors: [
+                    FloatingGlassStyle.rimTint.opacity(isHovered ? 0.20 : 0.12),
+                    FloatingGlassStyle.spectralTint.opacity(isHovered ? 0.14 : 0.08)
+                  ],
+                  startPoint: .topLeading,
+                  endPoint: .bottomTrailing
+                )
+              )
+            }
+          }
+          .modifier(SpectralGlassRim(isHovered: isHovered))
+      default:
+        // classic: the 2.6.1 frosted card with a cool tint wash.
+        content
+          .background(.regularMaterial, in: shape)
+          .overlay(shape.fill(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.14 : 0.07)).allowsHitTesting(false))
+          .modifier(SpectralGlassRim(isHovered: isHovered))
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func crystal(_ content: Content, _ shape: RoundedRectangle) -> some View {
+    if #available(macOS 26.0, *) {
+      // Each card is its own lens: native glass with a faint cool tint.
+      content.glassEffect(
+        .regular.tint(FloatingGlassStyle.cardTint.opacity(isHovered ? 0.22 : 0.12)),
+        in: shape
+      )
+    } else {
+      content.background(.regularMaterial, in: shape)
+    }
   }
 }
 
-private struct FloatingGlassRim: ViewModifier {
+private struct NeutralGlassRim: ViewModifier {
   let isHovered: Bool
 
   func body(content: Content) -> some View {
@@ -345,6 +397,48 @@ private struct FloatingGlassRim: ViewModifier {
         radius: isHovered ? 10 : 6,
         x: 0,
         y: 4
+      )
+  }
+}
+
+/// The original (2.6.1) card rim: gloss-to-cyan-to-pink gradient, soft drop shadow and a
+/// cool glow that blooms on the hovered card only.
+private struct SpectralGlassRim: ViewModifier {
+  let isHovered: Bool
+
+  @Environment(\.colorScheme) private var colorScheme
+
+  func body(content: Content) -> some View {
+    let shape = RoundedRectangle(cornerRadius: CardItemView.cardRadius, style: .continuous)
+    let isDark = colorScheme == .dark
+    let leadOpacity: Double = isDark ? (isHovered ? 0.92 : 0.68) : (isHovered ? 0.28 : 0.18)
+    let trailOpacity: Double = isDark ? 0.18 : 0.10
+    content
+      .overlay {
+        shape.strokeBorder(
+          LinearGradient(
+            colors: [
+              Color.primary.opacity(leadOpacity),
+              FloatingGlassStyle.rimTint.opacity(isHovered ? 0.72 : 0.42),
+              FloatingGlassStyle.spectralTint.opacity(isHovered ? 0.32 : 0.18),
+              Color.primary.opacity(trailOpacity)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+          ),
+          lineWidth: isHovered ? 1.5 : 1
+        )
+        .allowsHitTesting(false)
+      }
+      .shadow(
+        color: Color(red: 0.05, green: 0.07, blue: 0.10).opacity(isHovered ? 0.26 : 0.18),
+        radius: isHovered ? 12 : 9,
+        x: 0,
+        y: isHovered ? 8 : 6
+      )
+      .shadow(
+        color: FloatingGlassStyle.rimTint.opacity(isHovered ? 0.5 : 0),
+        radius: isHovered ? 10 : 0
       )
   }
 }

@@ -40,7 +40,10 @@
 
 // Native shelf material
 "glass_appearance" = "玻璃材质";
-"glass_system" = "跟随系统";
-"glass_clear" = "更通透";
+"glass_system" = "原生 · 跟随系统";
+"glass_clear" = "原生 · 更通透";
 "glass_appearance_help" = "跟随 macOS 的 Liquid Glass 设置；系统的“降低透明度”始终优先。";
 "collection_overlapping_files" = "请分别拖出文件夹和它里面的项目，避免连同已 Pin 的原件一起移动。";
+"glass_classic" = "日用版（2.6.1）";
+"glass_crystal" = "水晶";
+"glass_aurora" = "极光";
