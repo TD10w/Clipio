@@ -36,6 +36,10 @@ struct HistoryListView: View {
     frames.first { $0.value.contains(point) }?.key
   }
 
+  static func removeFrame(for id: UUID, from frames: inout [UUID: CGRect]) {
+    frames.removeValue(forKey: id)
+  }
+
   var body: some View {
     ScrollView(.horizontal, showsIndicators: false) {
       ScrollViewReader { proxy in
@@ -51,6 +55,9 @@ struct HistoryListView: View {
               if cardFrames[item.id] != frame {
                 cardFrames[item.id] = frame
               }
+            }
+            .onDisappear {
+              Self.removeFrame(for: item.id, from: &cardFrames)
             }
           }
         }

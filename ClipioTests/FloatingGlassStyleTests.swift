@@ -109,6 +109,15 @@ final class ShelfBehaviorTests: XCTestCase {
     )
   }
 
+  func testDisappearedCardCannotWinHoverAfterScrolling() {
+    let old = UUID()
+    let visible = UUID()
+    let rect = CGRect(x: 14, y: 10, width: 138, height: 150)
+    var frames = [old: rect, visible: rect]
+    HistoryListView.removeFrame(for: old, from: &frames)
+    XCTAssertEqual(HistoryListView.hoveredItemID(at: CGPoint(x: 30, y: 30), frames: frames), visible)
+  }
+
   func testNavigationDoesNotEnterFooterWhenFooterIsNotRendered() {
     let history = History()
     let footer = Footer()
