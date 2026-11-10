@@ -48,3 +48,7 @@ The two failing UI cases were compared against untouched PR #3 `842e22f` in an a
 ## Later owner feedback on November 10
 
 The owner reported oversized drag expansion, failure to dismiss on leaving/cancelling, an unsatisfactory Liquid Glass appearance, and Menu Bar movement during Tab switching. See [the source-faithful follow-up](acceptance-feedback-2026-11-10.md). Visual appearance is **not accepted**; the owner will arrange a different agent for the UI later. The tested running build is not yet identified. These are recorded reports, not reproduced root causes or accepted file-transfer outcomes. The revised checklist prioritizes file/data behavior and excludes repeated acceptance of these known unfixed UI items.
+
+## Owner-reported file outcomes after the updated checklist
+
+On November 10 the owner reported item 1 (ordinary move) and item 2 (Pin copy) passed. Within item 3, invalid-target drops and Escape cancellation were reported as having no problem. Same-name conflict cancellation remains untested. These are owner-reported outcomes for the current experience; the running bundle/revision was not independently identified. Do not generalize to cross-volume, batch, browser, restart, or the separate drag-UI dismissal issue. Source: [feedback and original wording](acceptance-feedback-2026-11-10.md).
