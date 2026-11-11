@@ -31,6 +31,57 @@ final class CollectionTests: XCTestCase {
     CollectionStore(directory: directory, securityScoped: false)
   }
 
+  @MainActor
+  func testNonemptyCollectionDoesNotOverlayMenuBarWithIdlePanel() throws {
+    let collection = store()
+    _ = try collection.addFile(source())
+    let existingWindows = Set(NSApp.windows.map(ObjectIdentifier.init))
+    let controller = CollectionAccessController(store: collection)
+    withExtendedLifetime(controller) {
+      let newPanels = NSApp.windows.filter {
+        $0 is NSPanel && !existingWindows.contains(ObjectIdentifier($0))
+      }
+      XCTAssertFalse(newPanels.contains { $0.isVisible && $0.level == .statusBar },
+                     "An idle collection must not cover system menu-bar items with a floating panel")
+    }
+  }
+
+  @MainActor
+  func testCollectionEntryUsesNativeStatusButtonAndRoutesToCollection() throws {
+    let collection = store()
+    _ = try collection.addFile(source())
+    let controller = CollectionAccessController(store: collection)
+    XCTAssertTrue(controller.statusItem.isVisible)
+    let button = try XCTUnwrap(controller.statusItem.button)
+    XCTAssertEqual(button.accessibilityIdentifier(), "collection-status-item")
+    let originalMode = AppState.shared.shelfMode
+    defer { AppState.shared.switchShelf(to: originalMode) }
+    AppState.shared.switchShelf(to: .clipboard)
+    button.performClick(nil)
+    XCTAssertEqual(AppState.shared.shelfMode, .collection)
+    XCTAssertTrue(controller.statusItem.isVisible)
+    AppState.shared.switchShelf(to: .clipboard)
+    XCTAssertTrue(controller.statusItem.isVisible, "Tab must not remove the collection's reserved menu slot")
+  }
+
+  @MainActor
+  func testDragReceiverStaysBelowMenuBarOnEveryScreen() {
+    for (screen, inset) in [
+      (NSRect(x: 0, y: 0, width: 1512, height: 982), CGFloat(38)),
+      (NSRect(x: 0, y: 0, width: 1920, height: 1080), CGFloat(0)),
+      (NSRect(x: -1920, y: -300, width: 1920, height: 1080), CGFloat(0))
+    ] {
+      for targeted in [false, true] {
+        let frame = CollectionAccessController.dragEntryFrame(
+          screenFrame: screen, safeAreaTop: inset, menuBarHeight: 24, targeted: targeted
+        )
+        XCTAssertLessThanOrEqual(frame.maxY, screen.maxY - max(inset, 24) - 8)
+        XCTAssertEqual(frame.midX, screen.midX)
+        XCTAssertTrue(screen.contains(frame))
+      }
+    }
+  }
+
   func testReferencesOriginalAndRestoresPinsAfterRestart() throws {
     let original = try source()
     let collection = store()
