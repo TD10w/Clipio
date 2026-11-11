@@ -1,6 +1,6 @@
 # 待办：Drop Zone 收入成功的音效与 UI 反馈
 
-状态：Backlog，仅记录；未排期、未设计、未实施。
+状态：设计与试听中，已有独立预览；尚未接入原生 App。
 
 来源：用户于 2026-11-11 口述，明确要求“先记下来”。
 
@@ -18,3 +18,11 @@
 - 本次只保存任务，不改应用代码，不制作音效或动效，不派发实现工作。
 
 相关历史反馈：[11 月 10 日体验记录](../acceptance-feedback-2026-11-10.md)。
+
+## 2026-11-11 设计讨论
+
+- 用户已选择视觉预览 C 的轻弹 + B 的勾号；不显示“已收好 / 数量”文字。
+- 原先选择复用按 Command+C 被 Clipio 收入时的 Write 音效；用户随后要求用 sound skill 再设计声音，因此最终音效重新开放试听，未定稿。
+- 一批真正收入成功只反馈一次；取消或全部失败不播放成功反馈。部分失败的具体反馈仍需设计。
+- [三个视觉方向](../../Designs/explorations/2026-11-11-receipt-feedback/index.html) 与 [音效试听](../../Designs/explorations/2026-11-11-receipt-feedback/sound-study/index.html) 均为独立 HTML 比较稿，不是已实现的原生行为。
+- 音效候选的 CC0 来源、下载/评分记录与加工方式见[试听说明](../../Designs/explorations/2026-11-11-receipt-feedback/sound-study/README.md)。

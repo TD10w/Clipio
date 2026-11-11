@@ -1,0 +1,26 @@
+[
+  {
+    "file": "fs_447910_Plop.mp3",
+    "duration": 0.243,
+    "peak_dbfs": 3.3,
+    "energy_1pct_s": 0.002,
+    "energy_95pct_s": 0.011,
+    "energy_99pct_s": 0.015
+  },
+  {
+    "file": "fs_477706_Digital-Radio-Rack-Unit-Button-Snap-3_1.mp3",
+    "duration": 0.664,
+    "peak_dbfs": -6.8,
+    "energy_1pct_s": 0.0,
+    "energy_95pct_s": 0.01,
+    "energy_99pct_s": 0.019
+  },
+  {
+    "file": "fs_625174_UI-Sound-Approval-High-Pitched-Bell-Synt.mp3",
+    "duration": 0.774,
+    "peak_dbfs": -0.4,
+    "energy_1pct_s": 0.017,
+    "energy_95pct_s": 0.348,
+    "energy_99pct_s": 0.46
+  }
+]
