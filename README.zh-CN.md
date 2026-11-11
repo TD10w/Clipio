@@ -2,7 +2,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-基于 [Maccy](https://github.com/p0deje/Maccy) 开发的原生 macOS 剪贴板管理器，以横向卡片展示复制历史。
+一款原生 macOS 剪贴板与文件收集工具，以横向卡片整理复制历史和临时收集的文件。
 
 浏览文字、图片、文件和颜色值，搜索历史，并置顶常用内容。另有一个**文件收集区**：先把文件和图片拖进来暂存，需要时再拖到要去的地方。
 
@@ -18,7 +18,7 @@ macOS 14+ · 支持 Apple Silicon 和 Intel · 已签名并通过 Apple 公证
 
 ## 下载安装
 
-**早期公开测试版。** 这是基于 Maccy 的独立个人项目。下载安装包使用不需要 Xcode，也不需要执行终端指令。
+**早期公开测试版。** Clipio 是由 [TD10w](https://github.com/TD10w) 设计和开发的独立个人项目。下载安装包使用不需要 Xcode，也不需要执行终端指令。
 
 1. [下载 Clipio-2.7.5-beta.1.dmg](https://github.com/TD10w/Clipio/releases/download/v2.7.5-beta.1/Clipio-2.7.5-beta.1.dmg)，双击打开安装窗口。请选择这个 DMG，不要下载 GitHub 自动生成的“Source code”源码压缩包。
 2. 将 **Clipio.app** 拖入“**应用程序**”文件夹，然后打开。如果出现 macOS 正常的首次打开确认提示，确认打开即可。
@@ -119,6 +119,6 @@ open build/LocalRelease/Build/Products/Release/Clipio.app
 
 仓库中的[演示工程](Designs/Clipio-Demo/README.md)是一段 20 秒的产品重建动画，并非真实操作录屏，目前尚未发布审核后的导出视频。旧 Maccy App Store 素材不代表当前 Clipio 界面。
 
-感谢 Alex Rodionov 及 Maccy 贡献者提供基础实现。上游版权声明、来源链接、内部名称与存储兼容名称会保留。Clipio 的问题请反馈到本仓库。
+Clipio 基于 Alex Rodionov 及贡献者开发的开源剪贴板工具 [Maccy](https://github.com/p0deje/Maccy)。感谢他们提供剪贴板基础实现。Clipio 在此基础上设计了横向卡片栏、重新设计的交互与预览，并扩展了文件收集和拖放工作流。项目保留上游版权与 MIT 许可声明，以及相关来源链接和存储兼容名称。Clipio 的问题请反馈到本仓库。
 
 代码使用 [MIT 许可证](LICENSE)。第三方图片、字体和音频的授权需单独核对，详见[素材说明](docs/media-notes.md)。

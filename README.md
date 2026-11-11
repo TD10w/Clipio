@@ -2,7 +2,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-A native macOS clipboard manager with a horizontal card shelf, built on [Maccy](https://github.com/p0deje/Maccy).
+A native macOS clipboard and file collection app with a horizontal card shelf.
 
 Browse copied text, images, files, and color values; search your history and pin items you use often. A second shelf, the **file collection**, holds files and images you drag in until you drag them out where they belong.
 
@@ -18,7 +18,7 @@ macOS 14+ · Apple Silicon & Intel · Signed and notarized by Apple
 
 ## Install
 
-**Early public beta.** This is an independent personal project built on Maccy. No Xcode or terminal commands are needed to use the download.
+**Early public beta.** Clipio is an independent personal project designed and developed by [TD10w](https://github.com/TD10w). No Xcode or terminal commands are needed to use the download.
 
 1. [Download Clipio-2.7.5-beta.1.dmg](https://github.com/TD10w/Clipio/releases/download/v2.7.5-beta.1/Clipio-2.7.5-beta.1.dmg) and double-click it to open the installer. Choose this DMG, not GitHub's automatically generated “Source code” archives.
 2. Drag **Clipio.app** into **Applications**, then open it. Confirm macOS's normal first-open prompt if shown.
@@ -119,6 +119,6 @@ Current source verification, outstanding acceptance work, and design follow-up a
 
 The [demo source](Designs/Clipio-Demo/README.md) contains a 20-second reconstructed product animation, not a live recording. A reviewed export is not published yet. Legacy Maccy App Store assets are not demonstrations of the current Clipio UI.
 
-Clipio builds on Maccy by Alex Rodionov and its contributors. Upstream copyright notices, source references, internal names, and storage compatibility names are intentionally retained. Please report Clipio-specific problems here, not to upstream Maccy.
+Clipio is based on [Maccy](https://github.com/p0deje/Maccy), the open-source clipboard manager by Alex Rodionov and its contributors. Thank you for the clipboard foundation. Clipio's work includes the horizontal card shelf, redesigned interaction and previews, and the file collection and drag-and-drop workflow. Upstream copyright and MIT license notices are retained, along with relevant source references and storage compatibility names. Please report Clipio issues in this repository.
 
 Code is available under the [MIT license](LICENSE). Third-party media and fonts need their own attribution and redistribution checks; see [media notes](docs/media-notes.md).
