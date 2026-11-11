@@ -33,15 +33,23 @@ struct HeaderView: View {
           .padding(.trailing, 5)
         }
 
-        ToolbarButton {
-          Task { @MainActor in
-            AppState.shared.openPreferences()
+        Menu {
+          Button("preferences") {
+            Task { @MainActor in AppState.shared.openPreferences() }
+          }
+          Button("onboarding_menu") {
+            AppState.shared.appDelegate?.showOnboarding()
           }
         } label: {
           Image(systemName: "gearshape")
             .font(.system(size: 13, weight: .medium))
         }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
         .modifier(HeaderGlassControl())
+        .accessibilityLabel(Text("preferences"))
+        .accessibilityIdentifier("shelf-settings-menu")
 
         ToolbarButton {
           AppState.shared.quit()

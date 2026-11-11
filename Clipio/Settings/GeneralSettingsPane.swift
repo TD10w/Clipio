@@ -88,6 +88,10 @@ struct GeneralSettingsPane: View {
       }
 
       Settings.Section(title: "") {
+        Button("onboarding_menu") {
+          AppState.shared.appDelegate?.showOnboarding()
+        }
+        .accessibilityIdentifier("settings-onboarding")
         if let notificationsURL = notificationsURL {
           Link(destination: notificationsURL, label: {
             Text("NotificationsAndSounds", tableName: "GeneralSettings")

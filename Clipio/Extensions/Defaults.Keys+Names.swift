@@ -64,6 +64,7 @@ extension Defaults.Keys {
   static let imageMaxHeight = Key<Int>("imageMaxHeight", default: 40)
   static let lastReviewRequestedAt = Key<Date>("lastReviewRequestedAt", default: Date.now)
   static let menuIcon = Key<MenuIcon>("menuIcon", default: .clipboard)
+  static let hasSeenOnboarding = Key<Bool>("hasSeenOnboarding", default: false)
   static let migrations = Key<[String: Bool]>("migrations", default: [:])
   static let numberOfUsages = Key<Int>("numberOfUsages", default: 0)
   static let pasteByDefault = Key<Bool>("pasteByDefault", default: false)

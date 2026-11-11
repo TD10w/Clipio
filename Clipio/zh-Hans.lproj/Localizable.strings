@@ -49,3 +49,23 @@
 "glass_more_opaque" = "模糊";
 
 "clipboard_remove" = "从剪贴板历史移除";
+
+// Onboarding: intentionally English, as approved for this version.
+"onboarding_menu" = "Getting Started";
+"onboarding_entry_title" = "Find Clipio here";
+"onboarding_entry_body" = "Click this icon to open Clipio.";
+"onboarding_entry_callout" = "Click here to open Clipio";
+"onboarding_menu_bar_example" = "Menu bar example";
+"onboarding_clipboard_title" = "Clipboard";
+"onboarding_clipboard_body" = "Find your copied text and images here.\nSelect a card to copy it again.";
+"onboarding_collection_title" = "Collection";
+"onboarding_collection_body" = "Drag files here, then drag them to another window.\nPress Tab to switch between Clipboard and Collection.";
+"onboarding_open_clipboard" = "Open Clipboard";
+"onboarding_open_collection" = "Open Collection";
+"onboarding_shortcut_unset" = "Not set. You can change shortcuts in Settings.";
+"onboarding_show_icon" = "Show Menu Bar Icon";
+"onboarding_skip" = "Skip";
+"onboarding_back" = "Back";
+"onboarding_next" = "Next";
+"onboarding_start" = "Get Started";
+"onboarding_step" = "Step %d of 3";
