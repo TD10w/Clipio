@@ -10,3 +10,6 @@
 - Added invariant/path regressions for rename removing selected item from results and Collection->Clipboard entry with pending external-copy intent. The three follow-up tests produced five expected failing assertions.
 - Fixes: infer color from original cached content; search alias/generated title as separate fields; reconcile hidden navigation selections centrally; apply opening preference on Clipboard re-entry as well as panel opening.
 - Final Star source verification: all 144 unit tests passed; required unsigned Debug build succeeded. Built app has 31/31 tables with Star/full-clear keys.
+- Integrated prior authorized Trash and receipt commits into this candidate. Only append-only localization conflicts required manual union; all intents retained.
+- Combined verification: 155/155 unit tests passed and required unsigned build succeeded; actual bundle has all 31 combined label sets and approved audio.
+- Prepared unopened, separately sandboxed com.clipio.app.candidate20261111 app and 9.2 MiB ZIP. Signature, ZIP CRC, bundle identity and included instructions verified. Details in docs/star-candidate-handoff-2026-11-11.md.
