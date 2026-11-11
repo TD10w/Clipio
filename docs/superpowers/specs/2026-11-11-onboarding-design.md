@@ -1,6 +1,14 @@
 # Clipio 简易上手指南
 
-状态：方向已由用户选定，以下具体方案待确认。
+状态：三页方向、可翻页示意稿及下方英文文案已于 2026-11-11 获用户确认，可实施。
+
+## 最终文案（取代下方早期中文工作描述）
+
+- Find Clipio here — Click this icon to open Clipio. 箭头指向菜单栏示意图里的实际所选图标。
+- Clipboard — Find your copied text and images here. Select a card to copy it again.
+- Collection — Drag files here, then drag them to another window. Press Tab to switch between Clipboard and Collection.
+- 快捷键标签：Open Clipboard / Open Collection。按钮：Back / Next / Get Started / Skip。重新查看入口：Getting Started。
+- 用户明确拒绝 Always within reach 等宣传式标题。本轮纯英文；通过全部 31 个现有语言资源表提供相同英文文案。
 
 ## 目的
 

@@ -7,6 +7,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   lazy var previewPopup = PreviewPopupPanel()
   private var previewShowWork: DispatchWorkItem?
   private var collectionAccess: CollectionAccessController?
+  @MainActor private lazy var onboarding = OnboardingController {
+    let state = AppState.shared
+    state.switchShelf(to: .clipboard)
+    state.popup.open(height: state.popup.height)
+  }
+
+  @MainActor func showOnboarding() {
+    hidePreviewNow()
+    panel.close()
+    onboarding.show()
+  }
 
   // Delay before the preview first appears on hover (seconds).
   private let previewHoverDelay: TimeInterval = 0.8
@@ -201,10 +212,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          CommandLine.arguments.contains("open-ui-testing-shelf") {
         panel.open(height: AppState.shared.popup.height, at: .statusItem)
       }
+      onboarding.showIfNeeded()
     }
   }
 
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+    if onboarding.isVisible {
+      onboarding.show()
+      return true
+    }
     panel.toggle(height: AppState.shared.popup.height)
     return true
   }
