@@ -71,7 +71,8 @@ class ClipioUITests: XCTestCase {
 
     app.launchArguments = []
     if name.contains("testTabKeepsHeaderAndWindowPositionStable") ||
-       name.contains("testClipboardContextMenuRemovesOnlyChosenItem") {
+       name.contains("testClipboardContextMenuRemovesOnlyChosenItem") ||
+       name.contains("testCollectionHasSeparateShortcutAndClipboardShortcutRoutesBack") {
       app.launchArguments.append("open-ui-testing-shelf")
     }
     app.launchArguments.append("enable-testing")
@@ -88,6 +89,9 @@ class ClipioUITests: XCTestCase {
     ])
     app.launchEnvironment["CLIPIO_UI_TEST_COLLECTION_FIXTURE"] = "1"
     app.launchEnvironment["CLIPIO_UI_TEST_MODE"] = "1"
+    if name.contains("testTabKeepsHeaderAndWindowPositionStable") {
+      app.launchEnvironment["CLIPIO_UI_TEST_COLLECTION_ENTRY"] = "1"
+    }
     app.launchEnvironment["CLIPIO_UI_TEST_OLDER_ITEM"] = copy2
     app.launchEnvironment["CLIPIO_UI_TEST_NEWER_ITEM"] = copy1
     app.launch()

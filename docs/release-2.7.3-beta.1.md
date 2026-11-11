@@ -1,6 +1,6 @@
 # Clipio 2.7.3-beta.1 — Getting Started
 
-App version 2.7.3, build 64. macOS 14+, Apple Silicon and Intel.
+App version 2.7.3, build 65. macOS 14+, Apple Silicon and Intel.
 
 ## 简体中文
 
@@ -8,6 +8,7 @@ App version 2.7.3, build 64. macOS 14+, Apple Silicon and Intel.
 - 指南使用简短英文，显示当前实际设置的快捷键；可以跳过，关闭后不会每次启动都出现。
 - 点击齿轮菜单里的 **Getting Started** 可以重新查看；设置 → General 里也有同名入口。
 - 沿用 2.7.2 的剪贴板与文件收集功能，本次不改变历史或文件的存储格式。
+- 修复收集区常驻入口遮挡其他菜单栏图标的问题：入口现在由 macOS 分配位置，拖文件时的接收胶囊仍显示在菜单栏下方。
 
 安装：下载 **Clipio-2.7.3-beta.1.dmg**，打开后把 Clipio 拖入「应用程序」。更新时先退出旧版，再替换。也提供 ZIP。已有用户更新后会看到一次指南，之后可以随时从上述入口重看。
 
@@ -19,6 +20,7 @@ App version 2.7.3, build 64. macOS 14+, Apple Silicon and Intel.
 - The guide shows your configured shortcuts, including when a shortcut is not set. Skip or close it to keep it from appearing on every launch.
 - Open **Getting Started** from the gear menu or Settings → General to view the guide again.
 - Existing clipboard and file-collection behavior is retained. This release does not change clipboard or collection storage formats.
+- Fix the idle Collection entry covering other menu-bar icons. macOS now allocates its menu-bar position; the file-drop receiver remains below the menu bar while dragging.
 
 Install **Clipio-2.7.3-beta.1.dmg**, open it and drag Clipio into Applications. Quit the previous version before replacing it. A ZIP is also available. Existing users see the guide once after updating and can reopen it at any time.
 

@@ -4,10 +4,11 @@ import QuartzCore
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// A small entry beside the notch. It never becomes key; the existing shelf owns all editing.
+/// The system positions the idle menu item; a separate drag receiver stays below the menu bar.
 @MainActor
-final class CollectionAccessController {
+final class CollectionAccessController: NSObject {
   private let store: CollectionStore
+  let statusItem: NSStatusItem
   private let panel: NSPanel
   private let dropView = CollectionEntryDropView(frame: .zero)
   private let hosting = NSHostingView(rootView: CollectionEntryLabel(dragging: false, targeted: false, action: {}))
@@ -28,7 +29,19 @@ final class CollectionAccessController {
 
   init(store: CollectionStore) {
     self.store = store
+    statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+    super.init()
+    statusItem.isVisible = false
+    if let button = statusItem.button {
+      button.image = NSImage(systemSymbolName: "tray", accessibilityDescription: nil)
+      button.image?.isTemplate = true
+      button.target = self
+      button.action = #selector(openCollection)
+      button.toolTip = NSLocalizedString("collection_open", comment: "")
+      button.setAccessibilityLabel(NSLocalizedString("collection_open", comment: ""))
+      button.setAccessibilityIdentifier("collection-status-item")
+    }
     panel.isOpaque = false
     panel.backgroundColor = .clear
     panel.hasShadow = false
@@ -77,7 +90,11 @@ final class CollectionAccessController {
     monitors.forEach(NSEvent.removeMonitor)
     if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
     let entryPanel = panel
-    Task { @MainActor in entryPanel.orderOut(nil) }
+    let entryStatusItem = statusItem
+    Task { @MainActor in
+      entryPanel.orderOut(nil)
+      NSStatusBar.system.removeStatusItem(entryStatusItem)
+    }
   }
 
   private func observeCount() {
@@ -177,25 +194,20 @@ final class CollectionAccessController {
   }
 
   private func updateEntry() {
-    // The idle entry's visibility deliberately ignores which shelf tab is active, so
-    // switching Clipboard/Collection with Tab never makes the menu bar area jump.
-    let visible = (showingDrag && !openedForDrag) || (!showingDrag && !openedForDrag && !store.items.isEmpty)
-    guard visible else {
+    // Never put a custom window in the menu bar. A real status item reserves space
+    // alongside other apps, and its visibility does not change on Tab or during a drag.
+    let hasItems = !store.items.isEmpty
+    if statusItem.isVisible != hasItems { statusItem.isVisible = hasItems }
+    guard showingDrag && !openedForDrag else {
       hide()
       return
     }
     let screen = (showingDrag ? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } : NSScreen.main)
       ?? NSScreen.main
     guard let screen else { return }
-    let topInset = max(screen.safeAreaInsets.top, NSStatusBar.system.thickness)
-    let height: CGFloat = showingDrag ? (dropTargeted ? 54 : 46) : min(30, topInset)
-    let width: CGFloat = showingDrag ? (dropTargeted ? 210 : 184) : 44
-    let notchRight = screen.auxiliaryTopRightArea?.minX ?? (screen.frame.midX + 80)
-    let target = NSRect(
-      x: showingDrag ? screen.frame.midX - width / 2 : min(notchRight + 6, screen.frame.maxX - width - 12),
-      y: showingDrag ? screen.frame.maxY - topInset - height - 8
-        : screen.frame.maxY - topInset + (topInset - height) / 2,
-      width: width, height: height
+    let target = Self.dragEntryFrame(
+      screenFrame: screen.frame, safeAreaTop: screen.safeAreaInsets.top,
+      menuBarHeight: NSStatusBar.system.thickness, targeted: dropTargeted
     )
     hosting.rootView = CollectionEntryLabel(dragging: showingDrag, targeted: dropTargeted) { [weak self] in
       self?.openCollection()
@@ -249,7 +261,19 @@ final class CollectionAccessController {
     }
   }
 
-  private func openCollection() {
+  static func dragEntryFrame(
+    screenFrame: NSRect, safeAreaTop: CGFloat, menuBarHeight: CGFloat, targeted: Bool
+  ) -> NSRect {
+    let height: CGFloat = targeted ? 54 : 46
+    let width: CGFloat = targeted ? 210 : 184
+    return NSRect(
+      x: screenFrame.midX - width / 2,
+      y: screenFrame.maxY - max(safeAreaTop, menuBarHeight) - height - 8,
+      width: width, height: height
+    )
+  }
+
+  @objc private func openCollection() {
     guard !store.isExporting else { return }
     let state = AppState.shared
     state.switchShelf(to: .collection)
