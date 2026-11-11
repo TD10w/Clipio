@@ -18,10 +18,18 @@
 
 来源：用户原话“一，是，二，图片应该可以保留吧，就是clipboard的功能。三，是的。”
 
+## 已确认（2026-11-11，第二轮）
+
+- 剪贴板 Pin 直接改成 Star，原来 Pin 住的内容自动成为收藏；收集区 Pin 保持原来的作用。
+- 剪贴板内部增加“全部 / 收藏”切换，不新增第三个主入口。
+- 每项收藏可自行取名，非必填；名称不改变复制或粘贴的原内容。
+
+来源：用户对 Q4–Q6 回复“1. 可以 2. 可以，怎么搞，shift+tab 切换吗？3. 是”。Shift+Tab 是用户提出的快捷键候选，需核对现有键盘行为再决定。
+
 ## 待后续讨论
 
-- Star 的入口，以及之后如何找到收藏并粘贴。
-- 与现有剪贴板 Pin 的关系，以及已有 Pin 如何衔接。
+- “全部 / 收藏”的快捷键与焦点规则；重新打开时默认的筛选范围。
+- 收藏名称的编辑入口，以及是否允许修改原内容。
 - 取消收藏、主动删除、清空全部等边界；文件引用是否另有保留要求。
 
 按 grill-with-docs 继续讨论并记录决定，用户确认已达成共同理解前不开始实现。
@@ -36,4 +44,4 @@
 - 已有改名和文字内容编辑能力；编辑富文本会转换成纯文本。图片/文件不走文字值编辑；如复用编辑入口，需要核对预览刷新。
 - 重复复制会保留原 Pin 和名称；现有复制、粘贴、无格式粘贴可复用，自动粘贴仍沿用既有辅助功能授权。
 
-核对来源：`Clipio/Observables/History.swift`、`Clipio/Models/HistoryItem.swift`、`Clipio/Clipboard.swift`、`Clipio/Settings/PinsSettingsPane.swift`、`Clipio/Views/HeaderView.swift`。Q4–Q6（与 Pin 关系、入口、可选名称）仍待用户回答。
+核对来源：`Clipio/Observables/History.swift`、`Clipio/Models/HistoryItem.swift`、`Clipio/Clipboard.swift`、`Clipio/Settings/PinsSettingsPane.swift`、`Clipio/Views/HeaderView.swift`。Q4–Q6 已于第二轮确认；快捷键仍待核对与决定。
