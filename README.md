@@ -12,9 +12,11 @@ macOS 14+ · Apple Silicon & Intel · Signed and notarized by Apple
 
 ![Clipio card shelf](docs/screenshots/clipio-shelf.png)
 
-*Clipio in dark appearance, shown with sample clipboard content.*
+*Clipboard history on macOS: text, an image, a color swatch, and links.*
 
-![Search clipboard history](docs/screenshots/clipio-search.png)
+![Clipio file collection](docs/screenshots/clipio-collection.png)
+
+*A separate shelf for collected files and images. [Screenshot notes](docs/screenshots/README.md).*
 
 ## Install
 

@@ -12,9 +12,11 @@ macOS 14+ · 支持 Apple Silicon 和 Intel · 已签名并通过 Apple 公证
 
 ![Clipio 横向卡片栏](docs/screenshots/clipio-shelf.png)
 
-*Clipio 深色透明界面，使用示例剪贴板内容。*
+*macOS 上的剪贴板历史：文字、图片、颜色和链接。*
 
-![搜索剪贴板历史](docs/screenshots/clipio-search.png)
+![Clipio 文件收集区](docs/screenshots/clipio-collection.png)
+
+*独立的文件与图片收集区。[截图说明](docs/screenshots/README.md)。*
 
 ## 下载安装
 
