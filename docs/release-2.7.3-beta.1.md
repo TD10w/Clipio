@@ -29,3 +29,10 @@ This is a public beta. Independent installation on another Mac, cross-disk moves
 ## Checksums
 
 SHA-256 sidecars are provided for both downloads. In Terminal, run `shasum -a 256 -c Clipio-2.7.3-beta.1.dmg.sha256` from the download folder, or use the corresponding ZIP sidecar.
+
+## Verification / 验证
+
+- The required Debug build and all 134 unit tests passed. The idle-menu overlap regression failed on the previous implementation and passed after the fix.
+- Six affected UI regressions passed in batches, covering collection preservation, both shortcuts, Tab switching with the native entry enabled, and onboarding. A shortcut test mistook the transparent prewarm panel for an opened shelf; the harness now uses the existing launch-open flag. Earlier failed attempts are retained in the project evidence; a single all-green full UI suite is not claimed.
+- The final build is 65; earlier unpublished build 64 packages are superseded. The packaged app contains arm64 and x86_64 code and all 31 language tables with the approved English guide.
+- Automated checks do not replace another-Mac installation or the user's real-world menu-bar/drag experience.
