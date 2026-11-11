@@ -293,7 +293,11 @@ final class CollectionStore {
       }
       return CollectionExport(
         ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed,
-        operation: movesOriginals ? .move : .copy,
+        // Dock Trash negotiates delete rather than move. Keep Pin batches out of
+        // that negotiation: their originals must remain protected.
+        operation: (movesOriginals ? NSDragOperation.move : .copy).union(
+          selected.contains(where: \.isPinned) ? [] : .delete
+        ),
         pinnedIDs: Set(selected.filter(\.isPinned).map(\.id)),
         exportedURLs: Dictionary(uniqueKeysWithValues: zip(selected.map(\.id), urls))
       )
@@ -306,14 +310,15 @@ final class CollectionStore {
 
   func finishExport(_ export: CollectionExport, operation: NSDragOperation) throws {
     defer { export.endAccess() }
-    guard operation == .move || operation == .copy else { return }
+    let isTrash = operation == .delete && export.operation.contains(.delete)
+    guard operation == .move || operation == .copy || isTrash else { return }
     var consumed: Set<UUID> = []
     for item in items where export.ids.contains(item.id) && !export.pinnedIDs.contains(item.id) && !item.isPinned {
-      if operation == .move, let source = export.exportedURLs[item.id] {
+      if operation == .move || isTrash, let source = export.exportedURLs[item.id] {
         if !fileManager.fileExists(atPath: source.path) {
           consumed.insert(item.id)
         } else {
-          // Finder may return before completing a long/cross-volume operation.
+          // Finder / Dock may return before completing a file operation.
           // Watch the source, with no idle polling, until it actually leaves.
           pendingMoves[item.id] = CollectionMoveObservation(url: source, onChange: { [weak self] in
             self?.reconcileMove(id: item.id, source: source)

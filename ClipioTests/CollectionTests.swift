@@ -168,7 +168,8 @@ final class CollectionTests: XCTestCase {
     let id = try collection.addFile(original)
     for operation: NSDragOperation in [.copy, .link, .delete, []] {
       let export = try collection.prepareExport(ids: [id])
-      XCTAssertEqual(export.operation, .move)
+      XCTAssertTrue(export.operation.contains(.move))
+      XCTAssertFalse(export.operation.contains(.copy))
       try collection.finishExport(export, operation: operation)
       XCTAssertEqual(collection.items.map(\.id), [id])
       XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
@@ -186,6 +187,80 @@ final class CollectionTests: XCTestCase {
     try collection.finishExport(export, operation: .copy)
     XCTAssertEqual(collection.items.map(\.id), [id])
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+  }
+
+  func testUnpinnedFileOffersTrashWithoutOfferingCopy() throws {
+    let collection = store()
+    let id = try collection.addFile(source())
+    let export = try collection.prepareExport(ids: [id])
+    defer { export.endAccess() }
+    XCTAssertTrue(export.operation.contains(.delete), "Dock Trash negotiates delete, not move")
+    XCTAssertTrue(export.operation.contains(.move))
+    XCTAssertFalse(export.operation.contains(.copy))
+  }
+
+  func testMixedPinnedBatchDoesNotOfferTrash() throws {
+    let collection = store()
+    let ordinary = try collection.addFile(source())
+    let pinned = try collection.addFile(source("pinned.txt"))
+    try collection.togglePin(pinned)
+    let export = try collection.prepareExport(ids: [ordinary, pinned])
+    XCTAssertFalse(export.operation.contains(.delete))
+    try collection.finishExport(export, operation: .delete)
+    XCTAssertEqual(Set(store().items.map(\.id)), [ordinary, pinned])
+    XCTAssertEqual(try String(contentsOf: collection.resolveURL(for: pinned), encoding: .utf8), "original")
+  }
+
+  func testTrashCallbackRemovesOnlyFilesThatActuallyLeftTheirExportedLocation() throws {
+    let collection = store()
+    let batch = UUID()
+    let original = try source("trashed.txt")
+    let removed = try collection.addFile(original, batch: batch)
+    let retainedURL = try source("retained.txt")
+    let retained = try collection.addFile(retainedURL, batch: batch)
+    let export = try collection.prepareExport(ids: [removed, retained])
+    // Simulate the destination moving one member. Never use the user's Trash.
+    let destination = root.appendingPathComponent("destination.txt")
+    try FileManager.default.moveItem(at: original, to: destination)
+    try collection.finishExport(export, operation: .delete)
+    XCTAssertEqual(store().items.map(\.id), [retained])
+    XCTAssertEqual(try String(contentsOf: destination, encoding: .utf8), "original")
+    XCTAssertEqual(try String(contentsOf: retainedURL, encoding: .utf8), "original")
+  }
+
+  func testTrashCompletingAfterCallbackIsReconciled() throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    try collection.finishExport(export, operation: .delete)
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    try FileManager.default.moveItem(at: original, to: root.appendingPathComponent("destination.txt"))
+    let removed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in collection.items.isEmpty }, object: nil)
+    XCTAssertEqual(XCTWaiter.wait(for: [removed], timeout: 2), .completed)
+    XCTAssertTrue(store().items.isEmpty)
+  }
+
+  func testOwnedImageOffersTrashAndKeepsCardUntilOutgoingFileLeaves() throws {
+    let collection = store()
+    let bitmap = try XCTUnwrap(NSBitmapImageRep(
+      bitmapDataPlanes: nil, pixelsWide: 2, pixelsHigh: 2, bitsPerSample: 8,
+      samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+    ))
+    let data = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+    let id = try collection.addImage(data: data, name: "web")
+    let export = try collection.prepareExport(ids: [id])
+    XCTAssertTrue(export.operation.contains(.delete))
+    XCTAssertTrue(export.operation.contains(.copy))
+    let outgoing = try XCTUnwrap(export.urls.first)
+    let destination = root.appendingPathComponent("image.png")
+    try collection.finishExport(export, operation: .delete)
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    try FileManager.default.moveItem(at: outgoing, to: destination)
+    let removed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in collection.items.isEmpty }, object: nil)
+    XCTAssertEqual(XCTWaiter.wait(for: [removed], timeout: 2), .completed)
+    XCTAssertTrue(store().items.isEmpty)
+    XCTAssertEqual(try Data(contentsOf: destination), data)
   }
 
   func testMovingParentProtectsUnselectedPinnedChild() throws {
