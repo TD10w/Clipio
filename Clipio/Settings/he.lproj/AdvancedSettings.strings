@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "אפשר ללחוץ על סמל התפריט תוך הזחקה של ⌥.\nכדי להתעלם רק מהעותק הבא, יש ללחוץ עם העכבר תוך החזקה של ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# העתקת נתונים";
 "ClearHistoryOnQuit" = "פינוי היסטוריה עם היציאה";
-"ClearHistoryOnQuitTooltip" = "להסיר את כל הפריטים שאינם נעוצים בטרם יציאה מהיישום.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "פינוי לוח הגזירים של המערכת בנוסף";
 "ClearSystemClipboardTooltip" = "כאשר ההגדרה פעילה, פינוי ההיסטוריה יפנה גם את לוח הגזירים הנוכחי של המערכת.";

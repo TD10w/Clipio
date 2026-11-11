@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Siempre";
 "SearchVisibilityDuringSearch" = "Durante la búsqueda";
 "ActiveScreen" = "Pantalla activa";
-"PinTo" = "Anclar a:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Arriba";
 "PinToBottom" = "Abajo";
-"PinToTooltip" = "Cambiar la ubicación de los artículos anclados.\nPor defecto: Arriba.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Altura de imagen:";
 "ImageHeightTooltip" = "Tamaño máximo de la previsualización de imágenes.\nPor defecto: 40.\nNota: Seleccionar 16 para igualar al tamaño del texto.";
 "PreviewDelay" = "Retraso de vista previa:";

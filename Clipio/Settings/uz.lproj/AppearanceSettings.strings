@@ -14,9 +14,9 @@
 "PopupAtLastLocationReset" = "Asil holatiga qaytarish";
 "PopupAtTooltip" = "Qalqib chiquvchi oyna paydo bo'ladigan joyni o'zgartiring. \nStandart: kursor.";
 "ActiveScreen" = "Faol ekran";
-"PinTo" = "Mahkamlangan:";
+"PinTo" = "Favorites position:";
 "PinToBottom" = "Pastda";
-"PinToTooltip" = "Mustahkamlangan elementlarning joylashuvini o'zgartirish. \nStandart: Tepada.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Rasm bo'yi:";
 "ImageHeightTooltip" = "Tasvirni oldindan ko'rishning maksimal balandligi.\nStandart: 40. \nMaslahat: Matn elementlariga o'xshash bo'lish uchun 16 ga o'rnating.";
 "PreviewDelay" = "Ko‘rish kechikishi:";

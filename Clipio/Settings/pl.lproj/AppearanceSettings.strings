@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Zawsze";
 "SearchVisibilityDuringSearch" = "Podczas wyszukiwania";
 "ActiveScreen" = "Aktywny ekran";
-"PinTo" = "Przypnij do:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Góry";
 "PinToBottom" = "Dołu";
-"PinToTooltip" = "Zmień pozycję przypiętych wpisów.\nDomyślnie: góra.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Wysokość obrazków:";
 "ImageHeightTooltip" = "Maksymalna wysokość podglądu obrazka.\nDomyślnie: 40.\nWskazówka: Wybierz 16 aby obrazek był takiej samej wysokości jak wpis tekstowy.";
 "PreviewDelay" = "Opóźnienie podglądu:";

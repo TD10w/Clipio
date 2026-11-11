@@ -1,10 +1,10 @@
 "search_placeholder" = "검색어를 입력하세요…";
-"clear_tooltip" = "고정되지 않은 항목들을 지웁니다.\n⇧와 함께 선택시 모두 지웁니다.";
-"clear_all_tooltip" = "모든 항목을 지웁니다.";
+"clear_tooltip" = "Clear clipboard history. Favorites are kept.";
+"clear_all_tooltip" = "Clear all clipboard history, including favorites.";
 "about_tooltip" = "어플리케이션에 관하여 더 보기.";
 "quit_tooltip" = "어플리케이션을 종료합니다.";
-"clear" = "지우기";
-"clear_all" = "모두 지우기";
+"clear" = "Clear History";
+"clear_all" = "Clear All (Including Favorites)";
 "about" = "관하여";
 "quit" = "종료";
 "preferences" = "설정…";
@@ -69,3 +69,35 @@
 "onboarding_next" = "Next";
 "onboarding_start" = "Get Started";
 "onboarding_step" = "Step %d of 3";
+
+"star_filter" = "Clipboard View";
+
+"star_all" = "All";
+
+"star_favorites" = "Favorites";
+
+"star_empty" = "Star an item to keep it here.";
+
+"star_no_results" = "No matching favorites.";
+
+"star_add" = "Add to Favorites (⌥P)";
+
+"star_remove" = "Remove from Favorites (⌥P)";
+
+"star_rename" = "Name Favorite";
+
+"star_name_placeholder" = "Name (optional)";
+
+"star_name_comment" = "This name helps you find the item. Copied content stays unchanged.";
+
+"star_save" = "Save";
+
+"star_ok" = "OK";
+
+"star_name_failed" = "The name could not be saved. Please try again.";
+
+"star_clear_menu" = "Clear History…";
+
+"star_clear_all_message" = "Clear All, Including Favorites?";
+
+"star_clear_all_comment" = "All clipboard history and favorites will be removed from Clipio. This cannot be undone.";

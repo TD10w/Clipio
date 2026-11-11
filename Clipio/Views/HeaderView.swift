@@ -77,23 +77,21 @@ private struct HeaderClearButton: View {
   @Bindable var clearItem: FooterItem
   @Bindable var clearAllItem: FooterItem
 
-  @Environment(ModifierFlags.self) private var modifierFlags
-
-  private var isClearAll: Bool {
-    modifierFlags.flags.contains(.shift)
-  }
-
   var body: some View {
-    ToolbarButton {
-      requestClear(isClearAll ? clearAllItem : clearItem)
+    Menu {
+      Button("clear") { clearItem.requestAction() }
+      Button("clear_all", role: .destructive) { clearAllItem.requestAction() }
     } label: {
-      Image(systemName: isClearAll ? "trash.slash" : "trash")
+      Image(systemName: "trash")
         .font(.system(size: 13, weight: .medium))
     }
+    .menuStyle(.borderlessButton)
+    .menuIndicator(.hidden)
+    .fixedSize()
     .modifier(HeaderGlassControl())
     .accessibilityIdentifier("clear-history")
-    .accessibilityLabel(Text(isClearAll ? "clear_all" : "clear"))
-    .help(Text(isClearAll ? "clear_all_tooltip" : "clear_tooltip"))
+    .accessibilityLabel(Text("star_clear_menu"))
+    .help(Text("star_clear_menu"))
     .confirmationDialog(
       clearItem.confirmation?.message ?? "clear_alert_message",
       isPresented: $clearItem.showConfirmation
@@ -107,7 +105,6 @@ private struct HeaderClearButton: View {
     ) {
       clearConfirmationButtons(for: clearAllItem)
     }
-    .dialogSuppressionToggle(isSuppressed: clearAllItem.suppressConfirmation ?? .constant(false))
   }
 
   @ViewBuilder
@@ -122,13 +119,7 @@ private struct HeaderClearButton: View {
     }
   }
 
-  private func requestClear(_ item: FooterItem) {
-    if item.suppressConfirmation?.wrappedValue == true {
-      item.action()
-    } else {
-      item.showConfirmation = true
-    }
-  }
+
 }
 
 private struct HeaderGlassControl: ViewModifier {

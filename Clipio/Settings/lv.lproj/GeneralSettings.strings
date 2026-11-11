@@ -4,8 +4,8 @@
 "CheckNow" = "Pārbaudīt tagad";
 "Open" = "Atvērt:";
 "OpenTooltip" = "Globālais īsceļu taustiņš, lai atvērtu programmu.\nPakāpeniski nospiežot galveno taustiņu, vienlaikus turot modifikatorus, tiek atlasīts nākamais elements sarakstā. Šajā režīmā, atlaižot modifikatoru taustiņus, tiks apstiprināta izvēle un aizvērts uznirstošais logs.\nNo noklusējuma: ⇧⌘C.";
-"Pin" = "Piespraust:";
-"PinTooltip" = "Īsinājumtaustiņš, lai piespraust vēstures vienumu.\nNoklusējums: ⌥P.";
+"Pin" = "Favorite / Pin:";
+"PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Dzēst:";
 "DeleteTooltip" = "Īsinājumtaustiņš vēstures vienuma dzēšanai.\nNoklusējums: ⌥ ⌫.";
 "ShowPreview" = "Priekšskatījums:";

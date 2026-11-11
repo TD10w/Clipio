@@ -1,7 +1,7 @@
-"Title" = "固定";
+"Title" = "收藏";
 "Key" = "键位";
 "Alias" = "标题";
 "Content" = "内容";
 "ContentIsNotText" = "不可编辑的内容（图像或文件）";
 "RichTextEditWarning" = "编辑将放弃所有格式化。";
-"PinCustomizationDescription" = "您可以自定义任何固定项目的热键、标题和内容。\n要编辑，请双击该项目并输入新值。";
+"PinCustomizationDescription" = "可自定义收藏的快捷键和名称。文字内容也可编辑；图片和文件的内容不在这里编辑。";

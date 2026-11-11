@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Всегда";
 "SearchVisibilityDuringSearch" = "Во время поиска";
 "ActiveScreen" = "Активный экран";
-"PinTo" = "Прикреплять к:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Верху";
 "PinToBottom" = "Низу";
-"PinToTooltip" = "Изменить место прикрепленных записей.\nПо умолчанию: Верх.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Высота изображений:";
 "ImageHeightTooltip" = "Максимальная высота предпросмотра изображений.\nПо умолчанию: 40.\nСовет: Поставьте 16 для схожести с текстовыми записями.";
 "PreviewDelay" = "Задержка предварительного просмотра:";

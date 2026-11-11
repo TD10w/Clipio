@@ -1,10 +1,10 @@
 "search_placeholder" = "搜索…";
-"clear_tooltip" = "清除未固定的项目。\n按住 ⇧ 以全部清除。";
-"clear_all_tooltip" = "清除全部项目。";
+"clear_tooltip" = "清空剪贴板历史，保留收藏。";
+"clear_all_tooltip" = "清空所有剪贴板历史，包括收藏。";
 "about_tooltip" = "查看更多应用信息。";
 "quit_tooltip" = "退出应用。";
-"clear" = "清除";
-"clear_all" = "全部清除";
+"clear" = "清空历史";
+"clear_all" = "清空全部（含收藏）";
 "about" = "关于";
 "quit" = "退出";
 "preferences" = "偏好设置…";
@@ -69,3 +69,35 @@
 "onboarding_next" = "Next";
 "onboarding_start" = "Get Started";
 "onboarding_step" = "Step %d of 3";
+
+"star_filter" = "剪贴板范围";
+
+"star_all" = "全部";
+
+"star_favorites" = "收藏";
+
+"star_empty" = "给内容加上星标，就能在这里反复取用。";
+
+"star_no_results" = "没有匹配的收藏。";
+
+"star_add" = "加入收藏（⌥P）";
+
+"star_remove" = "取消收藏（⌥P）";
+
+"star_rename" = "为收藏命名";
+
+"star_name_placeholder" = "名称（可选）";
+
+"star_name_comment" = "名称只用于辨认和查找，复制出去的内容不会改变。";
+
+"star_save" = "保存";
+
+"star_ok" = "好";
+
+"star_name_failed" = "未能保存名称，请重试。";
+
+"star_clear_menu" = "清空历史…";
+
+"star_clear_all_message" = "清空全部，包含收藏？";
+
+"star_clear_all_comment" = "将从 Clipio 移除所有剪贴板历史和收藏。此操作无法撤销。";

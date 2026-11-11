@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Vous pouvez également cliquer sur l’icône du menu en appuyant sur ⌥.\nPour ignorer uniquement la copie suivante, cliquez avec ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copier des données";
 "ClearHistoryOnQuit" = "Effacer l’historique en quittant";
-"ClearHistoryOnQuitTooltip" = "Supprimez automatiquement tous les éléments non épinglés avant de quitter l’application.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Effacer également le presse-papiers du système";
 "ClearSystemClipboardTooltip" = "Lorsqu’elle est activée, l’effacement de l’historique effacera également le presse-papiers du système actuel.";

@@ -29,6 +29,7 @@ final class AppState {
     appDelegate?.hidePreviewNow()
     shelfMode = mode
     if mode == .collection { collection.refreshAvailability() }
+    else { history.prepareForOpening() }
   }
 
   // Drives the pop-out "unfold" animation. FloatingPanel sets this true on open (the shelf
@@ -80,12 +81,7 @@ final class AppState {
     if !navigator.selection.isEmpty {
       history.select(navigator.selection.first)
     } else if let item = footer.selectedItem {
-      // TODO: Use item.suppressConfirmation, but it's not updated!
-      if item.confirmation != nil, Defaults[.suppressClearAlert] == false {
-        item.showConfirmation = true
-      } else {
-        item.action()
-      }
+      item.requestAction()
     } else {
       Clipboard.shared.copy(history.searchQuery)
       history.searchQuery = ""
@@ -157,7 +153,7 @@ final class AppState {
           Settings.Pane(
             identifier: Settings.PaneIdentifier.pins,
             title: NSLocalizedString("Title", tableName: "PinsSettings", comment: ""),
-            toolbarIcon: NSImage.pincircle!
+            toolbarIcon: NSImage(systemSymbolName: "star.circle", accessibilityDescription: nil)!
           ) {
             PinsSettingsPane()
               .environment(self)

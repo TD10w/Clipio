@@ -8,6 +8,8 @@ import Sauce
 import Settings
 import SwiftData
 
+enum ClipboardFilter: String { case all, favorites }
+
 @Observable
 class History: ItemsContainer { // swiftlint:disable:this type_body_length
   static let shared = History()
@@ -23,16 +25,69 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     }
   }
 
+  private(set) var filter: ClipboardFilter = .all
+  @ObservationIgnored private var resetSearchOnOpening = false
+
+  @MainActor
+  func setFilter(_ value: ClipboardFilter) {
+    filter = value
+    Defaults[.clipboardFilter] = value.rawValue
+    resetSearchOnOpening = false
+    refreshFilteredItems()
+    if self === AppState.shared.history {
+      AppState.shared.appDelegate?.hidePreviewNow()
+      AppState.shared.navigator.select(item: items.first)
+    }
+  }
+
+  func prepareForOpening() {
+    filter = ClipboardFilter(rawValue: Defaults[.clipboardFilter]) ?? .all
+    if resetSearchOnOpening {
+      searchQuery = ""
+      resetSearchOnOpening = false
+    }
+    refreshFilteredItems()
+    if self === AppState.shared.history {
+      AppState.shared.navigator.select(item: filter == .favorites ? pinnedItems.first : (unpinnedItems.first ?? pinnedItems.first))
+    }
+  }
+
+  @discardableResult
+  @MainActor
+  func setFavoriteName(_ item: HistoryItemDecorator, name: String) -> Bool {
+    guard item.isPinned else { return false }
+    let old = item.item.favoriteName
+    let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    item.item.favoriteName = trimmed.isEmpty ? nil : trimmed
+    do { try Storage.shared.context.save() }
+    catch { item.item.favoriteName = old; return false }
+    item.title = item.item.favoriteName ?? item.item.title
+    refreshFilteredItems()
+    return true
+  }
+
+  private func refreshFilteredItems() {
+    let scope = filter == .favorites ? all.filter(\.isPinned) : all
+    updateItems(search.search(string: searchQuery, within: scope))
+    if self === AppState.shared.history {
+      let visible = Set(items.map(\.id))
+      let navigator = AppState.shared.navigator
+      if navigator.selection.items.contains(where: { !visible.contains($0.id) }) {
+        navigator.select(item: items.first)
+      }
+    }
+  }
+
   var pinnedItems: [HistoryItemDecorator] { items.filter(\.isPinned) }
   var unpinnedItems: [HistoryItemDecorator] { items.filter(\.isUnpinned) }
 
   var searchQuery: String = "" {
     didSet {
       throttler.throttle { [self] in
-        updateItems(search.search(string: searchQuery, within: all))
+        refreshFilteredItems()
 
         if searchQuery.isEmpty {
-          AppState.shared.navigator.select(item: unpinnedItems.first)
+          AppState.shared.navigator.select(item: filter == .favorites ? pinnedItems.first : (unpinnedItems.first ?? pinnedItems.first))
         } else {
           AppState.shared.navigator.highlightFirst()
         }
@@ -115,7 +170,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     let descriptor = FetchDescriptor<HistoryItem>()
     let results = try Storage.shared.context.fetch(descriptor)
     all = sorter.sort(results).map { HistoryItemDecorator($0) }
-    items = all
+    refreshFilteredItems()
 
     limitHistorySize(to: Defaults[.size])
 
@@ -145,6 +200,10 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   @discardableResult
   @MainActor
   func add(_ item: HistoryItem) -> HistoryItemDecorator {
+    if !item.fromMaccy {
+      Defaults[.clipboardFilter] = ClipboardFilter.all.rawValue
+      resetSearchOnOpening = true
+    }
     if #available(macOS 15.0, *) {
       try? insertIntoStorage(item)
     } else {
@@ -161,6 +220,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       item.numberOfCopies += existingHistoryItem.numberOfCopies
       item.pin = existingHistoryItem.pin
       item.title = existingHistoryItem.title
+      item.favoriteName = existingHistoryItem.favoriteName
       if !item.fromMaccy {
         item.application = existingHistoryItem.application
       }
@@ -197,15 +257,16 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
         all.insert(itemDecorator, at: index)
       }
 
-      items = all
+      refreshFilteredItems()
       updateUnpinnedShortcuts()
       AppState.shared.popup.needsResize = true
       // A full horizontal shelf keeps its current scroll offset when the oldest
       // card is replaced. Reveal the newly copied card so collection does not
       // appear to stop at the history-size limit.
-      AppState.shared.navigator.scrollTarget = itemDecorator.id
+      if items.contains(itemDecorator) { AppState.shared.navigator.scrollTarget = itemDecorator.id }
     }
 
+    refreshFilteredItems()
     return itemDecorator
   }
 
@@ -232,7 +293,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       }
       all.removeAll(where: \.isUnpinned)
       sessionLog.removeValues { $0.pin == nil }
-      items = all
+      refreshFilteredItems()
 
       try? Storage.shared.context.transaction {
         try? Storage.shared.context.delete(
@@ -263,7 +324,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       }
       all.removeAll()
       sessionLog.removeAll()
-      items = all
+      refreshFilteredItems()
 
       try? Storage.shared.context.delete(model: HistoryItem.self)
       Storage.shared.context.processPendingChanges()
@@ -359,11 +420,12 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       all.insert(item, at: newIndex)
     }
 
-    items = all
-
-    searchQuery = ""
+    refreshFilteredItems()
     updateUnpinnedShortcuts()
-    if item.isUnpinned {
+    if filter == .favorites, item.isUnpinned, self === AppState.shared.history {
+      AppState.shared.navigator.select(item: items.first)
+    }
+    if item.isUnpinned, items.contains(item) {
       AppState.shared.navigator.scrollTarget = item.id
     }
   }

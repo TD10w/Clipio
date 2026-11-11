@@ -4,7 +4,7 @@
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# tad kopēt datus";
 "ClearHistoryOnQuit" = "Notīrīt vēsturi, izejot no programmas";
 "Title" = "Papildu";
-"ClearHistoryOnQuitTooltip" = "Pirms lietojumprogrammas aizvēršanas automātiski notīrīt visus nepiespraustos vienumus.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "TurnOff" = "Izslēgt";
 "ClearSystemClipboard" = "Notīrīt arī sistēmas starpliktuvi";
 "ClearSystemClipboardTooltip" = "Ja šī opcija ir iespējota, vēstures notīrīšana notīrīs arī pašreizējo sistēmas starpliktuvi.";

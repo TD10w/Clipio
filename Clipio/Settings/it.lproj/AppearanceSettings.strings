@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Sempre";
 "SearchVisibilityDuringSearch" = "Durante la ricerca";
 "ActiveScreen" = "Schermo attivo";
-"PinTo" = "Blocca su:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Parte superiore";
 "PinToBottom" = "Parte inferiore";
-"PinToTooltip" = "Cambia la posizione degli elementi bloccati.\nDefault: Parte superiore.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Altezza dell'immagine:";
 "ImageHeightTooltip" = "Altezza massima preview immagine.\nDefault: 40.\nSuggerimento: Impostala a 16 per farla sembrare come gli elementi testuali.";
 "PreviewDelay" = "Anteprima ritardo:";

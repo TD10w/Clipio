@@ -1,7 +1,7 @@
-"Title" = "ピン留め";
+"Title" = "Favorites";
 "Key" = "キー";
 "Alias" = "タイトル";
 "Content" = "内容";
 "ContentIsNotText" = "編集不可能なコンテンツ（画像またはファイル）";
 "RichTextEditWarning" = "編集すると、すべてのフォーマットが破棄されます。";
-"PinCustomizationDescription" = "ピン留めした項目のホットキー、タイトル、内容をカスタマイズできます。\n編集するには、項目をダブルクリックして新しい値を入力します。";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

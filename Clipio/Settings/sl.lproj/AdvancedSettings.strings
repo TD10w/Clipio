@@ -6,5 +6,5 @@
 "Title" = "Napredno";
 "TurnOff" = "Izklopi";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopiranje podatkov";
-"ClearHistoryOnQuitTooltip" = "Preden zaprete aplikacijo, samodejno odstranite vse nepripete elemente.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "TurnOffDescription" = "Začasno prezrite vse nove kopije.\nVerjetno ga boste uporabili programsko in med kopiranjem občutljivih podatkov onemogočili aplikacijo.";

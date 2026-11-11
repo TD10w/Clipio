@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "⌥를 누른 상태에서 메뉴 아이콘을 클릭할 수도 있습니다.\n다음 사본만 무시하려면 ⌥⇧로 클릭하십시오.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# 데이터 복사";
 "ClearHistoryOnQuit" = "종료시 기록 지우기";
-"ClearHistoryOnQuitTooltip" = "애플리케이션을 종료하기 전에 고정 해제된 모든 항목을 자동으로 제거합니다.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "시스템 클립보드도 지우기";
 "ClearSystemClipboardTooltip" = "활성화되면 기록을 지우면 현재 시스템 클립보드도 지워집니다.";

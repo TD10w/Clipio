@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Um Maccy zu deaktivieren, klicke auf das Menüleistensymbol und halte dabei ⌥ gedrückt.\nUm nur die nächste Kopie zu ignorieren, klicke und halte ⌥⇧ gedrückt.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# Einträge wieder kopieren";
 "ClearHistoryOnQuit" = "Verlauf beim Beenden löschen";
-"ClearHistoryOnQuitTooltip" = "Alle nicht angehefteten Elemente werden vor dem Beenden der Anwendung automatisch entfernt.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Löschen Sie auch die Zwischenablage des Systems";
 "ClearSystemClipboardTooltip" = "Wenn diese Option aktiviert ist, wird durch das Löschen des Verlaufs auch die aktuelle Systemzwischenablage gelöscht.";

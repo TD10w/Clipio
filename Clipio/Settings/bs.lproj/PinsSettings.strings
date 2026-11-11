@@ -1,7 +1,7 @@
-"Title" = "Zakačke";
+"Title" = "Favorites";
 "Key" = "Dugme";
 "Alias" = "Naziv";
 "Content" = "Sadržaj";
 "ContentIsNotText" = "Sadržaj koji se ne može uređivati (slika ili datoteka)";
 "RichTextEditWarning" = "Uređivanjem će se odbaciti svo formatiranje.";
-"PinCustomizationDescription" = "Možete prilagoditi prečicu, naslov i sadržaj bilo koje prikvačene stavke. Za uređivanje, dvaput kliknite na stavku i unesite novu vrijednost.\nImajte na umu da se može mijenjati samo običan tekst.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

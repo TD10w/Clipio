@@ -76,6 +76,14 @@ struct HistoryListView: View {
         }
       }
     }
+    .overlay {
+      if orderedItems.isEmpty, appState.history.filter == .favorites {
+        Text(searchQuery.isEmpty ? "star_empty" : "star_no_results")
+          .font(.system(size: 13))
+          .foregroundStyle(.secondary)
+          .allowsHitTesting(false)
+      }
+    }
     .frame(maxWidth: .infinity)
     // The shelf unfolds with a parent scale transform. Measure and hit-test inside
     // the shelf so cached card frames cannot retain an intermediate global scale.

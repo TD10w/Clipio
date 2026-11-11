@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Također možete kliknuti ikonu izbornika s pritisnutim ⌥.\nZa ignoriranje samo sljedeće kopije kliknite s ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopiraj podatke";
 "ClearHistoryOnQuit" = "Izbriši povijest prilikom zatvaranja programa";
-"ClearHistoryOnQuitTooltip" = "Automatski ukloni sve otkvačene elemente prije zatvaranja programa.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Očistite i međuspremnik sustava";
 "ClearSystemClipboardTooltip" = "Kada je omogućeno, brisanje povijesti također bi izbrisalo trenutni sistemski međuspremnik.";

@@ -23,6 +23,14 @@ class FooterItem: Equatable, Identifiable, HasVisibility {
   var showConfirmation: Bool = false
   var suppressConfirmation: Binding<Bool>?
   var isVisible: Bool = true
+  var requiresConfirmation = false
+  func requestAction() {
+    if confirmation != nil && (requiresConfirmation || suppressConfirmation?.wrappedValue != true) {
+      showConfirmation = true
+    } else {
+      action()
+    }
+  }
   var action: () -> Void
 
   init(

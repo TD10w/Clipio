@@ -66,6 +66,11 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     return resolved
   }
 
+  var searchableFields: [String] {
+    guard let name = item.favoriteName else { return [title] }
+    return [name, item.title]
+  }
+
   var isPinned: Bool { item.pin != nil }
   var isUnpinned: Bool { item.pin == nil }
 
@@ -81,7 +86,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   init(_ item: HistoryItem, shortcuts: [KeyShortcut] = []) {
     self.item = item
     self.shortcuts = shortcuts
-    self.title = item.title
+    self.title = item.favoriteName ?? item.title
     self.applicationImage = ApplicationImageCache.shared.getImage(item: item)
 
     synchronizeItemPin()
@@ -204,7 +209,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   }
 
   func highlight(_ query: String, _ ranges: [Range<String.Index>]) {
-    guard !query.isEmpty, !title.isEmpty else {
+    guard item.favoriteName == nil, !query.isEmpty, !title.isEmpty else {
       attributedTitle = nil
       return
     }
@@ -253,9 +258,10 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   private func synchronizeItemTitle() {
     _ = withObservationTracking {
       item.title
+      item.favoriteName
     } onChange: {
       DispatchQueue.main.async {
-        self.title = self.item.title
+        self.title = self.item.favoriteName ?? self.item.title
         self.synchronizeItemTitle()
       }
     }

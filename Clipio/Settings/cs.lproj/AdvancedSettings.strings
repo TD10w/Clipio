@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Můžeš také kliknut na menu ikonu při stisknutí ⌥.\nPro ignorování následující kopie stiskni s ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopírovat data";
 "ClearHistoryOnQuit" = "Vymazat historii při ukončení";
-"ClearHistoryOnQuitTooltip" = "Automaticky odebrat všechny nepřipnuté položky před ukončením aplikace.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Vymazat taky systémovou schránku";
 "ClearSystemClipboardTooltip" = "Pokud je povoleno, smazání historie smaže i aktuální systémovou schránku.";

@@ -1,6 +1,6 @@
-"clear_all_tooltip" = "Wyczyść wszystkie pozycje.";
+"clear_all_tooltip" = "Clear all clipboard history, including favorites.";
 "about_tooltip" = "Przeczytaj więcej o aplikacji.";
-"clear_all" = "Wyczyść wszystkie";
+"clear_all" = "Clear All (Including Favorites)";
 "about" = "O aplikacji";
 "quit" = "Wyjdź";
 "preferences" = "Ustawienia…";
@@ -10,8 +10,8 @@
 "screen" = "Ekran";
 "search_placeholder" = "Wpisz aby wyszukać…";
 "quit_tooltip" = "Wyjdź z aplikacji.";
-"clear_tooltip" = "Wyczyść nieprzypięte pozycje\nWybierz z ⇧ aby wyczyścić wszystkie.";
-"clear" = "Wyczyść";
+"clear_tooltip" = "Clear clipboard history. Favorites are kept.";
+"clear" = "Clear History";
 "clear_alert_comment" = "Nie możesz cofnąć tej akcji.";
 
 /* File collection */
@@ -69,3 +69,35 @@
 "onboarding_next" = "Next";
 "onboarding_start" = "Get Started";
 "onboarding_step" = "Step %d of 3";
+
+"star_filter" = "Clipboard View";
+
+"star_all" = "All";
+
+"star_favorites" = "Favorites";
+
+"star_empty" = "Star an item to keep it here.";
+
+"star_no_results" = "No matching favorites.";
+
+"star_add" = "Add to Favorites (⌥P)";
+
+"star_remove" = "Remove from Favorites (⌥P)";
+
+"star_rename" = "Name Favorite";
+
+"star_name_placeholder" = "Name (optional)";
+
+"star_name_comment" = "This name helps you find the item. Copied content stays unchanged.";
+
+"star_save" = "Save";
+
+"star_ok" = "OK";
+
+"star_name_failed" = "The name could not be saved. Please try again.";
+
+"star_clear_menu" = "Clear History…";
+
+"star_clear_all_message" = "Clear All, Including Favorites?";
+
+"star_clear_all_comment" = "All clipboard history and favorites will be removed from Clipio. This cannot be undone.";

@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "תָמִיד";
 "SearchVisibilityDuringSearch" = "במהלך החיפוש";
 "ActiveScreen" = "מסך פעיל";
-"PinTo" = "הצמדה אל:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "למעלה";
 "PinToBottom" = "למטה";
-"PinToTooltip" = "החלפת מקום הפריטים הנעוצים.\nברירת מחדל: למעלה.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "גובה תמונה::";
 "ImageHeightTooltip" = "גודל מרבי לתצוגה מקדימה של תמונות.\nברירת מחדל: 40.\nעצה: יש להגדיר ל־16 כדי שייראו כמו פריטי טקסט.";
 "PreviewDelay" = "השהיית תצוגה מקדימה:";

@@ -63,6 +63,16 @@ final class MenuIconPresentationTests: XCTestCase {
 
 @MainActor
 final class ShelfBehaviorTests: XCTestCase {
+  func testFavoriteNameCannotChangeWhetherContentIsAColor() {
+    let color = HistoryItem(contents: [HistoryItemContent(type: "public.utf8-plain-text", value: Data("#FF0000".utf8))])
+    color.title = "#FF0000"
+    color.favoriteName = "Brand red"
+    XCTAssertNotNil(CardItemView.contentColor(for: HistoryItemDecorator(color)))
+    let text = HistoryItem(contents: [HistoryItemContent(type: "public.utf8-plain-text", value: Data("ordinary note".utf8))])
+    text.title = "ordinary note"
+    text.favoriteName = "#FF0000"
+    XCTAssertNil(CardItemView.contentColor(for: HistoryItemDecorator(text)))
+  }
   func testClipboardRemoveTargetsTheChosenCard() {
     final class RecordingHistory: History {
       var deletedItem: HistoryItemDecorator?

@@ -4,8 +4,8 @@
 "CheckNow" = "Controleer nu";
 "Open" = "Open:";
 "OpenTooltip" = "Een herhaalde druk op de hoofdtoets terwijl de modificatietoetsen ingedrukt worden gehouden, selecteert het volgende item in de lijst. In deze modus zal het loslaten van de modificatietoetsen de selectie bevestigen en het popupvenster sluiten.\nStandaard: ⇧⌘C.";
-"Pin" = "Pin:";
-"PinTooltip" = "Sneltoets om geschiedenisitem vast te zetten.\nStandaard: %@P.";
+"Pin" = "Favorite / Pin:";
+"PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Verwijder:";
 "DeleteTooltip" = "Sneltoets om geschiedenisitem te verwijderen.\nStandaard: %@⌫.";
 "ShowPreview" = "Voorbeeld:";

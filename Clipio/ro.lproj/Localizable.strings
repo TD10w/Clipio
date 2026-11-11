@@ -1,7 +1,7 @@
-"clear" = "Șterge";
-"clear_tooltip" = "Șterge elementele nefixate.\nSelectează cu ⇧ pentru a șterge tot.";
+"clear" = "Clear History";
+"clear_tooltip" = "Clear clipboard history. Favorites are kept.";
 "preferences" = "Configurări…";
-"clear_all_tooltip" = "Șterge tot.";
+"clear_all_tooltip" = "Clear all clipboard history, including favorites.";
 "quit_tooltip" = "Închide aplicația.";
 "quit" = "Închide";
 "clear_alert_message" = "Ești sigur că dorești să ștergi istoricul?";
@@ -10,7 +10,7 @@
 "screen" = "Ecran";
 "about_tooltip" = "Citește mai mult despre aplicație.";
 "about" = "Despre";
-"clear_all" = "Șterge tot";
+"clear_all" = "Clear All (Including Favorites)";
 "search_placeholder" = "tastează pentru a căuta…";
 "clear_alert_confirm" = "Șterge";
 
@@ -69,3 +69,35 @@
 "onboarding_next" = "Next";
 "onboarding_start" = "Get Started";
 "onboarding_step" = "Step %d of 3";
+
+"star_filter" = "Clipboard View";
+
+"star_all" = "All";
+
+"star_favorites" = "Favorites";
+
+"star_empty" = "Star an item to keep it here.";
+
+"star_no_results" = "No matching favorites.";
+
+"star_add" = "Add to Favorites (⌥P)";
+
+"star_remove" = "Remove from Favorites (⌥P)";
+
+"star_rename" = "Name Favorite";
+
+"star_name_placeholder" = "Name (optional)";
+
+"star_name_comment" = "This name helps you find the item. Copied content stays unchanged.";
+
+"star_save" = "Save";
+
+"star_ok" = "OK";
+
+"star_name_failed" = "The name could not be saved. Please try again.";
+
+"star_clear_menu" = "Clear History…";
+
+"star_clear_all_message" = "Clear All, Including Favorites?";
+
+"star_clear_all_comment" = "All clipboard history and favorites will be removed from Clipio. This cannot be undone.";

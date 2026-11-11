@@ -1,7 +1,7 @@
-"Title" = "Замацаваныя";
+"Title" = "Favorites";
 "Key" = "Клавіша";
 "Alias" = "Назва";
 "Content" = "Кантэнт";
 "ContentIsNotText" = "Нерэдагавальны кантэнт (малюнак або файл)";
 "RichTextEditWarning" = "Рэдагаванне адменіць усё фарматаванне.";
-"PinCustomizationDescription" = "Вы можаце наладзіць гарачую клавішу, назву і змест любога замацаванага элемента. Каб рэдагаваць, двойчы пстрыкніце па элеменце і ўвядзіце новае значэнне.\nЗвярніце ўвагу, што змяніць можна толькі звычайны тэкст.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

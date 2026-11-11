@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Du kan også klikke på menyikonet med ⌥ trykket.\nFor å ignorere bare den neste kopien, klikk med ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopier data";
 "ClearHistoryOnQuit" = "Tøm historikk når du slutter";
-"ClearHistoryOnQuitTooltip" = "Fjern alle ikke-festede elementer automatisk før du avslutter applikasjonen.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Tøm systemets utklippstavle også";
 "ClearSystemClipboardTooltip" = "Når den er aktivert, vil tømming av loggen også tømme gjeldende systemutklippstavle.";

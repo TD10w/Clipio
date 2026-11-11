@@ -1,6 +1,6 @@
 # 后续规划：剪贴板 Star 收藏
 
-状态：设计讨论中；部分规则已确认，尚未实施。
+状态：已按授权做出独立可回退候选；测试与编译通过，最终交互及旧数据升级待体验；未安装、未发布。
 
 来源：用户于 2026-11-11 口述，要求“之后聊一下怎么设计，先存一下”，随后指定存到 Clipio 的后续规划里。
 
@@ -61,3 +61,17 @@
 - 重复复制会保留原 Pin 和名称；现有复制、粘贴、无格式粘贴可复用，自动粘贴仍沿用既有辅助功能授权。
 
 核对来源：`Clipio/Observables/History.swift`、`Clipio/Models/HistoryItem.swift`、`Clipio/Clipboard.swift`、`Clipio/Settings/PinsSettingsPane.swift`、`Clipio/Views/HeaderView.swift`。Q4–Q6 已于第二轮确认；快捷键仍待核对与决定。
+
+## 可回退候选实现（2026-11-11）
+
+用户不在电脑旁，明确要求先做出候选继续推进。独立工作区 `.worktrees/star-candidate`，分支 `feature/clipboard-star`；没有替换日用版。
+
+已实现 Star 视觉与现有 Pin 数据衔接、全部/收藏筛选、可选名称、图片和原内容保留、单垃圾桶菜单、不可绕过的清空全部确认。普通清空保留收藏，文件仍是原位置引用。专用筛选快捷键暂未添加；收集区 Pin 不变。
+
+候选打开规则采用较少自动变化的提案：外部新复制（含重复复制）影响下次打开或重新进入剪贴板，回到全部并清除旧搜索；正在看的范围不跳；从 Clipio 自身取用不重置；手动选择优先于更早复制；点 Star 不改范围。这是候选行为，未冒称用户完成最终体验接受。
+
+实现说明：[设计](../superpowers/specs/2026-11-11-clipboard-star-design.md)、[计划](../superpowers/plans/2026-11-11-clipboard-star-candidate.md)。增加一个可空名称字段，复用原 pin 作为保存标记，不重写用户剪贴板内容。真实旧数据库升级尚待隔离验收，不能由全新内存库测试推断已通过。
+
+验证：134 项原始基线通过；功能和独立复核的回归先失败后修复；最终 144 项单元测试通过，unsigned Debug 编译通过，实际构建包的 31 份语言表包含新界面与完整清空说明。复核修正了别名影响颜色卡类型、带锚点正则搜索、隐藏条目选择残留和收集区返回路径问题。
+
+日志：`/tmp/clipio-star-red.log`、`/tmp/clipio-star-color-red.log`、`/tmp/clipio-star-review-red.log`、`/tmp/clipio-star-verified-tests.log`、`/tmp/clipio-star-final-build.log`。未使用 computer use、未运行会控制鼠标的 UI 测试。原生布局、改名弹窗、所有设置/输入法组合及实际旧数据升级仍待集中体验。

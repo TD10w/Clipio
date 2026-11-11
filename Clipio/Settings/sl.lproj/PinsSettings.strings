@@ -1,7 +1,7 @@
-"Title" = "Pini";
+"Title" = "Favorites";
 "Key" = "Ključ";
 "Alias" = "Naslov";
 "Content" = "Vsebina";
 "ContentIsNotText" = "Vsebina, ki je ni mogoče urejati (slika ali datoteka)";
 "RichTextEditWarning" = "Pri urejanju se bodo izgubile vse oblike.";
-"PinCustomizationDescription" = "Prilagodite lahko tipko za hitri dostop, naslov in vsebino vsakega pripetega elementa. Za urejanje dvakrat kliknite element in vnesite novo vrednost.\nUpoštevajte, da lahko spremenite samo navadno besedilo.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

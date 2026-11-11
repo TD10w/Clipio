@@ -1,7 +1,7 @@
-"Title" = "Prisegtukai";
+"Title" = "Favorites";
 "Key" = "Klavišas";
 "Alias" = "Pavadinimas";
 "Content" = "Turinys";
 "ContentIsNotText" = "Neredaguojamas turinys (vaizdas arba failas)";
 "RichTextEditWarning" = "Redaguojant bus panaikintas visas formatavimas.";
-"PinCustomizationDescription" = "Galite pritaikyti bet kurio prisegto elemento sparčiuosius klavišus, pavadinimą ir turinį. Norėdami redaguoti, dukart spustelėkite elementą ir įveskite naują reikšmę.\nAtkreipkite dėmesį, kad galima keisti tik paprastą tekstą.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

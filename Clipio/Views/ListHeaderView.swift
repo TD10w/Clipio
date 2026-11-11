@@ -32,6 +32,20 @@ struct ListHeaderView: View {
       .accessibilityLabel(Text(appState.shelfMode == .clipboard ? "collection_switch_to_collection" : "collection_switch_to_clipboard"))
       .help(Text("collection_switch_hint"))
 
+      if appState.shelfMode == .clipboard {
+        Picker("star_filter", selection: Binding(
+          get: { appState.history.filter },
+          set: { appState.history.setFilter($0) }
+        )) {
+          Text("star_all").tag(ClipboardFilter.all)
+          Text("star_favorites").tag(ClipboardFilter.favorites)
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .fixedSize(horizontal: true, vertical: false)
+        .accessibilityIdentifier("clipboard-filter")
+      }
+
       SearchFieldView(placeholder: "search_placeholder", query: $searchQuery)
         .id(appState.shelfMode)
         .focused($searchFocused)

@@ -7,4 +7,4 @@
 "ClearSystemClipboardTooltip" = "Калі гэты параметр улучаны, ачыстка гісторыі таксама ачысціць бягучы сістэмны буфер абмену.";
 "TurnOffDescription" = "Часова ігнараваць усе новыя капіяванні.\nВы можаце скарыстаць гэту наладу праграмна і адключыць дадатак на час капіявання прыватных дадзеных.";
 "TurnOffViaMenuIconDescription" = "Вы таксама можаце клікнуць значок меню з націснутым ⌥.\nКаб ігнараваць толькі наступную копію, клікніце з ⌥⇧.";
-"ClearHistoryOnQuitTooltip" = "Аўтаматычна падаляць усе незамацаваныя запісы перад зачыненнем дадатку.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";

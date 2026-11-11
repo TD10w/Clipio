@@ -25,7 +25,10 @@ struct PinTitleView: View {
   @Bindable var item: HistoryItem
 
   var body: some View {
-    TextField("", text: $item.title)
+    TextField(item.title, text: Binding(
+      get: { item.favoriteName ?? "" },
+      set: { item.favoriteName = $0.isEmpty ? nil : $0 }
+    ))
   }
 }
 

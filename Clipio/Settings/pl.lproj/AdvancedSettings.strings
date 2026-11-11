@@ -7,4 +7,4 @@
 "TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# skopiuj dane\ndefaults write com.clipio.app ignoreEvents false";
 "TurnOffViaMenuIconDescription" = "Możesz też kliknąć na ikonę menu z wciśniętym klawiszem ⌥.\nAby zignorować tylko następną akcję kopiowania, kliknij ikonę z wciśniętymi klawiszami ⌥⇧.";
 "ClearSystemClipboard" = "Wyczyść także schowek systemowy";
-"ClearHistoryOnQuitTooltip" = "Automatycznie wyczyść wszystkie nieprzypięte wpisy przed wyjściem z aplikacji.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";

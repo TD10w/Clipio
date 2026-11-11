@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Immer";
 "SearchVisibilityDuringSearch" = "Während der Suche";
 "ActiveScreen" = "Aktiver Bildschirm";
-"PinTo" = "Angeheftete Einträge:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Oben";
 "PinToBottom" = "Unten";
-"PinToTooltip" = "Ändere die Position der angehefteten Einträge.\nStandard: Oben.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Bildhöhe:";
 "ImageHeightTooltip" = "Maximale Höhe für Bildvorschau in Pixel.\nStandard: 40.\nHinweis: Wähle 16, wenn das Bild gleich groß dargestellt werden soll, wie Text.";
 "PreviewDelay" = "Vorschauverzögerung:";

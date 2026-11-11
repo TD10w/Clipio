@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Je kunt ook op het menu-icoontje klikken terwijl je ⌥ ingedrukt houdt.\nOm alleen de volgende kopie te negeren, klik met ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# kopieer data";
 "ClearHistoryOnQuit" = "Wis geschiedenis bij afsluiten";
-"ClearHistoryOnQuitTooltip" = "Verwijder automatisch alle niet vastgemaakte items voordat u de app afsluit.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Wis ook het systeemklembord";
 "ClearSystemClipboardTooltip" = "Als dit is ingeschakeld, wordt bij het wissen van de geschiedenis ook het huidige klembord van het systeem gewist..";
