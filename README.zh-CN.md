@@ -6,7 +6,7 @@
 
 浏览文字、图片、文件和颜色值，搜索历史，并置顶常用内容。另有一个**文件收集区**：先把文件和图片拖进来暂存，需要时再拖到要去的地方。
 
-**[下载 macOS 测试版 — 2.7.4-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.7.4-beta.1/Clipio-2.7.4-beta.1.dmg)** · [版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.7.4-beta.1)
+**[下载 macOS 测试版 — 2.7.5-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.7.5-beta.1/Clipio-2.7.5-beta.1.dmg)** · [版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.7.5-beta.1)
 
 macOS 14+ · 支持 Apple Silicon 和 Intel · 已签名并通过 Apple 公证
 
@@ -20,7 +20,7 @@ macOS 14+ · 支持 Apple Silicon 和 Intel · 已签名并通过 Apple 公证
 
 **早期公开测试版。** 这是基于 Maccy 的独立个人项目。下载安装包使用不需要 Xcode，也不需要执行终端指令。
 
-1. [下载 Clipio-2.7.4-beta.1.dmg](https://github.com/TD10w/Clipio/releases/download/v2.7.4-beta.1/Clipio-2.7.4-beta.1.dmg)，双击打开安装窗口。请选择这个 DMG，不要下载 GitHub 自动生成的“Source code”源码压缩包。
+1. [下载 Clipio-2.7.5-beta.1.dmg](https://github.com/TD10w/Clipio/releases/download/v2.7.5-beta.1/Clipio-2.7.5-beta.1.dmg)，双击打开安装窗口。请选择这个 DMG，不要下载 GitHub 自动生成的“Source code”源码压缩包。
 2. 将 **Clipio.app** 拖入“**应用程序**”文件夹，然后打开。如果出现 macOS 正常的首次打开确认提示，确认打开即可。
 3. Clipio 位于**菜单栏**，按 **Shift + Command + V** 打开剪贴板，按 **Shift + Command + C** 打开文件收集区；它没有普通应用那样的 Dock 主窗口。
 4. 在其他应用中复制内容，Clipio 会记录到历史。选中卡片按 **Return**，再到目标应用按 **Command + V** 粘贴。
@@ -36,7 +36,7 @@ macOS 14+ · 支持 Apple Silicon 和 Intel · 已签名并通过 Apple 公证
 
 如果 macOS 拒绝打开，请确认系统为 macOS 14 或更高版本，并从本仓库重新下载。在 [Issues](https://github.com/TD10w/Clipio/issues/new/choose) 中附上准确报错；无需全局关闭 Gatekeeper 安全检查。
 
-可选的校验和验证方法见[版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.7.4-beta.1)。
+可选的校验和验证方法见[版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.7.5-beta.1)。
 
 ## 基本用法
 
