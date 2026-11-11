@@ -101,3 +101,5 @@
 "star_clear_all_message" = "清空全部，包含收藏？";
 
 "star_clear_all_comment" = "将从 Clipio 移除所有剪贴板历史和收藏。此操作无法撤销。";
+
+"collection_received" = "已收好";

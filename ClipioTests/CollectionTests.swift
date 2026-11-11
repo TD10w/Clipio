@@ -730,6 +730,114 @@ final class CollectionTests: XCTestCase {
     XCTAssertTrue(legacy.items.allSatisfy { $0.batchID == nil })
   }
 
+  @MainActor
+  func testReceiptOnlyAfterEntireNewBatchHasPersisted() throws {
+    let collection = store()
+    let batch = CollectionImportBatch(count: 2, store: collection)
+    let first = try collection.addFile(source("first.txt"))
+    batch.complete(id: first)
+    XCTAssertEqual(collection.receiptGeneration, 0)
+    XCTAssertEqual(collection.importingCount, 1)
+    let second = try collection.addFile(source("second.txt"))
+    batch.complete(id: second)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    batch.complete(id: second)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    XCTAssertEqual(store().receiptGeneration, 0, "Restoring saved items must not replay success")
+  }
+
+  @MainActor
+  func testConcurrentImportFailureCannotConfirmOrCancelAnotherBatch() throws {
+    let collection = store()
+    let good = CollectionImportBatch(count: 2, store: collection)
+    let partial = CollectionImportBatch(count: 2, store: collection)
+    good.complete(id: try collection.addFile(source("good1.txt")))
+    partial.complete(id: try collection.addFile(source("partial.txt")))
+    partial.complete(error: CollectionError.unsupportedDrop)
+    XCTAssertEqual(collection.receiptGeneration, 0, "Partial failures must not claim complete success")
+    XCTAssertEqual(collection.importingCount, 1)
+    XCTAssertNotNil(collection.lastError)
+    good.complete(id: try collection.addFile(source("good2.txt")))
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    XCTAssertEqual(collection.items.count, 3)
+  }
+
+  @MainActor
+  func testProviderBatchReceiptsExcludeDuplicateEmptyAndFailedImports() async throws {
+    let collection = store()
+    let url = try source()
+    let provider = { NSItemProvider(item: url as NSURL, typeIdentifier: "public.file-url") }
+    await CollectionImporter.collect([provider()], into: collection)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    await CollectionImporter.collect([provider()], into: collection)
+    await CollectionImporter.collect([], into: collection)
+    await CollectionImporter.collect([NSItemProvider()], into: collection)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    try collection.clearUnpinned()
+    await CollectionImporter.collect([provider()], into: collection)
+    XCTAssertEqual(collection.receiptGeneration, 2, "A new drop still confirms when total count returns to the same value")
+  }
+
+  @MainActor
+  func testSevenProviderFilesProduceOneReceiptAndFailedSaveProducesNone() async throws {
+    let collection = store()
+    let providers = try (1...7).map { number in
+      NSItemProvider(item: try source("\(number).txt") as NSURL, typeIdentifier: "public.file-url")
+    }
+    await CollectionImporter.collect(providers, into: collection)
+    XCTAssertEqual(collection.items.count, 7)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    let broken = CollectionStore(directory: root.appendingPathComponent("broken"), securityScoped: false) { _, _ in
+      throw CocoaError(.fileWriteOutOfSpace)
+    }
+    await CollectionImporter.collect(providers, into: broken)
+    XCTAssertTrue(broken.items.isEmpty)
+    XCTAssertEqual(broken.receiptGeneration, 0)
+    XCTAssertEqual(broken.importingCount, 0)
+    XCTAssertNotNil(broken.lastError)
+  }
+
+  func testApprovedCollectionSoundIsIncludedInBuiltApp() throws {
+    let url = try XCTUnwrap(Bundle.main.url(forResource: "Collect", withExtension: "wav"))
+    let sound = try XCTUnwrap(NSSound(contentsOf: url, byReference: false))
+    XCTAssertEqual(sound.duration, 0.38, accuracy: 0.002)
+  }
+
+  @MainActor
+  func testOverlappingDropsOfSameFileOnlyConfirmOneActualInsertion() async throws {
+    let collection = store()
+    let url = try source()
+    let requested = expectation(description: "Both drops start before either file arrives")
+    requested.expectedFulfillmentCount = 2
+    let gate = DispatchSemaphore(value: 0)
+    func provider() -> NSItemProvider {
+      let provider = NSItemProvider()
+      provider.registerDataRepresentation(forTypeIdentifier: "public.file-url", visibility: .all) { completion in
+        requested.fulfill()
+        DispatchQueue.global().async {
+          _ = gate.wait(timeout: .now() + 3)
+          completion(url.dataRepresentation, nil)
+        }
+        return nil
+      }
+      return provider
+    }
+    let first = Task { await CollectionImporter.collect([provider()], into: collection) }
+    let second = Task { await CollectionImporter.collect([provider()], into: collection) }
+    await fulfillment(of: [requested], timeout: 2)
+    gate.signal()
+    gate.signal()
+    await first.value
+    await second.value
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertEqual(collection.receiptGeneration, 1, "The duplicate-only drop must not confirm another batch's insertion")
+    XCTAssertEqual(collection.importingCount, 0)
+  }
+
   func testSearchHitShowsWholeStackAndLastMemberBecomesOrdinaryCard() throws {
     let batch = UUID()
     let collection = store()

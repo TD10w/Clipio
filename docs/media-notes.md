@@ -27,3 +27,9 @@ Geist's upstream license is available at [vercel/geist-font](https://github.com/
 Capture with a clean sample clipboard, hide notifications and account names, and inspect the full frame for filenames and private text. Record the build commit. Check the rendered video from beginning to end; a safe sample frame is not clearance for a whole recording.
 
 Use a lightweight PNG/JPEG in the README, optionally a short GIF. Put the MP4 in Release assets and link it from the README or use a GitHub attachment in a suitable discussion/issue. Do not assume a repository `.mov` link will play inline in README rendering. Keep large generated renders out of Git history.
+
+## Collection receipt sound (2026-11-11)
+
+`Clipio/Sounds/Collect.wav` is the exact 0.38-second candidate A selected by the user in the second receipt-sound audition. The new collection sound is separate from existing `Write.caf` / `Knock.caf` clipboard sounds.
+
+Both source recordings are CC0: [swoosh-1.mp3 by lesaucisson](https://freesound.org/people/lesaucisson/sounds/585257/) and [Item or Material Pickup Pop 1 of 3 by el_boss](https://freesound.org/people/el_boss/sounds/665183/). The source previews were trimmed, filtered, retimed/pitched, mixed and gain-controlled. No paid library or generated audio was used. Source metadata, processing script, measurements and downloaded previews are preserved in `Designs/explorations/2026-11-11-receipt-feedback/sound-study-v2/`. The app bundles the processed WAV, not the reference MP3 files. CC0 provenance applies to this audio; do not infer rights for unrelated media.

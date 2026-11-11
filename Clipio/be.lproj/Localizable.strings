@@ -100,3 +100,5 @@
 "star_clear_all_message" = "Clear All, Including Favorites?";
 
 "star_clear_all_comment" = "All clipboard history and favorites will be removed from Clipio. This cannot be undone.";
+
+"collection_received" = "Collected";

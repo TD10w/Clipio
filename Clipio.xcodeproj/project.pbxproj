@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C011EC710000000000000002 /* Collect.wav in Resources */ = {isa = PBXBuildFile; fileRef = C011EC710000000000000001 /* Collect.wav */; };
 		CB1C11000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = CB1C11000000000000000001 /* AppIcon.icon */; };
 		CB0B11000000000000000016 /* OnboardingIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000015 /* OnboardingIllustration.swift */; };
 		CB0B11000000000000000014 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000013 /* OnboardingView.swift */; };
@@ -177,6 +178,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C011EC710000000000000001 /* Collect.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Collect.wav; sourceTree = "<group>"; };
 		CB1C11000000000000000001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		CB0B11000000000000000015 /* OnboardingIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingIllustration.swift; sourceTree = "<group>"; };
 		CB0B11000000000000000013 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -693,6 +695,7 @@
 		DA21AD3C249E85BD003E7C98 /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				C011EC710000000000000001 /* Collect.wav */,
 				DA20FA732B082E0100056DD5 /* Knock.caf */,
 				DA20FA752B082E0800056DD5 /* Write.caf */,
 			);
@@ -1028,6 +1031,7 @@
 				DA689FCF2C1DEE570009B887 /* AppearanceSettings.strings in Resources */,
 				4762D6972467226100B3A2BA /* Localizable.strings in Resources */,
 				DA009934256411F90030E697 /* LICENSE in Resources */,
+				C011EC710000000000000002 /* Collect.wav in Resources */,
 				DA20FA742B082E0100056DD5 /* Knock.caf in Resources */,
 				DAA5ACB52C1B803000B58513 /* GeneralSettings.strings in Resources */,
 				DA740D7A2C21E6B0007B1A36 /* AdvancedSettings.strings in Resources */,

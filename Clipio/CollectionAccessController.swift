@@ -23,12 +23,17 @@ final class CollectionAccessController: NSObject {
   private var itemCountAtSpring = 0
   private var springWork: DispatchWorkItem?
   private var hideGeneration = 0
+  private var seenReceiptGeneration = 0
+  private var showingReceipt = false
+  private var receiptToken = UUID()
+  private var receiptDismissWork: DispatchWorkItem?
   /// How long a drag must rest on the pill before it unfolds into the full shelf.
   static let springDelay: TimeInterval = 0.6
   private let dragPasteboard = NSPasteboard(name: .drag)
 
   init(store: CollectionStore) {
     self.store = store
+    seenReceiptGeneration = store.receiptGeneration
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
     super.init()
@@ -87,6 +92,7 @@ final class CollectionAccessController: NSObject {
 
   deinit {
     releaseWork?.cancel()
+    receiptDismissWork?.cancel()
     monitors.forEach(NSEvent.removeMonitor)
     if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
     let entryPanel = panel
@@ -100,6 +106,7 @@ final class CollectionAccessController: NSObject {
   private func observeCount() {
     withObservationTracking {
       _ = store.items.count
+      _ = store.receiptGeneration
       _ = AppState.shared.shelfExpanded
       _ = AppState.shared.shelfMode
     } onChange: { [weak self] in
@@ -115,6 +122,12 @@ final class CollectionAccessController: NSObject {
     switch event.type {
     case .leftMouseDown:
       releaseWork?.cancel()
+      if showingReceipt {
+        showingReceipt = false
+        receiptToken = UUID()
+        receiptDismissWork?.cancel()
+        updateEntry()
+      }
       dragChangeCount = dragPasteboard.changeCount
     case .leftMouseDragged:
       guard !store.isExporting, dragPasteboard.changeCount != dragChangeCount,
@@ -194,22 +207,40 @@ final class CollectionAccessController: NSObject {
   }
 
   private func updateEntry() {
+    if seenReceiptGeneration != store.receiptGeneration {
+      seenReceiptGeneration = store.receiptGeneration
+      showingReceipt = true
+      receiptDismissWork?.cancel()
+      let token = UUID()
+      receiptToken = token
+      Notifier.play(sound: .collectionReceipt)
+      let work = DispatchWorkItem { [weak self] in
+        guard let self, self.receiptToken == token else { return }
+        self.showingReceipt = false
+        self.updateEntry()
+      }
+      receiptDismissWork = work
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.05, execute: work)
+    }
     // Never put a custom window in the menu bar. A real status item reserves space
     // alongside other apps, and its visibility does not change on Tab or during a drag.
     let hasItems = !store.items.isEmpty
     if statusItem.isVisible != hasItems { statusItem.isVisible = hasItems }
-    guard showingDrag && !openedForDrag else {
+    panel.ignoresMouseEvents = showingReceipt && !showingDrag
+    guard showingReceipt || (showingDrag && !openedForDrag) else {
       hide()
       return
     }
-    let screen = (showingDrag ? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } : NSScreen.main)
+    let screen = (showingDrag ? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } : panel.screen)
       ?? NSScreen.main
     guard let screen else { return }
     let target = Self.dragEntryFrame(
       screenFrame: screen.frame, safeAreaTop: screen.safeAreaInsets.top,
       menuBarHeight: NSStatusBar.system.thickness, targeted: dropTargeted
     )
-    hosting.rootView = CollectionEntryLabel(dragging: showingDrag, targeted: dropTargeted) { [weak self] in
+    hosting.rootView = CollectionEntryLabel(
+      dragging: true, targeted: dropTargeted, received: showingReceipt, receiptGeneration: seenReceiptGeneration
+    ) { [weak self] in
       self?.openCollection()
     }
     hideGeneration += 1
@@ -287,18 +318,20 @@ final class CollectionAccessController: NSObject {
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 1
     queue.qualityOfService = .utility
-    let batch = receivers.count > 1 ? UUID() : nil
+    // Each receiver may promise several files, each delivered in its own callback.
+    let fileCount = receivers.reduce(0) { $0 + max(1, $1.fileNames.count) }
+    let batch = fileCount > 1 ? UUID() : nil
+    let store = self.store
+    let receipt = CollectionImportBatch(count: fileCount, store: store)
     for receiver in receivers {
-      receiver.receivePromisedFiles(atDestination: destination, options: [:], operationQueue: queue) { [weak self] url, error in
+      receiver.receivePromisedFiles(atDestination: destination, options: [:], operationQueue: queue) { url, error in
         let image = Result { () throws -> CollectionImage in
           if let error { throw error }
           return try CollectionImage(contentsOf: url)
         }
         DispatchQueue.main.async {
-          guard let self else { return }
-          self.store.perform {
-            try self.store.addImage(image.get(), batch: batch)
-          }
+          do { receipt.complete(id: try store.addImage(image.get(), batch: batch)) }
+          catch { receipt.complete(error: error) }
           try? FileManager.default.removeItem(at: url)
         }
       }
@@ -309,24 +342,33 @@ final class CollectionAccessController: NSObject {
 private struct CollectionEntryLabel: View {
   let dragging: Bool
   let targeted: Bool
+  var received = false
+  var receiptGeneration = 0
   let action: () -> Void
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     Button(action: action) {
       HStack(spacing: 7) {
-        Image(systemName: dragging ? "tray.and.arrow.down" : "tray")
+        Image(systemName: received ? "checkmark" : (dragging ? "tray.and.arrow.down" : "tray"))
           .symbolEffect(.bounce, value: targeted)
         if dragging { Text("collection_drop_hint") }
       }
       .font(.system(size: dragging ? 12.5 : 11, weight: .medium))
       .foregroundStyle(.primary)
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .modifier(CollectionEntrySurface(radius: dragging ? 22 : 13, targeted: targeted))
+      .modifier(CollectionEntrySurface(radius: dragging ? 22 : 13, targeted: targeted || received))
       .contentShape(Capsule())
     }
     .buttonStyle(.plain)
     .padding(3)
-    .accessibilityLabel(Text(dragging ? "collection_drop_hint" : "collection_open"))
+    .keyframeAnimator(initialValue: CGFloat(1), trigger: reduceMotion ? 0 : receiptGeneration) { content, scale in
+      content.scaleEffect(scale)
+    } keyframes: { _ in
+      LinearKeyframe(1.045, duration: 0.18)
+      SpringKeyframe(1, duration: 0.32, spring: .smooth(duration: 0.32))
+    }
+    .accessibilityLabel(Text(received ? "collection_received" : (dragging ? "collection_drop_hint" : "collection_open")))
     .accessibilityIdentifier("collection-entry")
   }
 }

@@ -2,68 +2,105 @@ import AppKit
 import UniformTypeIdentifiers
 
 @MainActor
+final class CollectionImportBatch {
+  private let store: CollectionStore
+  private let existingIDs: Set<UUID>
+  private var remaining: Int
+  private var receivedIDs: Set<UUID> = []
+  private var failures = 0
+  private var lastError: Error?
+
+  init(count: Int, store: CollectionStore) {
+    self.store = store
+    existingIDs = Set(store.items.map(\.id))
+    remaining = max(0, count)
+    store.importingCount += remaining
+  }
+
+  func complete(id: UUID? = nil, error: Error? = nil) {
+    guard remaining > 0 else { return }
+    if let error {
+      failures += 1
+      lastError = error
+    } else if let id, !existingIDs.contains(id) {
+      receivedIDs.insert(id)
+    }
+    remaining -= 1
+    store.importingCount -= 1
+    guard remaining == 0 else { return }
+    if failures > 0 {
+      store.lastError = String(format: NSLocalizedString("collection_import_failed", comment: ""), failures)
+        + "\n" + (lastError?.localizedDescription ?? "")
+    } else if !receivedIDs.isDisjoint(with: Set(store.items.map(\.id))) {
+      store.recordReceipt()
+    }
+    store.refreshAvailability()
+  }
+}
+
+@MainActor
 enum CollectionImporter {
   static let supportedTypes: [UTType] = [.fileURL, .image, .url]
 
   static func collect(_ providers: [NSItemProvider], into store: CollectionStore) async {
-    store.importingCount += providers.count
-    var failures = 0
+    let receipt = CollectionImportBatch(count: providers.count, store: store)
     // Everything delivered by one drop forms one Stack.
     let batch = providers.count > 1 ? UUID() : nil
     for provider in providers {
       do {
+        let id: UUID?
         if let file = await loadURL(from: provider, type: UTType.fileURL.identifier), file.isFileURL {
-          try await addFile(file, provider: provider, batch: batch, into: store)
+          id = try await addFile(file, provider: provider, batch: batch, into: store)
         } else if let image = await imageData(from: provider) {
           let name = provider.suggestedName ?? "Image"
           let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: image, name: name) }.value
-          try store.addImage(prepared, batch: batch)
+          id = try store.addImage(prepared, batch: batch)
         } else if let url = await loadURL(from: provider, type: UTType.url.identifier) {
           if url.isFileURL {
-            try store.addFile(url, batch: batch)
+            id = try addNewFile(url, batch: batch, into: store)
           } else {
             let data = try await downloadImage(url)
             let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: data, name: url.lastPathComponent) }.value
-            try store.addImage(prepared, batch: batch)
+            id = try store.addImage(prepared, batch: batch)
           }
         } else {
           throw CollectionError.unsupportedDrop
         }
+        receipt.complete(id: id)
       } catch {
-        failures += 1
-        store.lastError = error.localizedDescription
+        receipt.complete(error: error)
       }
-      store.importingCount -= 1
     }
-    if failures > 0 {
-      store.lastError = String(format: NSLocalizedString("collection_import_failed", comment: ""), failures)
-        + "\n" + (store.lastError ?? "")
-    }
-    store.refreshAvailability()
   }
 
   /// Apps like Messages drag a URL into their own private storage alongside the image
   /// bytes. Such a URL is unreadable from the sandbox, and referencing it would let a
   /// later drag-out move the file out of that app's storage. Keep a copy of the bytes
   /// instead; ordinary user files stay references.
-  private static func addFile(_ file: URL, provider: NSItemProvider, batch: UUID?, into store: CollectionStore) async throws {
+  private static func addFile(_ file: URL, provider: NSItemProvider, batch: UUID?, into store: CollectionStore) async throws -> UUID? {
     if !isAppPrivate(file) {
       do {
-        try store.addFile(file, batch: batch)
-        return
+        return try addNewFile(file, batch: batch, into: store)
       } catch {
         guard let image = await imageData(from: provider) else { throw error }
-        try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
-        return
+        return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
       }
     }
     guard let image = await imageData(from: provider) else { throw CollectionError.unavailable }
-    try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
+    return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
   }
 
-  private static func addOwnedImage(_ data: Data, name: String, batch: UUID?, into store: CollectionStore) async throws {
+  // No suspension between checking and adding: concurrent drops cannot claim
+  // each other's persisted item as a new insertion.
+  private static func addNewFile(_ file: URL, batch: UUID?, into store: CollectionStore) throws -> UUID? {
+    let count = store.items.count
+    let id = try store.addFile(file, batch: batch)
+    return store.items.count > count ? id : nil
+  }
+
+  private static func addOwnedImage(_ data: Data, name: String, batch: UUID?, into store: CollectionStore) async throws -> UUID {
     let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: data, name: name) }.value
-    try store.addImage(prepared, batch: batch)
+    return try store.addImage(prepared, batch: batch)
   }
 
   /// Home whose ~/Library counts as app-private. Tests point it at a scratch folder.

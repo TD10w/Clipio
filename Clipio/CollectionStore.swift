@@ -22,6 +22,8 @@ final class CollectionStore {
   }
   var lastError: String?
   var importingCount = 0
+  /// Session-only: restored metadata and ordinary edits never trigger receipts.
+  private(set) var receiptGeneration = 0
   var isExporting = false
   var showClearConfirmation = false
 
@@ -63,6 +65,8 @@ final class CollectionStore {
       lastError = CollectionError.unreadableStore.localizedDescription
     }
   }
+
+  func recordReceipt() { receiptGeneration += 1 }
 
   /// A search hit on any Stack member shows the whole Stack.
   var visibleItems: [CollectionItem] {
