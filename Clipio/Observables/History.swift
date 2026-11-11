@@ -29,6 +29,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   @ObservationIgnored private var resetSearchOnOpening = false
 
   @MainActor
+  func toggleFilter() { setFilter(filter == .all ? .favorites : .all) }
+
+  @MainActor
   func setFilter(_ value: ClipboardFilter) {
     filter = value
     Defaults[.clipboardFilter] = value.rawValue

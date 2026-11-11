@@ -32,6 +32,7 @@ final class CollectionStore {
   private let writeManifest: (Data, URL) throws -> Void
   private var canWrite = true
   private let fileManager = FileManager.default
+  @ObservationIgnored private var recycling = false
   @ObservationIgnored private var pendingMoves: [UUID: CollectionMoveObservation] = [:]
 
   private struct Manifest: Codable {
@@ -125,10 +126,17 @@ final class CollectionStore {
     if let existing = items.first(where: { item in
       item.ownedFileName == nil && (try? resolveURL(for: item.id).resolvingSymlinksInPath()) == url.resolvingSymlinksInPath()
     }) {
+      // Re-dropping an existing reference is also an explicit grant refresh for
+      // items saved by an older read-only build. Preserve its ID, batch and Pin.
+      let bookmark = try url.bookmarkData(options: securityScoped ? [.withSecurityScope] : [.minimalBookmark],
+        includingResourceValuesForKeys: nil, relativeTo: nil)
+      var updated = items
+      if let index = updated.firstIndex(where: { $0.id == existing.id }) { updated[index].bookmark = bookmark }
+      try commit(updated)
       return existing.id
     }
     let bookmark = try url.bookmarkData(
-      options: securityScoped ? [.withSecurityScope, .securityScopeAllowOnlyReadAccess] : [.minimalBookmark],
+      options: securityScoped ? [.withSecurityScope] : [.minimalBookmark],
       includingResourceValuesForKeys: nil,
       relativeTo: nil
     )
@@ -168,7 +176,7 @@ final class CollectionStore {
     return id
   }
 
-  func resolveURL(for id: UUID) throws -> URL {
+  func resolveURL(for id: UUID, requireReadable: Bool = true) throws -> URL {
     guard let item = items.first(where: { $0.id == id }) else { throw CollectionError.unavailable }
     let url: URL
     if let fileName = item.ownedFileName {
@@ -186,7 +194,7 @@ final class CollectionStore {
         var updated = items
         if let index = updated.firstIndex(where: { $0.id == id }) {
           updated[index].bookmark = try url.bookmarkData(
-            options: securityScoped ? [.withSecurityScope, .securityScopeAllowOnlyReadAccess] : [.minimalBookmark],
+            options: securityScoped ? [.withSecurityScope] : [.minimalBookmark],
             includingResourceValuesForKeys: nil, relativeTo: nil
           )
           try commit(updated)
@@ -197,7 +205,7 @@ final class CollectionStore {
     }
     let accessed = url.startAccessingSecurityScopedResource()
     defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-    guard fileManager.isReadableFile(atPath: url.path) else { throw CollectionError.unavailable }
+    guard !requireReadable || fileManager.isReadableFile(atPath: url.path) else { throw CollectionError.unavailable }
     return url
   }
 
@@ -212,6 +220,7 @@ final class CollectionStore {
   /// Pins every item when any of them is unpinned, otherwise unpins them all, so a
   /// partly pinned selection or Stack never flips member by member.
   func togglePin(ids: Set<UUID>) throws {
+    guard !isExporting else { throw CollectionError.exportInProgress }
     let indices = items.indices.filter { ids.contains(items[$0].id) }
     guard !indices.isEmpty else { return }
     let pin = indices.contains { !items[$0].isPinned }
@@ -252,6 +261,7 @@ final class CollectionStore {
   }
 
   func prepareExport(ids: Set<UUID>) throws -> CollectionExport {
+    guard !isExporting else { throw CollectionError.exportInProgress }
     pruneOldExports()
     let selected = items.filter { ids.contains($0.id) }
     guard !selected.isEmpty else { throw CollectionError.unavailable }
@@ -266,14 +276,17 @@ final class CollectionStore {
       for entry in resolved {
         if entry.url.startAccessingSecurityScopedResource() { accessed.append(entry.url) }
       }
+      var unknownPin = false
       let protectedURLs = items.filter { $0.isPinned && $0.ownedFileName == nil }.compactMap { item -> URL? in
-        // Missing/unavailable pins cannot be handed to a destination, but shouldn't
-        // prevent unrelated files from exporting.
-        try? resolveURL(for: item.id)
+        do { return try resolveURL(for: item.id, requireReadable: false) }
+        catch { unknownPin = true; return nil }
       }
       // Moving a parent also moves descendants, even if a child is pinned. Reject
       // overlapping batches before staging or giving any URL to a destination.
       for parent in resolved where !parent.item.isPinned && parent.item.ownedFileName == nil {
+        if unknownPin, (try? parent.url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != false {
+          throw CollectionError.overlappingFiles
+        }
         let prefix = parent.url.resolvingSymlinksInPath().path + "/"
         if resolved.contains(where: {
           $0.item.id != parent.item.id && $0.url.resolvingSymlinksInPath().path.hasPrefix(prefix)
@@ -303,7 +316,10 @@ final class CollectionStore {
           selected.contains(where: \.isPinned) ? [] : .delete
         ),
         pinnedIDs: Set(selected.filter(\.isPinned).map(\.id)),
-        exportedURLs: Dictionary(uniqueKeysWithValues: zip(selected.map(\.id), urls))
+        exportedURLs: Dictionary(uniqueKeysWithValues: zip(selected.map(\.id), urls)),
+        identities: Dictionary(uniqueKeysWithValues: try zip(selected.map(\.id), urls).map {
+          ($0.0, try CollectionFileIdentity(url: $0.1))
+        })
       )
     } catch {
       accessed.forEach { $0.stopAccessingSecurityScopedResource() }
@@ -312,13 +328,83 @@ final class CollectionStore {
     }
   }
 
+  @MainActor
+  func completeExport(_ export: CollectionExport, operation: NSDragOperation,
+    recycle: @escaping ([URL], @escaping ([URL: URL], Error?) -> Void) -> Void = { urls, done in
+      NSWorkspace.shared.recycle(urls, completionHandler: done)
+    }
+  ) async {
+    guard !recycling else {
+      export.endAccess()
+      lastError = CollectionError.exportInProgress.localizedDescription
+      return
+    }
+    isExporting = true
+    defer { isExporting = false }
+    guard operation == .delete else {
+      perform { try finishExport(export, operation: operation) }
+      return
+    }
+    recycling = true
+    defer { recycling = false; export.endAccess() }
+    do {
+      let current = items.filter { export.ids.contains($0.id) }
+      guard export.operation.contains(.delete), export.pinnedIDs.isEmpty,
+            !current.contains(where: \.isPinned) else { throw CollectionError.trashProtected }
+      guard current.count == export.ids.count, !current.isEmpty else { throw CollectionError.unavailable }
+      var unknownPin = false
+      let protected = items.filter { $0.isPinned && $0.ownedFileName == nil }.compactMap { item -> URL? in
+        do { return try resolveURL(for: item.id, requireReadable: false) }
+        catch { unknownPin = true; return nil }
+      }
+      for item in current {
+        guard let source = export.exportedURLs[item.id], let expected = export.identities[item.id],
+              try CollectionFileIdentity(url: source) == expected else { throw CollectionError.unavailable }
+        if item.ownedFileName == nil {
+          // A bookmark following a move must not cause a replacement at the old
+          // path to be trashed. Only the exact original drag payload is eligible.
+          let currentURL = try resolveURL(for: item.id)
+          guard currentURL.standardizedFileURL == source.standardizedFileURL else { throw CollectionError.unavailable }
+          if unknownPin, (try? source.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != false {
+            throw CollectionError.trashProtected
+          }
+          let prefix = source.resolvingSymlinksInPath().path + "/"
+          guard !protected.contains(where: { $0.resolvingSymlinksInPath().path.hasPrefix(prefix) }) else {
+            throw CollectionError.trashProtected
+          }
+        }
+      }
+      let result: ([URL: URL], Error?) = await withCheckedContinuation { continuation in
+        recycle(export.urls) { moved, error in continuation.resume(returning: (moved, error)) }
+      }
+      let confirmedSources = Set(result.0.filter { $0.key.standardizedFileURL != $0.value.standardizedFileURL }
+        .map { $0.key.standardizedFileURL })
+      let confirmed = Set(current.compactMap { item -> UUID? in
+        guard let source = export.exportedURLs[item.id], confirmedSources.contains(source.standardizedFileURL) else { return nil }
+        return item.id
+      })
+      // Reuse the existence check and delayed source watcher only AFTER the
+      // system has acknowledged recycling that individual file.
+      let completed = CollectionExport(ids: confirmed, urls: [], accessedURLs: [], operation: .move,
+        pinnedIDs: export.pinnedIDs, exportedURLs: export.exportedURLs)
+      try finishExport(completed, operation: .move)
+      if let error = result.1 { throw error }
+      if confirmed.count != export.ids.count { throw CollectionError.trashFailed }
+    } catch {
+      let cocoa = error as NSError
+      if cocoa.domain == NSCocoaErrorDomain && cocoa.code == NSFileWriteNoPermissionError {
+        lastError = NSLocalizedString("collection_trash_reauthorize", comment: "")
+      } else { lastError = error.localizedDescription }
+      refreshAvailability()
+    }
+  }
+
   func finishExport(_ export: CollectionExport, operation: NSDragOperation) throws {
     defer { export.endAccess() }
-    let isTrash = operation == .delete && export.operation.contains(.delete)
-    guard operation == .move || operation == .copy || isTrash else { return }
+    guard operation == .move || operation == .copy else { return }
     var consumed: Set<UUID> = []
     for item in items where export.ids.contains(item.id) && !export.pinnedIDs.contains(item.id) && !item.isPinned {
-      if operation == .move || isTrash, let source = export.exportedURLs[item.id] {
+      if operation == .move, let source = export.exportedURLs[item.id] {
         if !fileManager.fileExists(atPath: source.path) {
           consumed.insert(item.id)
         } else {

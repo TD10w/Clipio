@@ -439,6 +439,18 @@ class HistoryTests: XCTestCase {
     XCTAssertEqual(history.searchQuery, "")
   }
 
+  func testStarIconToggleUsesSameFilterAndRetainsSearch() {
+    defer { history.setFilter(.all); history.searchQuery = "" }
+    history.setFilter(.all)
+    history.searchQuery = "website"
+    history.toggleFilter()
+    XCTAssertEqual(history.filter, .favorites)
+    XCTAssertEqual(history.searchQuery, "website")
+    history.toggleFilter()
+    XCTAssertEqual(history.filter, .all)
+    XCTAssertEqual(history.searchQuery, "website")
+  }
+
   private func historyItem(_ value: String) -> HistoryItem {
     let contents = [
       HistoryItemContent(

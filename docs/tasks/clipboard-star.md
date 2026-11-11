@@ -75,3 +75,10 @@
 验证：134 项原始基线通过；功能和独立复核的回归先失败后修复；最终 144 项单元测试通过，unsigned Debug 编译通过，实际构建包的 31 份语言表包含新界面与完整清空说明。复核修正了别名影响颜色卡类型、带锚点正则搜索、隐藏条目选择残留和收集区返回路径问题。
 
 日志：`/tmp/clipio-star-red.log`、`/tmp/clipio-star-color-red.log`、`/tmp/clipio-star-review-red.log`、`/tmp/clipio-star-verified-tests.log`、`/tmp/clipio-star-final-build.log`。未使用 computer use、未运行会控制鼠标的 UI 测试。原生布局、改名弹窗、所有设置/输入法组合及实际旧数据升级仍待集中体验。
+
+
+## R2 反馈处理
+
+用户拒绝“全部 / 收藏”分段按钮，指定单个 Star 图标；R2 改为空心星标=全部、金色实心=只看收藏，点击切换。补齐精确 Shift+Tab，同一切换方法保留搜索词；普通 Tab、输入法组合输入、弹窗及收集区不被此切换占用，已配置打开快捷键优先。
+
+R1 未绑定 Shift+Tab，原记录“暂不新增专用快捷键”是旧候选状态。单星标原型见 `Designs/explorations/2026-11-11-star-controls-r2/index.html`，原生外观和真实按键仍待新包体验。

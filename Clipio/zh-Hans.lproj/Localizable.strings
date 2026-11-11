@@ -103,3 +103,15 @@
 "star_clear_all_comment" = "将从 Clipio 移除所有剪贴板历史和收藏。此操作无法撤销。";
 
 "collection_received" = "已收好";
+
+"star_show_all" = "显示全部（⇧Tab）";
+
+"star_show_favorites" = "只看收藏（⇧Tab）";
+
+"collection_trash_failed" = "部分文件未能移入废纸篓，未确认完成的项目已保留。";
+
+"collection_trash_protected" = "Pin 项目受到保护。请先取消 Pin，再移入废纸篓。";
+
+"collection_export_in_progress" = "文件操作仍在进行中，请稍后再更改 Pin。";
+
+"collection_trash_reauthorize" = "这些项目来自旧的只读授权。请从 Finder 重新拖入一次以更新文件操作授权，然后重试。原卡片和 Pin 状态会保留。";

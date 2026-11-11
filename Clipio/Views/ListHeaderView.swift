@@ -33,16 +33,19 @@ struct ListHeaderView: View {
       .help(Text("collection_switch_hint"))
 
       if appState.shelfMode == .clipboard {
-        Picker("star_filter", selection: Binding(
-          get: { appState.history.filter },
-          set: { appState.history.setFilter($0) }
-        )) {
-          Text("star_all").tag(ClipboardFilter.all)
-          Text("star_favorites").tag(ClipboardFilter.favorites)
+        Button {
+          appState.history.toggleFilter()
+        } label: {
+          Image(systemName: appState.history.filter == .favorites ? "star.fill" : "star")
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(appState.history.filter == .favorites ? Color(red: 1, green: 0.83, blue: 0.47) : .primary)
+            .frame(width: FloatingGlassStyle.toolbarControlSize, height: FloatingGlassStyle.toolbarControlSize)
+            .contentShape(Rectangle())
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .fixedSize(horizontal: true, vertical: false)
+        .buttonStyle(.plain)
+        .help(Text(appState.history.filter == .favorites ? "star_show_all" : "star_show_favorites"))
+        .accessibilityLabel(Text(appState.history.filter == .favorites ? "star_show_all" : "star_show_favorites"))
+        .accessibilityValue(Text(appState.history.filter == .favorites ? "star_favorites" : "star_all"))
         .accessibilityIdentifier("clipboard-filter")
       }
 

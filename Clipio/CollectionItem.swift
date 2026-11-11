@@ -79,6 +79,32 @@ struct CollectionImage: Sendable {
   }
 }
 
+/// Session-only identity. Fresh stat values also protect against NSURL metadata
+/// caches and deletion/recreation at a path that still resolves from a bookmark.
+struct CollectionFileIdentity: Equatable {
+  let device: UInt64
+  let inode: UInt64
+  let created: Date?
+  let resource: NSObject?
+
+  init(url: URL) throws {
+    let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+    guard let device = attributes[.systemNumber] as? NSNumber,
+          let inode = attributes[.systemFileNumber] as? NSNumber else { throw CollectionError.unavailable }
+    self.device = device.uint64Value
+    self.inode = inode.uint64Value
+    created = attributes[.creationDate] as? Date
+    var fresh = url
+    fresh.removeAllCachedResourceValues()
+    resource = (try? fresh.resourceValues(forKeys: [.fileResourceIdentifierKey]).fileResourceIdentifier) as? NSObject
+  }
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.device == rhs.device && lhs.inode == rhs.inode && lhs.created == rhs.created
+      && (lhs.resource == nil && rhs.resource == nil || lhs.resource?.isEqual(rhs.resource) == true)
+  }
+}
+
 struct CollectionExport {
   let ids: Set<UUID>
   let urls: [URL]
@@ -86,6 +112,13 @@ struct CollectionExport {
   let operation: NSDragOperation
   let pinnedIDs: Set<UUID>
   let exportedURLs: [UUID: URL]
+  let identities: [UUID: CollectionFileIdentity]
+
+  init(ids: Set<UUID>, urls: [URL], accessedURLs: [URL], operation: NSDragOperation,
+       pinnedIDs: Set<UUID>, exportedURLs: [UUID: URL], identities: [UUID: CollectionFileIdentity] = [:]) {
+    self.ids = ids; self.urls = urls; self.accessedURLs = accessedURLs; self.operation = operation
+    self.pinnedIDs = pinnedIDs; self.exportedURLs = exportedURLs; self.identities = identities
+  }
 
   func endAccess() {
     accessedURLs.forEach { $0.stopAccessingSecurityScopedResource() }
@@ -93,7 +126,7 @@ struct CollectionExport {
 }
 
 enum CollectionError: LocalizedError {
-  case unavailable, invalidImage, invalidFile, unreadableStore, unsupportedDrop, overlappingFiles
+  case unavailable, invalidImage, invalidFile, unreadableStore, unsupportedDrop, overlappingFiles, trashFailed, trashProtected, exportInProgress
 
   var errorDescription: String? {
     let key: String
@@ -104,6 +137,9 @@ enum CollectionError: LocalizedError {
     case .unreadableStore: key = "collection_store_unavailable"
     case .unsupportedDrop: key = "collection_unsupported_drop"
     case .overlappingFiles: key = "collection_overlapping_files"
+    case .trashFailed: key = "collection_trash_failed"
+    case .trashProtected: key = "collection_trash_protected"
+    case .exportInProgress: key = "collection_export_in_progress"
     }
     return NSLocalizedString(key, comment: "")
   }

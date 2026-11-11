@@ -135,6 +135,11 @@ class Popup {
     return keyCode == 48 && relevant.isEmpty && !composing
   }
 
+  static func isFavoriteSwitch(keyCode: UInt16, modifiers: NSEvent.ModifierFlags, composing: Bool, mode: ShelfMode, editing: Bool) -> Bool {
+    keyCode == 48 && modifiers.intersection([.command, .option, .control, .shift]) == .shift
+      && !composing && mode == .clipboard && !editing
+  }
+
   private func handleEvent(_ event: NSEvent) -> NSEvent? {
     switch event.type {
     case .keyDown:
@@ -151,6 +156,20 @@ class Popup {
     guard let panel = appState.appDelegate?.panel, panel.isPresented,
           NSApp.keyWindow === panel else { return event }
     let composing = (panel.firstResponder as? NSTextInputClient)?.hasMarkedText() == true
+    // Explicitly configured opening shortcuts retain precedence over local view controls.
+    for (name, mode) in [(KeyboardShortcuts.Name.popup, ShelfMode.clipboard), (.collectionPopup, .collection)] {
+      if let shortcut = name.shortcut,
+         shortcut.key?.rawValue == Int(event.keyCode),
+         event.modifierFlags.intersection([.command, .shift, .option, .control]) == shortcut.modifiers {
+        toggle(mode: mode)
+        return nil
+      }
+    }
+    if Self.isFavoriteSwitch(keyCode: event.keyCode, modifiers: event.modifierFlags, composing: composing,
+      mode: appState.shelfMode, editing: NSApp.modalWindow != nil || panel.attachedSheet != nil) {
+      Task { @MainActor in appState.history.toggleFilter() }
+      return nil
+    }
     if Self.isShelfSwitch(keyCode: event.keyCode, modifiers: event.modifierFlags, composing: composing),
        !appState.collection.isExporting {
       appState.switchShelf(to: appState.shelfMode.other)
@@ -180,14 +199,7 @@ class Popup {
       default: break
       }
     }
-    for (name, mode) in [(KeyboardShortcuts.Name.popup, ShelfMode.clipboard), (.collectionPopup, .collection)] {
-      if let shortcut = name.shortcut,
-         shortcut.key?.rawValue == Int(event.keyCode),
-         event.modifierFlags.intersection([.command, .shift, .option, .control]) == shortcut.modifiers {
-        toggle(mode: mode)
-        return nil
-      }
-    }
+
     return event
   }
 

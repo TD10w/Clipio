@@ -103,3 +103,15 @@
 "star_clear_all_comment" = "All clipboard history and favorites will be removed from Clipio. This cannot be undone.";
 
 "collection_received" = "Collected";
+
+"star_show_all" = "Show All (⇧Tab)";
+
+"star_show_favorites" = "Show Favorites (⇧Tab)";
+
+"collection_trash_failed" = "Some files could not be moved to the Trash. Unconfirmed items were kept.";
+
+"collection_trash_protected" = "Pinned files are protected. Unpin them before moving them to the Trash.";
+
+"collection_export_in_progress" = "A file operation is still in progress. Please wait before changing Pin.";
+
+"collection_trash_reauthorize" = "These items have older read-only access. Drag them in again from Finder to refresh file-operation access, then retry. Existing cards and Pin states are kept.";

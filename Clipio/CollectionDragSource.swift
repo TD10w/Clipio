@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 import SwiftUI
 
 /// `ids` is one card's items: a single item, or every member of a collapsed Stack.
@@ -28,6 +29,7 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
   private var mouseDownPoint = NSPoint.zero
   private var activeExport: CollectionExport?
   private var didDrag = false
+  private static let logger = Logger(subsystem: "com.clipio.app", category: "CollectionDrag")
 
   override func mouseDown(with event: NSEvent) {
     mouseDownPoint = event.locationInWindow
@@ -52,7 +54,7 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
   }
 
   override func mouseDragged(with event: NSEvent) {
-    guard !didDrag, let store, !itemIDs.isEmpty,
+    guard !didDrag, let store, !store.isExporting, !itemIDs.isEmpty,
           hypot(event.locationInWindow.x - mouseDownPoint.x, event.locationInWindow.y - mouseDownPoint.y) > 4 else { return }
     didDrag = true
     do {
@@ -64,6 +66,7 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
         item.setDraggingFrame(NSRect(x: 0, y: 0, width: 48, height: 48), contents: icon)
         return item
       }
+      Self.logger.notice("Collection drag began: items=\(export.ids.count), mask=\(export.operation.rawValue)")
       activeExport = export
       store.isExporting = true
       AppState.shared.appDelegate?.panel.isDragging = true
@@ -81,8 +84,10 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
   func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
     guard let export = activeExport else { return }
     activeExport = nil
-    store?.perform { try store?.finishExport(export, operation: operation) }
-    store?.isExporting = false
+    Self.logger.notice("Collection drag ended: items=\(export.ids.count), operation=\(operation.rawValue)")
+    if let store {
+      Task { @MainActor in await store.completeExport(export, operation: operation) }
+    } else { export.endAccess() }
     AppState.shared.appDelegate?.panel.isDragging = false
   }
 }
