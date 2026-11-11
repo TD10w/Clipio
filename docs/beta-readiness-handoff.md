@@ -3,6 +3,7 @@
 ## 新增后续任务（2026-11-11）
 
 - [Drop Zone 收入成功的音效与 UI 反馈](tasks/drop-zone-receipt-feedback.md)：让用户明确知道项目已被收下。用户要求先记录，未排期、未实施。
+- [收集区项目无法拖入 macOS 废纸篓](tasks/drop-zone-trash-drag.md)：用户报告目前拖不到 Trash，后续需复现并处理；本轮仅记录。
 
 更新于 2026-11-10。此页汇总当前源码、公开发布包和下一步工作。
 
