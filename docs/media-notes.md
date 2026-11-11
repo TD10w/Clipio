@@ -4,6 +4,7 @@ Reviewed on 2026-09-05. This is an inventory, not a blanket clearance of all ass
 
 | Asset | Finding | Public presentation |
 | --- | --- | --- |
+| `Clipio/AppIcon.icon/` | Native Icon Composer document using the enlarged banana-horse artwork. Default, dark and tinted icon stacks verified in the compiled catalog. Actual macOS icon rendering checked through NSWorkspace to confirm the artwork fills the system enclosure | Primary bundled icon in 2.7.5 |
 | `Clipio/Assets.xcassets/AppIcon.appiconset/` | Banana-horse icon edited from the existing repository image with ImageGen on 2026-11-11 to enlarge the artwork and replace exterior padding with transparency. Detached exterior pixels cleared during PNG export. All ten macOS sizes verified in source and the built asset catalog, with the compiled ICNS visually inspected | Bundled application icon in 2.7.4 |
 | `docs/screenshots/clipio-shelf.png`, `clipio-search.png` | Current dark UI from the app source in `v2.6.1-beta.1`, isolated in-memory UI-test mode; native PNG captures with alpha preserved, visually checked with synthetic text and a public repository URL | Used in both READMEs |
 | `Designs/Clipio-Demo/assets/clipio-shelf-reference.jpg` | Visually checked: sample product text and a public developer URL; earlier layout | Historical reference; replaced in the READMEs |

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB1C11000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = CB1C11000000000000000001 /* AppIcon.icon */; };
 		CB0B11000000000000000016 /* OnboardingIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000015 /* OnboardingIllustration.swift */; };
 		CB0B11000000000000000014 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000013 /* OnboardingView.swift */; };
 		CB0B11000000000000000012 /* OnboardingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000011 /* OnboardingController.swift */; };
@@ -176,6 +177,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CB1C11000000000000000001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		CB0B11000000000000000015 /* OnboardingIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingIllustration.swift; sourceTree = "<group>"; };
 		CB0B11000000000000000013 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		CB0B11000000000000000011 /* OnboardingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingController.swift; sourceTree = "<group>"; };
@@ -833,6 +835,7 @@
 				DA81D673252A056B009977BC /* Throttler.swift */,
 				DAB8CE4024E3677F00A2500E /* Clipio.entitlements */,
 				DAEE384D1E3DBEB100DD2966 /* Info.plist */,
+				CB1C11000000000000000001 /* AppIcon.icon */,
 				DA6373971E4AB9BB00263391 /* Assets.xcassets */,
 				4762D6992467226100B3A2BA /* Localizable.strings */,
 			);
@@ -1019,6 +1022,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA20FA762B082E0800056DD5 /* Write.caf in Resources */,
+				CB1C11000000000000000002 /* AppIcon.icon in Resources */,
 				DA6373981E4AB9BB00263391 /* Assets.xcassets in Resources */,
 				DAA365D12C4C147400A394F8 /* PinsSettings.strings in Resources */,
 				DA689FCF2C1DEE570009B887 /* AppearanceSettings.strings in Resources */,
@@ -1725,7 +1729,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 66;
+				CURRENT_PROJECT_VERSION = 67;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1740,7 +1744,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.7.4;
+				MARKETING_VERSION = 2.7.5;
 				CLIPIO_APP_BUNDLE_IDENTIFIER = com.clipio.app;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(CLIPIO_APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1761,7 +1765,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 66;
+				CURRENT_PROJECT_VERSION = 67;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1776,7 +1780,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 2.7.4;
+				MARKETING_VERSION = 2.7.5;
 				CLIPIO_APP_BUNDLE_IDENTIFIER = com.clipio.app;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(CLIPIO_APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
