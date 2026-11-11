@@ -1,0 +1,42 @@
+[
+  {
+    "file": "fs_563465_ItemPickup-wav.mp3",
+    "duration": 0.3657,
+    "energy_1": 0.0373,
+    "energy_50": 0.0434,
+    "energy_99": 0.3117,
+    "peak_dbfs": -15.0
+  },
+  {
+    "file": "fs_575583_Pouch-ofGold-Coins-Place-Down-on-Wood-wa.mp3",
+    "duration": 0.93,
+    "energy_1": 0.1564,
+    "energy_50": 0.1756,
+    "energy_99": 0.5766,
+    "peak_dbfs": -16.6
+  },
+  {
+    "file": "fs_585257_swoosh-1-mp3.mp3",
+    "duration": 0.4528,
+    "energy_1": 0.1583,
+    "energy_50": 0.1722,
+    "energy_99": 0.194,
+    "peak_dbfs": -4.2
+  },
+  {
+    "file": "fs_665183_Item-or-Material-Pickup-Pop-1-of-3.mp3",
+    "duration": 0.0711,
+    "energy_1": 0.0064,
+    "energy_50": 0.0118,
+    "energy_99": 0.0249,
+    "peak_dbfs": -11.8
+  },
+  {
+    "file": "fs_667177_suction-cup-wav.mp3",
+    "duration": 0.017,
+    "energy_1": 0.002,
+    "energy_50": 0.0094,
+    "energy_99": 0.0169,
+    "peak_dbfs": 0.3
+  }
+]

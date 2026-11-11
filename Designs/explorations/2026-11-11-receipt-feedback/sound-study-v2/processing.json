@@ -1,0 +1,20 @@
+[
+  {
+    "file": "01-drawn-in.wav",
+    "duration": 0.38,
+    "peak_dbfs": -16.36,
+    "gain_db": -16.36
+  },
+  {
+    "file": "02-pocket-landing.wav",
+    "duration": 0.46,
+    "peak_dbfs": -14.65,
+    "gain_db": -14.65
+  },
+  {
+    "file": "03-gather-and-settle.wav",
+    "duration": 0.36,
+    "peak_dbfs": -16.72,
+    "gain_db": -14.24
+  }
+]

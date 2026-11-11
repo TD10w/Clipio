@@ -26,3 +26,4 @@
 - 一批真正收入成功只反馈一次；取消或全部失败不播放成功反馈。部分失败的具体反馈仍需设计。
 - [三个视觉方向](../../Designs/explorations/2026-11-11-receipt-feedback/index.html) 与 [音效试听](../../Designs/explorations/2026-11-11-receipt-feedback/sound-study/index.html) 均为独立 HTML 比较稿，不是已实现的原生行为。
 - 音效候选的 CC0 来源、下载/评分记录与加工方式见[试听说明](../../Designs/explorations/2026-11-11-receipt-feedback/sound-study/README.md)。
+- 第一轮试听后用户反馈“还差一点，想要收集的感觉”，未选定任何候选。[第二轮试听](../../Designs/explorations/2026-11-11-receipt-feedback/sound-study-v2/index.html) 改为靠近、接住和落定的短声音组合；视觉保持轻弹＋勾号，仍待试听确认。
