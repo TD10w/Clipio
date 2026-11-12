@@ -169,7 +169,7 @@ final class CollectionTests: XCTestCase {
     for operation: NSDragOperation in [.copy, .link, .delete, []] {
       let export = try collection.prepareExport(ids: [id])
       XCTAssertTrue(export.operation.contains(.move))
-      XCTAssertFalse(export.operation.contains(.copy))
+      XCTAssertTrue(export.operation.contains(.copy))
       try collection.finishExport(export, operation: operation)
       XCTAssertEqual(collection.items.map(\.id), [id])
       XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
@@ -189,14 +189,62 @@ final class CollectionTests: XCTestCase {
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
   }
 
-  func testUnpinnedFileOffersTrashWithoutOfferingCopy() throws {
+  func testCopyOnlyAttachmentDestinationAcceptsUnpinnedFiles() throws {
+    for name in ["Pasted text.txt", "Clipio.dmg"] {
+      let collection = store()
+      let original = try source(name)
+      let id = try collection.addFile(original)
+      let export = try collection.prepareExport(ids: [id])
+      defer { export.endAccess() }
+
+      // Attachment receivers accept copy, never a move of the user's original.
+      let acceptedOperation = export.operation.intersection(.copy)
+      XCTAssertEqual(acceptedOperation, .copy, "An attachment must not require Pin to accept the drop")
+      guard acceptedOperation == .copy else { continue }
+      let attachment = root.appendingPathComponent("attached-" + name)
+      try FileManager.default.copyItem(at: XCTUnwrap(export.urls.first), to: attachment)
+      try collection.finishExport(export, operation: acceptedOperation)
+
+      XCTAssertEqual(try Data(contentsOf: attachment), Data("original".utf8))
+      XCTAssertEqual(try Data(contentsOf: original), Data("original".utf8))
+      XCTAssertTrue(collection.items.contains { $0.id == id })
+    }
+  }
+
+  func testCopyOnlyAttachmentDestinationAcceptsMixedPinnedBatch() throws {
+    let collection = store()
+    let original = try source()
+    let pinnedOriginal = try source("pinned.txt")
+    let ordinary = try collection.addFile(original)
+    let pinned = try collection.addFile(pinnedOriginal)
+    try collection.togglePin(pinned)
+    let export = try collection.prepareExport(ids: [ordinary, pinned])
+    defer { export.endAccess() }
+    let acceptedOperation = export.operation.intersection(.copy)
+    XCTAssertEqual(acceptedOperation, .copy)
+    guard acceptedOperation == .copy else { return }
+
+    let attachments = root.appendingPathComponent("attachments")
+    try FileManager.default.createDirectory(at: attachments, withIntermediateDirectories: true)
+    for url in export.urls {
+      try FileManager.default.copyItem(at: url, to: attachments.appendingPathComponent(url.lastPathComponent))
+    }
+    try collection.finishExport(export, operation: acceptedOperation)
+    XCTAssertEqual(Set(collection.items.map(\.id)), [ordinary, pinned])
+    for url in [original, pinnedOriginal] {
+      XCTAssertEqual(try Data(contentsOf: url), Data("original".utf8))
+      XCTAssertEqual(try Data(contentsOf: attachments.appendingPathComponent(url.lastPathComponent)), Data("original".utf8))
+    }
+  }
+
+  func testUnpinnedFileOffersTrashMoveAndAttachmentCopy() throws {
     let collection = store()
     let id = try collection.addFile(source())
     let export = try collection.prepareExport(ids: [id])
     defer { export.endAccess() }
     XCTAssertTrue(export.operation.contains(.delete), "Dock Trash negotiates delete, not move")
     XCTAssertTrue(export.operation.contains(.move))
-    XCTAssertFalse(export.operation.contains(.copy))
+    XCTAssertTrue(export.operation.contains(.copy))
   }
 
   func testMixedPinnedBatchDoesNotOfferTrash() throws {

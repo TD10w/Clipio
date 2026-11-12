@@ -445,7 +445,9 @@ final class CollectionStore {
         ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed,
         // Dock Trash negotiates delete rather than move. Keep Pin batches out of
         // that negotiation: their originals must remain protected.
-        operation: (movesOriginals ? NSDragOperation.move : .copy).union(
+        // Some chat/upload targets only accept copy. Offer it alongside move so an
+        // unpinned reference can be attached without changing its Pin state.
+        operation: (movesOriginals ? NSDragOperation([.move, .copy]) : .copy).union(
           selected.contains(where: \.isPinned) ? [] : .delete
         ),
         pinnedIDs: Set(selected.filter(\.isPinned).map(\.id)),
