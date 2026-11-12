@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "คุณยังสามารถคลิกไอคอนเมนูโดยกด ⌥\nหากต้องการละเว้นเฉพาะสำเนาถัดไป ให้คลิกด้วย ⌥⇧";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# คัดลอกข้อมูล";
 "ClearHistoryOnQuit" = "ล้างประวัติเมื่อออก";
-"ClearHistoryOnQuitTooltip" = "ลบรายการที่เลิกปักหมุดทั้งหมดออกโดยอัตโนมัติก่อนออกจากแอปพลิเคชัน";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "ล้างคลิปบอร์ดของระบบด้วย";
 "ClearSystemClipboardTooltip" = "เมื่อเปิดใช้งาน การล้างประวัติจะเป็นการล้างคลิปบอร์ดของระบบปัจจุบันด้วย";

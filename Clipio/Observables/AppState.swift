@@ -29,6 +29,7 @@ final class AppState {
     appDelegate?.hidePreviewNow()
     shelfMode = mode
     if mode == .collection { collection.refreshAvailability() }
+    else { history.prepareForOpening() }
   }
 
   // Drives the pop-out "unfold" animation. FloatingPanel sets this true on open (the shelf
@@ -67,12 +68,12 @@ final class AppState {
   func select() {
     if shelfMode == .collection {
       collection.perform {
-        let export = try collection.prepareExport(ids: collection.selectedIDs)
-        defer { export.endAccess() }
-        let contents = export.urls.map {
-          HistoryItemContent(type: NSPasteboard.PasteboardType.fileURL.rawValue, value: $0.dataRepresentation)
-        }
+        let export = try collection.prepareExport(ids: collection.selectedIDs, forCopy: true)
+        var copied = false
+        defer { if copied { export.endAccess() } else { collection.cancelPreparedExport(export) } }
+        let contents = try collection.clipboardContents(for: export)
         Clipboard.shared.copy(HistoryItem(contents: contents))
+        copied = true
         popup.close()
       }
       return
@@ -80,12 +81,7 @@ final class AppState {
     if !navigator.selection.isEmpty {
       history.select(navigator.selection.first)
     } else if let item = footer.selectedItem {
-      // TODO: Use item.suppressConfirmation, but it's not updated!
-      if item.confirmation != nil, Defaults[.suppressClearAlert] == false {
-        item.showConfirmation = true
-      } else {
-        item.action()
-      }
+      item.requestAction()
     } else {
       Clipboard.shared.copy(history.searchQuery)
       history.searchQuery = ""
@@ -157,7 +153,7 @@ final class AppState {
           Settings.Pane(
             identifier: Settings.PaneIdentifier.pins,
             title: NSLocalizedString("Title", tableName: "PinsSettings", comment: ""),
-            toolbarIcon: NSImage.pincircle!
+            toolbarIcon: NSImage(systemSymbolName: "star.circle", accessibilityDescription: nil)!
           ) {
             PinsSettingsPane()
               .environment(self)

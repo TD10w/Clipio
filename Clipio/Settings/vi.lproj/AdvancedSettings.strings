@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Bạn cũng có thể nhấp vào biểu tượng menu khi giữ phím ⌥ .\nĐể chỉ bỏ qua lần sao chép tiếp theo, hãy nhấp khi giữ đồng thời ⌥ ⇧ .";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copy data";
 "ClearHistoryOnQuit" = "Xóa lịch sử khi thoát";
-"ClearHistoryOnQuitTooltip" = "Tự động xóa bỏ tất cả các mục không được ghim khi thoát khỏi ứng dụng.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Xóa cả bảng nhớ tạm của hệ thống nữa";
 "ClearSystemClipboardTooltip" = "Khi được kích hoạt, việc xóa lịch sử cũng sẽ xóa bảng nhớ tạm hiện tại của hệ thống.";

@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "دائمًا";
 "SearchVisibilityDuringSearch" = "أثناء البحث";
 "ActiveScreen" = "شاشة نشطة";
-"PinTo" = "تثبيت إلى:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "الأعلى";
 "PinToBottom" = "الأسفل";
-"PinToTooltip" = "تغيير موقع العناصر المثبتة.\nالافتراضي: الأعلى.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "ارتفاع الصورة:";
 "ImageHeightTooltip" = "أقصى ارتفاع معاينة الصورة.\nالافتراضي: 40.\nتلميح: قم بتعيينه إلى 16 ليبدو مثل عناصر النص.";
 "PreviewDelay" = "تأخير المعاينة:";

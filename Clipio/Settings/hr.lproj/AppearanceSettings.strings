@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Uvijek";
 "SearchVisibilityDuringSearch" = "Tijekom pretrage";
 "ActiveScreen" = "Aktivni ekran";
-"PinTo" = "Prikvači:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Gore";
 "PinToBottom" = "Dolje";
-"PinToTooltip" = "Promijeni mjesto prikvačenih elemenata.\nStandardno: Gore.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Visina slike:";
 "ImageHeightTooltip" = "Maksimalna visina slike pregleda.\nStandardno: 40.\nSavjet: Postavi na 16 da bi sličilo tekstu.";
 "PreviewDelay" = "Odgoda pregleda:";

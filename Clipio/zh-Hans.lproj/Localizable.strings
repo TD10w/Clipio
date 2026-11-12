@@ -1,10 +1,10 @@
 "search_placeholder" = "搜索…";
-"clear_tooltip" = "清除未固定的项目。\n按住 ⇧ 以全部清除。";
-"clear_all_tooltip" = "清除全部项目。";
+"clear_tooltip" = "清空剪贴板历史，保留收藏。";
+"clear_all_tooltip" = "清空所有剪贴板历史，包括收藏。";
 "about_tooltip" = "查看更多应用信息。";
 "quit_tooltip" = "退出应用。";
-"clear" = "清除";
-"clear_all" = "全部清除";
+"clear" = "清空历史";
+"clear_all" = "清空全部（含收藏）";
 "about" = "关于";
 "quit" = "退出";
 "preferences" = "偏好设置…";
@@ -69,3 +69,58 @@
 "onboarding_next" = "Next";
 "onboarding_start" = "Get Started";
 "onboarding_step" = "Step %d of 3";
+
+"star_filter" = "剪贴板范围";
+
+"star_all" = "全部";
+
+"star_favorites" = "收藏";
+
+"star_empty" = "给内容加上星标，就能在这里反复取用。";
+
+"star_no_results" = "没有匹配的收藏。";
+
+"star_add" = "加入收藏（⌥P）";
+
+"star_remove" = "取消收藏（⌥P）";
+
+"star_rename" = "为收藏命名";
+
+"star_name_placeholder" = "名称（可选）";
+
+"star_name_comment" = "名称只用于辨认和查找，复制出去的内容不会改变。";
+
+"star_save" = "保存";
+
+"star_ok" = "好";
+
+"star_name_failed" = "未能保存名称，请重试。";
+
+"star_clear_menu" = "清空历史…";
+
+"star_clear_all_message" = "清空全部，包含收藏？";
+
+"star_clear_all_comment" = "将从 Clipio 移除所有剪贴板历史和收藏。此操作无法撤销。";
+
+"collection_received" = "已收好";
+
+"star_show_all" = "显示全部（⇧Tab）";
+
+"star_show_favorites" = "只看收藏（⇧Tab）";
+
+"collection_trash_failed" = "部分文件未能移入废纸篓，未确认完成的项目已保留。";
+
+"collection_trash_protected" = "Pin 项目受到保护。请先取消 Pin，再移入废纸篓。";
+
+"collection_export_in_progress" = "文件操作仍在进行中，请稍后再更改 Pin。";
+
+"collection_trash_reauthorize" = "这些项目来自旧的只读授权。请从 Finder 重新拖入一次以更新文件操作授权，然后重试。原卡片和 Pin 状态会保留。";
+
+"collection_payload_too_large" = "内容超过单项保存限制。可先保存为普通文件，再拖入以仅保留位置。";
+
+"collection_storage_limit" = "收集区已保存内容达到 128MB 预算。移除已保存项目后可继续收集；文件引用仅保存少量记录。";
+
+"collection_staging_limit" = "临时传送缓存达到上限，请待旧传送过期后重试。较大的 Pin 文件请单独拖出。";
+
+"collection_virtual_media_needs_file" = "此来源只提供临时副本，生成前无法确认大小。请先保存到 Finder 文件夹，再拖入以仅保存位置。";
+"collection_source_requires_move" = "此来源只允许移动。请先恢复到普通文件夹，再拖入以保存引用。";

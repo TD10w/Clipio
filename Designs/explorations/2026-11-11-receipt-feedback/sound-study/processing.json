@@ -1,0 +1,29 @@
+[
+  {
+    "file": "01-soft-pop.wav",
+    "duration": 0.13,
+    "peak_dbfs": -16.924381021801473,
+    "gain_db": -21.022491665407582,
+    "filter": "highpass=f=100,lowpass=f=3500",
+    "fade_start": 0.08,
+    "source": "fs_447910_Plop.mp3"
+  },
+  {
+    "file": "02-soft-snap.wav",
+    "duration": 0.16,
+    "peak_dbfs": -12.0,
+    "gain_db": -4.498707344805432,
+    "filter": "highpass=f=120,lowpass=f=4000",
+    "fade_start": 0.1,
+    "source": "fs_477706_Digital-Radio-Rack-Unit-Button-Snap-3_1.mp3"
+  },
+  {
+    "file": "03-soft-confirm.wav",
+    "duration": 0.6,
+    "peak_dbfs": -18.041571896000722,
+    "gain_db": -17.6026763423967,
+    "filter": "asetrate=39289,aresample=44100,highpass=f=120,lowpass=f=4800",
+    "fade_start": 0.48,
+    "source": "fs_625174_UI-Sound-Approval-High-Pitched-Bell-Synt.mp3"
+  }
+]

@@ -2,7 +2,7 @@
 "TurnOff" = "Oprește";
 "TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# copiază datele\ndefaults write com.clipio.app ignoreEvents false";
 "ClearHistoryOnQuit" = "Șterge istoricul la închiderea aplicației";
-"ClearHistoryOnQuitTooltip" = "Elimină automat toate elementele nefixate înainte de a închide aplicația.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboardTooltip" = "Când este activat, ștergerea istoricului va șterge și clipboard-ul actual al sistemului.";
 "ClearSystemClipboard" = "Șterge și clipboard-ul sistemului";
 "TurnOffViaMenuIconDescription" = "Poți de asemenea să faci clic pe simbolul din meniu cu tasta ⌥ apăsată.\nPentru a ignora doar următoarea copie, fă clic cu ⌥⇧.";

@@ -32,6 +32,23 @@ struct ListHeaderView: View {
       .accessibilityLabel(Text(appState.shelfMode == .clipboard ? "collection_switch_to_collection" : "collection_switch_to_clipboard"))
       .help(Text("collection_switch_hint"))
 
+      if appState.shelfMode == .clipboard {
+        Button {
+          appState.history.toggleFilter()
+        } label: {
+          Image(systemName: appState.history.filter == .favorites ? "star.fill" : "star")
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(appState.history.filter == .favorites ? Color(red: 1, green: 0.83, blue: 0.47) : .primary)
+            .frame(width: FloatingGlassStyle.toolbarControlSize, height: FloatingGlassStyle.toolbarControlSize)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(Text(appState.history.filter == .favorites ? "star_show_all" : "star_show_favorites"))
+        .accessibilityLabel(Text(appState.history.filter == .favorites ? "star_show_all" : "star_show_favorites"))
+        .accessibilityValue(Text(appState.history.filter == .favorites ? "star_favorites" : "star_all"))
+        .accessibilityIdentifier("clipboard-filter")
+      }
+
       SearchFieldView(placeholder: "search_placeholder", query: $searchQuery)
         .id(appState.shelfMode)
         .focused($searchFocused)

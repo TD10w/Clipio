@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Luôn luôn";
 "SearchVisibilityDuringSearch" = "Trong quá trình tìm kiếm";
 "ActiveScreen" = "Màn hình hoạt động";
-"PinTo" = "Ghim vào:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Trên cùng";
 "PinToBottom" = "Dưới cùng";
-"PinToTooltip" = "Thay đổi vị trí của các mục đã ghim.\nMặc định: Trên cùng.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Chiều cao hình ảnh:";
 "ImageHeightTooltip" = "Chiều cao xem trước hình ảnh tối đa.\nMặc định: 40.\nGợi ý: Đặt thành 16 sẽ trông giống như các mục văn bản.";
 "PreviewDelay" = "Trì hoãn xem trước:";

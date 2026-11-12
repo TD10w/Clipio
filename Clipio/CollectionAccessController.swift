@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 import Observation
 import QuartzCore
 import SwiftUI
@@ -13,6 +14,7 @@ final class CollectionAccessController: NSObject {
   private let dropView = CollectionEntryDropView(frame: .zero)
   private let hosting = NSHostingView(rootView: CollectionEntryLabel(dragging: false, targeted: false, action: {}))
   private var releaseWork: DispatchWorkItem?
+  private var receivingResetWork: DispatchWorkItem?
   private var monitors: [Any] = []
   private var screenObserver: NSObjectProtocol?
   private var dragChangeCount = -1
@@ -23,12 +25,17 @@ final class CollectionAccessController: NSObject {
   private var itemCountAtSpring = 0
   private var springWork: DispatchWorkItem?
   private var hideGeneration = 0
+  private var seenReceiptGeneration = 0
+  private var showingReceipt = false
+  private var receiptToken = UUID()
+  private var receiptDismissWork: DispatchWorkItem?
   /// How long a drag must rest on the pill before it unfolds into the full shelf.
   static let springDelay: TimeInterval = 0.6
   private let dragPasteboard = NSPasteboard(name: .drag)
 
   init(store: CollectionStore) {
     self.store = store
+    seenReceiptGeneration = store.receiptGeneration
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
     super.init()
@@ -64,6 +71,11 @@ final class CollectionAccessController: NSObject {
       }
       self.updateEntry()
     }
+    dropView.importStore = store
+    dropView.onFiles = { [weak self] files, fallbacks in
+      guard let self, !self.store.isExporting else { return }
+      Task { await CollectionImporter.collectFiles(files, fallbacks: fallbacks, into: self.store) }
+    }
     dropView.onDrop = { [weak self] providers in
       guard let self, !self.store.isExporting else { return }
       Task { await CollectionImporter.collect(providers, into: self.store) }
@@ -87,6 +99,8 @@ final class CollectionAccessController: NSObject {
 
   deinit {
     releaseWork?.cancel()
+    receivingResetWork?.cancel()
+    receiptDismissWork?.cancel()
     monitors.forEach(NSEvent.removeMonitor)
     if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
     let entryPanel = panel
@@ -100,6 +114,7 @@ final class CollectionAccessController: NSObject {
   private func observeCount() {
     withObservationTracking {
       _ = store.items.count
+      _ = store.receiptGeneration
       _ = AppState.shared.shelfExpanded
       _ = AppState.shared.shelfMode
     } onChange: { [weak self] in
@@ -115,13 +130,19 @@ final class CollectionAccessController: NSObject {
     switch event.type {
     case .leftMouseDown:
       releaseWork?.cancel()
+      if showingReceipt {
+        showingReceipt = false
+        receiptToken = UUID()
+        receiptDismissWork?.cancel()
+        updateEntry()
+      }
+      receivingResetWork?.cancel()
+      store.isReceivingDrag = false
       dragChangeCount = dragPasteboard.changeCount
     case .leftMouseDragged:
       guard !store.isExporting, dragPasteboard.changeCount != dragChangeCount,
-            dragPasteboard.types?.contains(where: { type in
-              type == .fileURL || type == .png || type == .tiff || type == .URL
-                || NSFilePromiseReceiver.readableDraggedTypes.contains(type.rawValue)
-            }) == true else { return }
+            CollectionImporter.accepts(types: dragPasteboard.types ?? []) else { return }
+      store.isReceivingDrag = true
       releaseWork?.cancel()
       let mouse = NSEvent.mouseLocation
       if openedForDrag {
@@ -142,6 +163,10 @@ final class CollectionAccessController: NSObject {
         updateEntry()
       }
     case .leftMouseUp:
+      receivingResetWork?.cancel()
+      let reset = DispatchWorkItem { [weak self] in self?.store.isReceivingDrag = false }
+      receivingResetWork = reset
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: reset)
       releaseWork?.cancel()
       springWork?.cancel()
       guard showingDrag || dropTargeted || openedForDrag else { return }
@@ -194,22 +219,40 @@ final class CollectionAccessController: NSObject {
   }
 
   private func updateEntry() {
+    if seenReceiptGeneration != store.receiptGeneration {
+      seenReceiptGeneration = store.receiptGeneration
+      showingReceipt = true
+      receiptDismissWork?.cancel()
+      let token = UUID()
+      receiptToken = token
+      Notifier.play(sound: .collectionReceipt)
+      let work = DispatchWorkItem { [weak self] in
+        guard let self, self.receiptToken == token else { return }
+        self.showingReceipt = false
+        self.updateEntry()
+      }
+      receiptDismissWork = work
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.05, execute: work)
+    }
     // Never put a custom window in the menu bar. A real status item reserves space
     // alongside other apps, and its visibility does not change on Tab or during a drag.
     let hasItems = !store.items.isEmpty
     if statusItem.isVisible != hasItems { statusItem.isVisible = hasItems }
-    guard showingDrag && !openedForDrag else {
+    panel.ignoresMouseEvents = showingReceipt && !showingDrag
+    guard showingReceipt || (showingDrag && !openedForDrag) else {
       hide()
       return
     }
-    let screen = (showingDrag ? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } : NSScreen.main)
+    let screen = (showingDrag ? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } : panel.screen)
       ?? NSScreen.main
     guard let screen else { return }
     let target = Self.dragEntryFrame(
       screenFrame: screen.frame, safeAreaTop: screen.safeAreaInsets.top,
       menuBarHeight: NSStatusBar.system.thickness, targeted: dropTargeted
     )
-    hosting.rootView = CollectionEntryLabel(dragging: showingDrag, targeted: dropTargeted) { [weak self] in
+    hosting.rootView = CollectionEntryLabel(
+      dragging: true, targeted: dropTargeted, received: showingReceipt, receiptGeneration: seenReceiptGeneration
+    ) { [weak self] in
       self?.openCollection()
     }
     hideGeneration += 1
@@ -281,52 +324,41 @@ final class CollectionAccessController: NSObject {
   }
 
   private func receivePromises(_ receivers: [NSFilePromiseReceiver]) {
-    let destination = FileManager.default.temporaryDirectory.appendingPathComponent("Clipio-Promises-\(UUID().uuidString)")
-    do { try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true) }
-    catch { store.lastError = error.localizedDescription; return }
-    let queue = OperationQueue()
-    queue.maxConcurrentOperationCount = 1
-    queue.qualityOfService = .utility
-    let batch = receivers.count > 1 ? UUID() : nil
-    for receiver in receivers {
-      receiver.receivePromisedFiles(atDestination: destination, options: [:], operationQueue: queue) { [weak self] url, error in
-        let image = Result { () throws -> CollectionImage in
-          if let error { throw error }
-          return try CollectionImage(contentsOf: url)
-        }
-        DispatchQueue.main.async {
-          guard let self else { return }
-          self.store.perform {
-            try self.store.addImage(image.get(), batch: batch)
-          }
-          try? FileManager.default.removeItem(at: url)
-        }
-      }
-    }
+    CollectionImporter.collectPromises(receivers, into: store)
   }
+
 }
 
 private struct CollectionEntryLabel: View {
   let dragging: Bool
   let targeted: Bool
+  var received = false
+  var receiptGeneration = 0
   let action: () -> Void
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     Button(action: action) {
       HStack(spacing: 7) {
-        Image(systemName: dragging ? "tray.and.arrow.down" : "tray")
+        Image(systemName: received ? "checkmark" : (dragging ? "tray.and.arrow.down" : "tray"))
           .symbolEffect(.bounce, value: targeted)
         if dragging { Text("collection_drop_hint") }
       }
       .font(.system(size: dragging ? 12.5 : 11, weight: .medium))
       .foregroundStyle(.primary)
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .modifier(CollectionEntrySurface(radius: dragging ? 22 : 13, targeted: targeted))
+      .modifier(CollectionEntrySurface(radius: dragging ? 22 : 13, targeted: targeted || received))
       .contentShape(Capsule())
     }
     .buttonStyle(.plain)
     .padding(3)
-    .accessibilityLabel(Text(dragging ? "collection_drop_hint" : "collection_open"))
+    .keyframeAnimator(initialValue: CGFloat(1), trigger: reduceMotion ? 0 : receiptGeneration) { content, scale in
+      content.scaleEffect(scale)
+    } keyframes: { _ in
+      LinearKeyframe(1.045, duration: 0.18)
+      SpringKeyframe(1, duration: 0.32, spring: .smooth(duration: 0.32))
+    }
+    .accessibilityLabel(Text(received ? "collection_received" : (dragging ? "collection_drop_hint" : "collection_open")))
     .accessibilityIdentifier("collection-entry")
   }
 }
@@ -352,24 +384,69 @@ private struct CollectionEntrySurface: ViewModifier {
   }
 }
 
+struct CollectionDropSurface: NSViewRepresentable {
+  let store: CollectionStore
+  @Binding var targeted: Bool
+
+  func makeNSView(context: Context) -> NSView {
+    let view = CollectionEntryDropView(frame: .zero)
+    view.importStore = store
+    view.dragOnly = true
+    view.onTargetChange = { targeted = $0 }
+    view.onFiles = { files, fallbacks in
+      Task { await CollectionImporter.collectFiles(files, fallbacks: fallbacks, into: store) }
+    }
+    view.onDrop = { providers in Task { await CollectionImporter.collect(providers, into: store) } }
+    view.onPromises = { CollectionImporter.collectPromises($0, into: store) }
+    return view
+  }
+
+  func updateNSView(_ view: NSView, context: Context) {
+    (view as? CollectionEntryDropView)?.onTargetChange = { targeted = $0 }
+  }
+}
+
 private final class CollectionEntryDropView: NSView {
   var onTargetChange: ((Bool) -> Void)?
   var onDrop: (([NSItemProvider]) -> Void)?
+  var onFiles: ((CollectionFileDrop, [NSItemProvider]) -> Void)?
+  var importStore: CollectionStore?
+  var dragOnly = false
+  private static let logger = Logger(subsystem: "com.clipio.app", category: "CollectionDrop")
+
+  override func hitTest(_ point: NSPoint) -> NSView? {
+    if dragOnly && importStore?.isReceivingDrag != true { return nil }
+    return super.hitTest(point)
+  }
   var onPromises: (([NSFilePromiseReceiver]) -> Void)?
 
   override init(frame frameRect: NSRect) {
     super.init(frame: frameRect)
     let promiseTypes = NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) }
-    let types: [NSPasteboard.PasteboardType] = [.fileURL, .png, .tiff, .URL]
+    let types: [NSPasteboard.PasteboardType] = [.fileURL, .png, .tiff, .URL, .string,
+      NSPasteboard.PasteboardType("NSFilenamesPboardType"),
+      NSPasteboard.PasteboardType(UTType.image.identifier), NSPasteboard.PasteboardType(UTType.jpeg.identifier),
+      NSPasteboard.PasteboardType(UTType.heic.identifier), NSPasteboard.PasteboardType(UTType.gif.identifier),
+      NSPasteboard.PasteboardType(UTType.webP.identifier), NSPasteboard.PasteboardType(UTType.plainText.identifier),
+      NSPasteboard.PasteboardType(UTType.utf16PlainText.identifier), NSPasteboard.PasteboardType(UTType.utf16ExternalPlainText.identifier)]
     registerForDraggedTypes(types + promiseTypes)
   }
 
   required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
   override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-    guard !AppState.shared.collection.isExporting else { return [] }
-    onTargetChange?(true)
-    return .copy
+    guard !(importStore ?? AppState.shared.collection).isExporting else { return [] }
+    let operation = CollectionImporter.referenceOperation(offered: sender.draggingSourceOperationMask)
+    Self.logger.notice("Drop entered: sourceMask=\(sender.draggingSourceOperationMask.rawValue), accepted=\(operation.rawValue), types=\((sender.draggingPasteboard.types ?? []).map(\.rawValue).joined(separator: ","), privacy: .public)")
+    onTargetChange?(!operation.isEmpty)
+    return operation
+  }
+
+  override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+    guard !(importStore ?? AppState.shared.collection).isExporting else { return [] }
+    let operation = CollectionImporter.referenceOperation(offered: sender.draggingSourceOperationMask)
+    onTargetChange?(!operation.isEmpty)
+    return operation
   }
 
   override func draggingExited(_ sender: NSDraggingInfo?) {
@@ -377,46 +454,58 @@ private final class CollectionEntryDropView: NSView {
   }
 
   override func draggingEnded(_ sender: NSDraggingInfo) {
+    importStore?.isReceivingDrag = false
     onTargetChange?(false)
   }
 
   override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+    guard !(importStore ?? AppState.shared.collection).isExporting else { return false }
+    guard !CollectionImporter.referenceOperation(offered: sender.draggingSourceOperationMask).isEmpty else {
+      (importStore ?? AppState.shared.collection).lastError = NSLocalizedString("collection_source_requires_move", comment: "")
+      return false
+    }
     let pasteboard = sender.draggingPasteboard
-    if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty {
-      // Carry any image bytes on the same item too, so a URL into another app's private
-      // storage (e.g. Messages) can fall back to a copy of the image.
+    var urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
+    if urls.isEmpty, let paths = pasteboard.propertyList(forType: NSPasteboard.PasteboardType("NSFilenamesPboardType")) as? [String] {
+      urls = paths.map { URL(fileURLWithPath: $0) }
+    }
+    if !urls.isEmpty {
+      let files = CollectionFileDrop(urls: urls)
       let items = pasteboard.pasteboardItems ?? []
-      onDrop?(urls.enumerated().map { index, url in
-        let provider = NSItemProvider(item: url as NSURL, typeIdentifier: UTType.fileURL.identifier)
-        if items.count == urls.count {
-          let item = items[index]
-          for type in item.types where UTType(type.rawValue)?.conforms(to: .image) == true {
-            guard let data = item.data(forType: type) else { continue }
+      let fallbacks = urls.enumerated().map { index, url in
+        let provider = NSItemProvider()
+        if items.count == urls.count,
+          CollectionImporter.isAppPrivate(url) || !FileManager.default.isReadableFile(atPath: url.path) {
+          for type in items[index].types where UTType(type.rawValue)?.conforms(to: .image) == true {
+            guard let data = items[index].data(forType: type) else { continue }
             provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
-              completion(data, nil)
-              return nil
+              completion(data, nil); return nil
             }
           }
         }
         return provider
-      })
-      return true
+      }
+      Self.logger.notice("File drop accepted: count=\(urls.count)")
+      onFiles?(files, fallbacks)
+      return onFiles != nil
     }
-    if let receivers = pasteboard.readObjects(forClasses: [NSFilePromiseReceiver.self]) as? [NSFilePromiseReceiver], !receivers.isEmpty {
-      onPromises?(receivers)
-      return true
-    }
-    let providers = (pasteboard.pasteboardItems ?? []).map { item in
+    // Prefer bounded, directly readable representations to unknown-size promises.
+    let providers = (pasteboard.pasteboardItems ?? []).compactMap { item -> NSItemProvider? in
       let provider = NSItemProvider()
       for type in item.types {
-        if let data = item.data(forType: type) {
-          provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
-            completion(data, nil)
-            return nil
-          }
+        guard let value = UTType(type.rawValue), value.conforms(to: .image) || value.conforms(to: .plainText) || type == .URL,
+              let data = item.data(forType: type) else { continue }
+        provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
+          completion(data, nil)
+          return nil
         }
       }
-      return provider
+      return provider.registeredTypeIdentifiers.isEmpty ? nil : provider
+    }
+    if providers.isEmpty,
+      let receivers = pasteboard.readObjects(forClasses: [NSFilePromiseReceiver.self]) as? [NSFilePromiseReceiver], !receivers.isEmpty {
+      onPromises?(receivers)
+      return true
     }
     guard !providers.isEmpty else { return false }
     onDrop?(providers)

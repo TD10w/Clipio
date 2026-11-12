@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "總是";
 "SearchVisibilityDuringSearch" = "搜尋期間";
 "ActiveScreen" = "使用中的螢幕";
-"PinTo" = "固定項目位置：";
+"PinTo" = "收藏位置：";
 "PinToTop" = "置頂";
 "PinToBottom" = "置底";
-"PinToTooltip" = "更改固定項目的位置。\n預設：置頂。";
+"PinToTooltip" = "设置收藏在“全部”中的位置。默认：顶部。";
 "ImageHeight" = "圖片高度：";
 "ImageHeightTooltip" = "圖片預覽最高。\n預設：40\n提示：設定 16 可符合文字項目大小。";
 "PreviewDelay" = "預覽延遲:";

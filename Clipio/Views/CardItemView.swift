@@ -10,6 +10,9 @@ struct CardItemView: View {
   let onSelect: () -> Void
 
   @State private var selectionPopEpoch = 0
+  @State private var showingRename = false
+  @State private var favoriteName = ""
+  @State private var renameFailed = false
 
   static let cardWidth = FloatingGlassStyle.cardWidth
   static let cardHeight = FloatingGlassStyle.cardHeight
@@ -37,11 +40,15 @@ struct CardItemView: View {
   }
 
   private var detectedColor: NSColor? {
-    NSColor(hexString: item.title)
+    Self.contentColor(for: item)
+  }
+
+  static func contentColor(for item: HistoryItemDecorator) -> NSColor? {
+    NSColor(hexString: item.text.trimmingCharacters(in: .whitespacesAndNewlines))
   }
 
   private var shortcutBadgeLabel: String? {
-    if let pin = item.item.pin {
+    if let pin = item.item.pin, !pin.isEmpty {
       return "⌘\(pin.uppercased())"
     }
     if let number = item.numericShortcut {
@@ -69,11 +76,13 @@ struct CardItemView: View {
       LinearKeyframe(1.06, duration: 0.07)
       SpringKeyframe(1.0, duration: 0.22, spring: .bouncy(duration: 0.22, extraBounce: 0.05))
     }
+    .contentShape(RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous))
     .overlay {
       if item.isSelected {
         RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous)
           .strokeBorder(Color.accentColor.opacity(0.95), lineWidth: 2.5)
           .shadow(color: Color.accentColor.opacity(0.45), radius: 5)
+          .allowsHitTesting(false)
       }
     }
     .overlay(alignment: .topLeading) {
@@ -86,25 +95,52 @@ struct CardItemView: View {
           .background(Color.black.opacity(0.4), in: Capsule())
           .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 0.5))
           .padding(6)
+          .allowsHitTesting(false)
       }
-    }
-    .overlay(alignment: .topTrailing) {
-      pinControl
     }
     .onTapGesture { onSelect() }
     .contextMenu {
+      Button(item.isPinned ? "star_remove" : "star_add") {
+        Self.togglePin(item, in: AppState.shared.history)
+      }
+      if item.isPinned {
+        Button("star_rename") {
+          favoriteName = item.item.favoriteName ?? ""
+          showingRename = true
+        }
+      }
       Button("clipboard_remove", role: .destructive) {
         Self.remove(item, from: AppState.shared.history)
       }
+    }
+    .alert("star_rename", isPresented: $showingRename) {
+      TextField("star_name_placeholder", text: $favoriteName)
+      Button("star_save") {
+        renameFailed = !AppState.shared.history.setFavoriteName(item, name: favoriteName)
+      }
+      Button("clear_alert_cancel", role: .cancel) {}
+    } message: {
+      Text("star_name_comment")
+    }
+    .alert("star_name_failed", isPresented: $renameFailed) {
+      Button("star_ok", role: .cancel) {}
     }
     .onDrag {
       dragProvider()
     } preview: {
       dragPreview()
     }
+    .overlay(alignment: .topTrailing) {
+      pinControl
+    }
     .onAppear {
       AppState.shared.appDelegate?.panel.finishPrewarming()
       item.ensureThumbnailImage()
+    }
+    .onDisappear {
+      item.releaseThumbnailImage()
+      item.releasePreviewImage()
+      AppState.shared.appDelegate?.hidePreviewSoon(for: item)
     }
     // No hover lift: shifting the card with .offset moves the visual but not the
     // hit area, so the hover/click would land on the wrong spot. Hover feedback
@@ -114,7 +150,7 @@ struct CardItemView: View {
       guard isSelected else { return }
       selectionPopEpoch += 1
     }
-    .accessibilityElement(children: .ignore)
+    .accessibilityElement(children: .contain)
     .accessibilityIdentifier("copy-history-item")
     .accessibilityLabel(Text(item.title.isEmpty ? "Image" : item.title))
     .accessibilityValue(Text(item.text))
@@ -123,8 +159,8 @@ struct CardItemView: View {
     .accessibilityAction { onSelect() }
   }
 
-  // Pin affordance in the top-right. Pinned cards show the gold pin (click to unpin).
-  // Hovering an unpinned card reveals a "pin ⌥P" pill — both a clickable button and a
+  // Clipboard favorites reuse legacy Pin storage and shortcuts; Collection Pin is separate.
+  // Hovering a normal card reveals a Star pill — both a clickable button and a
   // visible hint for the Option-P shortcut.
   @ViewBuilder
   private var pinControl: some View {
@@ -134,14 +170,14 @@ struct CardItemView: View {
           Self.togglePin(item, in: AppState.shared.history)
         }
       } label: {
-        Image(systemName: "pin.fill")
+        Image(systemName: "star.fill")
           .font(.system(size: 9, weight: .semibold))
           .foregroundStyle(Color(red: 1, green: 0.83, blue: 0.47))
           .frame(width: 22, height: 22)
           .background(isHovered ? Color.black.opacity(0.28) : .clear, in: Circle())
       }
       .buttonStyle(.plain)
-      .help("Unpin (⌥P)")
+      .help(Text("star_remove"))
       .padding(6)
     } else if isHovered {
       Button {
@@ -150,7 +186,7 @@ struct CardItemView: View {
         }
       } label: {
         HStack(spacing: 3) {
-          Image(systemName: "pin")
+          Image(systemName: "star")
             .font(.system(size: 9, weight: .semibold))
           Text("⌥P")
             .font(.system(size: 9.5, weight: .semibold))
@@ -162,7 +198,7 @@ struct CardItemView: View {
         .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 0.5))
       }
       .buttonStyle(.plain)
-      .help("Pin (⌥P)")
+      .help(Text("star_add"))
       .padding(6)
     }
   }
@@ -185,6 +221,14 @@ struct CardItemView: View {
       .scaledToFill()
       .frame(width: Self.cardWidth, height: Self.cardHeight - Self.footerHeight)
       .clipped()
+      .contentShape(Rectangle())
+      .overlay(alignment: .bottomLeading) {
+        if let name = item.item.favoriteName {
+          Text(name).font(.system(size: 11)).lineLimit(1)
+            .padding(5).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
+            .padding(6).allowsHitTesting(false)
+        }
+      }
       .frame(maxHeight: .infinity, alignment: .top)
   }
 
@@ -207,10 +251,15 @@ struct CardItemView: View {
 
   @ViewBuilder
   private var textCard: some View {
-    Text(item.text)
-      .font(.system(size: FloatingGlassStyle.cardBodyFontSize))
-      .foregroundStyle(.primary)
-      .lineLimit(5)
+    VStack(alignment: .leading, spacing: 4) {
+      if let name = item.item.favoriteName {
+        Text(name).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+      }
+      Text(item.text)
+        .font(.system(size: FloatingGlassStyle.cardBodyFontSize))
+        .foregroundStyle(.primary)
+        .lineLimit(item.item.favoriteName == nil ? 5 : 3)
+    }
       .multilineTextAlignment(.leading)
       .padding(.horizontal, 11)
       .padding(.top, FloatingGlassStyle.textCardTopPadding)

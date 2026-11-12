@@ -168,7 +168,8 @@ final class CollectionTests: XCTestCase {
     let id = try collection.addFile(original)
     for operation: NSDragOperation in [.copy, .link, .delete, []] {
       let export = try collection.prepareExport(ids: [id])
-      XCTAssertEqual(export.operation, .move)
+      XCTAssertTrue(export.operation.contains(.move))
+      XCTAssertFalse(export.operation.contains(.copy))
       try collection.finishExport(export, operation: operation)
       XCTAssertEqual(collection.items.map(\.id), [id])
       XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
@@ -186,6 +187,90 @@ final class CollectionTests: XCTestCase {
     try collection.finishExport(export, operation: .copy)
     XCTAssertEqual(collection.items.map(\.id), [id])
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+  }
+
+  func testUnpinnedFileOffersTrashWithoutOfferingCopy() throws {
+    let collection = store()
+    let id = try collection.addFile(source())
+    let export = try collection.prepareExport(ids: [id])
+    defer { export.endAccess() }
+    XCTAssertTrue(export.operation.contains(.delete), "Dock Trash negotiates delete, not move")
+    XCTAssertTrue(export.operation.contains(.move))
+    XCTAssertFalse(export.operation.contains(.copy))
+  }
+
+  func testMixedPinnedBatchDoesNotOfferTrash() throws {
+    let collection = store()
+    let ordinary = try collection.addFile(source())
+    let pinned = try collection.addFile(source("pinned.txt"))
+    try collection.togglePin(pinned)
+    let export = try collection.prepareExport(ids: [ordinary, pinned])
+    XCTAssertFalse(export.operation.contains(.delete))
+    try collection.finishExport(export, operation: .delete)
+    XCTAssertEqual(Set(store().items.map(\.id)), [ordinary, pinned])
+    XCTAssertEqual(try String(contentsOf: collection.resolveURL(for: pinned), encoding: .utf8), "original")
+  }
+
+  @MainActor
+  func testTrashCallbackRemovesOnlyFilesThatActuallyLeftTheirExportedLocation() async throws {
+    let collection = store()
+    let batch = UUID()
+    let original = try source("trashed.txt")
+    let removed = try collection.addFile(original, batch: batch)
+    let retainedURL = try source("retained.txt")
+    let retained = try collection.addFile(retainedURL, batch: batch)
+    let export = try collection.prepareExport(ids: [removed, retained])
+    // Simulate the destination moving one member. Never use the user's Trash.
+    let destination = root.appendingPathComponent("destination.txt")
+    await collection.completeExport(export, operation: .delete) { _, finish in
+      do {
+        try FileManager.default.moveItem(at: original, to: destination)
+        finish([original: destination], CocoaError(.fileWriteNoPermission))
+      } catch { finish([:], error) }
+    }
+    XCTAssertEqual(store().items.map(\.id), [retained])
+    XCTAssertEqual(try String(contentsOf: destination, encoding: .utf8), "original")
+    XCTAssertEqual(try String(contentsOf: retainedURL, encoding: .utf8), "original")
+  }
+
+  @MainActor
+  func testTrashCompletingAfterCallbackIsReconciled() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    let destination = root.appendingPathComponent("destination.txt")
+    await collection.completeExport(export, operation: .delete) { _, finish in finish([original: destination], nil) }
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    try FileManager.default.moveItem(at: original, to: root.appendingPathComponent("destination.txt"))
+    let removed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in collection.items.isEmpty }, object: nil)
+    await fulfillment(of: [removed], timeout: 2)
+    XCTAssertTrue(store().items.isEmpty)
+  }
+
+  @MainActor
+  func testOwnedImageOffersTrashAndKeepsCardUntilOutgoingFileLeaves() async throws {
+    let collection = store()
+    let bitmap = try XCTUnwrap(NSBitmapImageRep(
+      bitmapDataPlanes: nil, pixelsWide: 2, pixelsHigh: 2, bitsPerSample: 8,
+      samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+    ))
+    let data = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+    let id = try collection.addImage(data: data, name: "web")
+    let export = try collection.prepareExport(ids: [id])
+    XCTAssertTrue(export.operation.contains(.delete))
+    XCTAssertTrue(export.operation.contains(.copy))
+    let outgoing = try XCTUnwrap(export.urls.first)
+    let destination = root.appendingPathComponent("image.png")
+    await collection.completeExport(export, operation: .delete) { _, finish in
+      XCTAssertEqual(collection.items.map(\.id), [id])
+      do {
+        try FileManager.default.moveItem(at: outgoing, to: destination)
+        finish([outgoing: destination], nil)
+      } catch { finish([:], error) }
+    }
+    XCTAssertTrue(store().items.isEmpty)
+    XCTAssertEqual(try Data(contentsOf: destination), data)
   }
 
   func testMovingParentProtectsUnselectedPinnedChild() throws {
@@ -237,7 +322,9 @@ final class CollectionTests: XCTestCase {
       with: .leftMouseUp, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
       windowNumber: panel.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 0
     ))
-    NSApp.postEvent(released, atStart: true)
+    // Deliver the old release before starting the next drag. Posting it leaves
+    // delivery to a later run-loop turn, which can occur after the new drag.
+    NSApp.sendEvent(released)
     let checked = expectation(description: "old release cannot clear a new drag")
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { panel.isDragging = true }
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -344,7 +431,7 @@ final class CollectionTests: XCTestCase {
     let collection = store()
     let url = try source()
     let valid = NSItemProvider(item: url as NSURL, typeIdentifier: "public.file-url")
-    let unsupported = NSItemProvider(item: "plain text" as NSString, typeIdentifier: "public.utf8-plain-text")
+    let unsupported = NSItemProvider()
     await CollectionImporter.collect([valid, unsupported], into: collection)
     XCTAssertEqual(collection.items.count, 1)
     XCTAssertEqual(collection.importingCount, 0)
@@ -362,6 +449,395 @@ final class CollectionTests: XCTestCase {
     XCTAssertEqual(state.activeSearchQuery, "clipboard search")
     state.switchShelf(to: .collection)
     XCTAssertEqual(state.activeSearchQuery, "collection search")
+  }
+
+  func testShiftTabOnlyTogglesFavoritesInClipboardMainView() {
+    XCTAssertTrue(Popup.isFavoriteSwitch(keyCode: 48, modifiers: .shift, composing: false, mode: .clipboard, editing: false))
+    for flags: NSEvent.ModifierFlags in [[], .command, [.shift, .command], [.shift, .option], [.shift, .control]] {
+      XCTAssertFalse(Popup.isFavoriteSwitch(keyCode: 48, modifiers: flags, composing: false, mode: .clipboard, editing: false))
+    }
+    XCTAssertFalse(Popup.isFavoriteSwitch(keyCode: 48, modifiers: .shift, composing: true, mode: .clipboard, editing: false))
+    XCTAssertFalse(Popup.isFavoriteSwitch(keyCode: 48, modifiers: .shift, composing: false, mode: .collection, editing: false))
+    XCTAssertFalse(Popup.isFavoriteSwitch(keyCode: 48, modifiers: .shift, composing: false, mode: .clipboard, editing: true))
+    XCTAssertFalse(Popup.isFavoriteSwitch(keyCode: 0, modifiers: .shift, composing: false, mode: .clipboard, editing: false))
+  }
+
+  @MainActor
+  func testTrashDropActuallyRequestsRecyclingBeforeRemovingCard() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    let target = root.appendingPathComponent("recycled.txt")
+    var requests = 0
+    await collection.completeExport(export, operation: .delete) { urls, finish in
+      requests += 1
+      XCTAssertEqual(urls, [original])
+      XCTAssertEqual(collection.items.map(\.id), [id])
+      XCTAssertTrue(collection.isExporting)
+      do {
+        try FileManager.default.moveItem(at: original, to: target)
+        finish([original: target], nil)
+      } catch { finish([:], error) }
+    }
+    XCTAssertEqual(requests, 1)
+    XCTAssertEqual(try String(contentsOf: target, encoding: .utf8), "original")
+    XCTAssertTrue(store().items.isEmpty)
+    XCTAssertFalse(collection.isExporting)
+  }
+
+  @MainActor
+  func testRecycleFailureKeepsOriginalAndReportsError() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    await collection.completeExport(export, operation: .delete) { _, finish in
+      finish([:], CocoaError(.fileWriteNoPermission))
+    }
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+    XCTAssertNotNil(collection.lastError)
+    XCTAssertFalse(collection.isExporting)
+  }
+
+  @MainActor
+  func testPartialRecycleConsumesOnlySystemConfirmedItems() async throws {
+    let collection = store()
+    let first = try source("one.txt")
+    let second = try source("two.txt")
+    let a = try collection.addFile(first)
+    let b = try collection.addFile(second)
+    let export = try collection.prepareExport(ids: [a, b])
+    let target = root.appendingPathComponent("recycled.txt")
+    await collection.completeExport(export, operation: .delete) { _, finish in
+      do {
+        try FileManager.default.moveItem(at: first, to: target)
+        finish([first: target], CocoaError(.fileWriteNoPermission))
+      } catch { finish([:], error) }
+    }
+    XCTAssertEqual(store().items.map(\.id), [b])
+    XCTAssertEqual(try String(contentsOf: second, encoding: .utf8), "original")
+    XCTAssertEqual(try String(contentsOf: target, encoding: .utf8), "original")
+    XCTAssertNotNil(collection.lastError)
+  }
+
+  @MainActor
+  func testPinAddedAfterDragStartedPreventsTrashRequest() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    try collection.togglePin(id)
+    var requested = false
+    await collection.completeExport(export, operation: .delete) { _, finish in
+      requested = true; finish([:], nil)
+    }
+    XCTAssertFalse(requested)
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    XCTAssertTrue(FileManager.default.fileExists(atPath: original.path))
+  }
+
+  @MainActor
+  func testSystemRecycleMovesAndRestoresOnlyItsSyntheticFile() async throws {
+    let collection = store()
+    let original = try source("Clipio-r2-recycle-\(UUID().uuidString).txt")
+    let marker = "Clipio R2 synthetic recycle test \(UUID().uuidString)"
+    try Data(marker.utf8).write(to: original)
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    var returned: URL?
+    await collection.completeExport(export, operation: .delete) { urls, finish in
+      NSWorkspace.shared.recycle(urls) { moved, error in
+        returned = moved[original]
+        finish(moved, error)
+      }
+    }
+    XCTAssertNil(collection.lastError)
+    let trashURL = try XCTUnwrap(returned)
+    print("CLIPIO_R2_SYNTHETIC_TRASH_URL=\(trashURL.absoluteString)")
+    let accessed = trashURL.startAccessingSecurityScopedResource()
+    defer { if accessed { trashURL.stopAccessingSecurityScopedResource() } }
+    defer {
+      if !FileManager.default.fileExists(atPath: original.path) {
+        try? FileManager.default.moveItem(at: trashURL, to: original)
+      }
+    }
+    XCTAssertEqual(try String(contentsOf: trashURL, encoding: .utf8), marker)
+    XCTAssertFalse(FileManager.default.fileExists(atPath: original.path))
+    XCTAssertTrue(collection.items.isEmpty)
+    try FileManager.default.moveItem(at: trashURL, to: original)
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), marker)
+  }
+
+  @MainActor
+  func testNewPinnedDescendantProtectsParentAfterDragStarted() async throws {
+    let collection = store()
+    let parent = root.appendingPathComponent("folder")
+    try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+    let child = parent.appendingPathComponent("child.txt")
+    try Data("protected".utf8).write(to: child)
+    let parentID = try collection.addFile(parent)
+    let childID = try collection.addFile(child)
+    let export = try collection.prepareExport(ids: [parentID])
+    try collection.togglePin(childID)
+    var requested = false
+    await collection.completeExport(export, operation: .delete) { _, finish in requested = true; finish([:], nil) }
+    XCTAssertFalse(requested)
+    XCTAssertEqual(try String(contentsOf: child, encoding: .utf8), "protected")
+  }
+
+  @MainActor
+  func testUnconfirmedRecycleKeepsCardAndReportsFailure() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    await collection.completeExport(export, operation: .delete) { _, finish in finish([:], nil) }
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+    XCTAssertNotNil(collection.lastError)
+  }
+
+  @MainActor
+  func testReplacementAtOldDragPathCannotBeRecycled() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    let moved = root.appendingPathComponent("moved-original.txt")
+    try FileManager.default.moveItem(at: original, to: moved)
+    try Data("replacement".utf8).write(to: original)
+    var requested = false
+    await collection.completeExport(export, operation: .delete) { _, finish in requested = true; finish([:], nil) }
+    XCTAssertFalse(requested)
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "replacement")
+    XCTAssertEqual(try String(contentsOf: moved, encoding: .utf8), "original")
+    XCTAssertEqual(collection.items.map(\.id), [id])
+  }
+
+  @MainActor
+  func testSecondExportCannotReleaseFirstPendingRecycleLock() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let first = try collection.prepareExport(ids: [id])
+    let second = try collection.prepareExport(ids: [id])
+    let started = expectation(description: "First recycle awaits system")
+    var release: (([URL: URL], Error?) -> Void)?
+    let pending = Task { await collection.completeExport(first, operation: .delete) { _, finish in
+      release = finish; started.fulfill()
+    } }
+    await fulfillment(of: [started], timeout: 2)
+    XCTAssertTrue(collection.isExporting)
+    XCTAssertThrowsError(try collection.prepareExport(ids: [id]))
+    await collection.completeExport(second, operation: .delete) { _, finish in finish([:], CocoaError(.userCancelled)) }
+    XCTAssertTrue(collection.isExporting, "Rejected second completion cannot unlock the first operation")
+    XCTAssertThrowsError(try collection.togglePin(id))
+    release?([:], CocoaError(.userCancelled))
+    await pending.value
+    XCTAssertFalse(collection.isExporting)
+  }
+
+  @MainActor
+  func testUnreadablePinnedChildStillProtectsParent() async throws {
+    let collection = store()
+    let parent = root.appendingPathComponent("parent-protected")
+    try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+    let child = parent.appendingPathComponent("pinned.txt")
+    try Data("protected".utf8).write(to: child)
+    let parentID = try collection.addFile(parent)
+    let childID = try collection.addFile(child)
+    let export = try collection.prepareExport(ids: [parentID])
+    try collection.togglePin(childID)
+    try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: child.path)
+    defer { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: child.path) }
+    XCTAssertFalse(FileManager.default.isReadableFile(atPath: child.path))
+    XCTAssertThrowsError(try collection.prepareExport(ids: [parentID]))
+    var requested = false
+    await collection.completeExport(export, operation: .delete) { _, finish in requested = true; finish([:], nil) }
+    XCTAssertFalse(requested)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: parent.path))
+  }
+
+  @MainActor
+  func testDeletedAndRecreatedDragSourceCannotBeRecycled() async throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    let held = try FileHandle(forReadingFrom: original)
+    defer { try? held.close() }
+    try FileManager.default.removeItem(at: original)
+    try Data("replacement".utf8).write(to: original)
+    var requested = false
+    await collection.completeExport(export, operation: .delete) { _, finish in requested = true; finish([:], nil) }
+    XCTAssertFalse(requested)
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "replacement")
+  }
+
+  @MainActor
+  func testPlainTextAndLinksAreSavedWithoutImageDownload() async throws {
+    let collection = store()
+    let text = "hello\nworld"
+    let link = try XCTUnwrap(URL(string: "mailto:clipio-test@example.invalid"))
+    await CollectionImporter.collect([
+      NSItemProvider(item: text as NSString, typeIdentifier: "public.utf8-plain-text"),
+      NSItemProvider(item: link as NSURL, typeIdentifier: "public.url")
+    ], into: collection)
+    XCTAssertEqual(collection.items.count, 2)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    let payloads = try collection.items.compactMap { try collection.payload(for: $0.id) }
+    XCTAssertTrue(payloads.contains(.text(text)))
+    XCTAssertTrue(payloads.contains(.link(link)))
+    XCTAssertEqual(try store().items.compactMap { try store().payload(for: $0.id) }.count, 2)
+  }
+
+  func testSavedPayloadQuotaCountsBytesAndDoesNotDeleteRetainedContent() throws {
+    let collection = CollectionStore(directory: directory, securityScoped: false, ownedByteLimit: 8)
+    let id = try collection.addText("four")
+    try collection.togglePin(id)
+    XCTAssertEqual(collection.ownedStorageBytes, 4)
+    XCTAssertThrowsError(try collection.addText("12345"))
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    XCTAssertEqual(try collection.payload(for: id), .text("four"))
+    XCTAssertTrue(collection.items[0].isPinned)
+  }
+
+  func testFailedPayloadManifestWriteCleansOnlyNewOwnedFile() throws {
+    let broken = CollectionStore(directory: directory, securityScoped: false) { _, _ in throw CocoaError(.fileWriteOutOfSpace) }
+    XCTAssertThrowsError(try broken.addText("value"))
+    XCTAssertTrue(broken.items.isEmpty)
+    XCTAssertEqual(broken.ownedStorageBytes, 0)
+  }
+
+  func testVideoReferenceDoesNotSaveOrReadVideoBytes() throws {
+    let file = root.appendingPathComponent("large.mov")
+    FileManager.default.createFile(atPath: file.path, contents: Data())
+    let handle = try FileHandle(forWritingTo: file)
+    try handle.truncate(atOffset: 2 * 1024 * 1024 * 1024)
+    try handle.close()
+    let collection = store()
+    let id = try collection.addFile(file)
+    XCTAssertNil(collection.items[0].ownedFileName)
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+    XCTAssertEqual(try collection.resolveURL(for: id).standardizedFileURL, file.standardizedFileURL)
+  }
+
+  @MainActor
+  func testNativeFileIntakeKeepsReferencesAndSharesOneReceipt() async throws {
+    let collection = store()
+    let a = try source("one.txt")
+    let b = try source("two.txt")
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [a, b]), fallbacks: [], into: collection)
+    XCTAssertEqual(collection.items.count, 2)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertTrue(collection.items.allSatisfy { $0.ownedFileName == nil })
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+  }
+
+  @MainActor
+  func testTrashedFileCanBeCollectedAsReferenceWithoutMovingOrDuplicating() async throws {
+    let original = try source("Clipio-r3-inbound-\(UUID().uuidString).txt")
+    var returned: NSURL?
+    try FileManager.default.trashItem(at: original, resultingItemURL: &returned)
+    let trash = try XCTUnwrap(returned as URL?)
+    let access = trash.startAccessingSecurityScopedResource()
+    defer { if access { trash.stopAccessingSecurityScopedResource() } }
+    defer { try? FileManager.default.moveItem(at: trash, to: original) }
+    let collection = CollectionStore(directory: directory)
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [trash]), fallbacks: [], into: collection)
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertNil(collection.lastError)
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: trash.path))
+    XCTAssertFalse(FileManager.default.fileExists(atPath: original.path))
+    let id = try XCTUnwrap(collection.items.first?.id)
+    let restored = CollectionStore(directory: directory)
+    XCTAssertEqual(try restored.resolveURL(for: id).standardizedFileURL, trash.standardizedFileURL)
+  }
+
+  @MainActor
+  func testReferenceNegotiationNeverPromisesAMoveForAMoveOnlySource() {
+    XCTAssertEqual(CollectionImporter.referenceOperation(offered: [.copy, .move]), .copy)
+    XCTAssertEqual(CollectionImporter.referenceOperation(offered: .link), .link)
+    XCTAssertEqual(CollectionImporter.referenceOperation(offered: .generic), .generic)
+    XCTAssertTrue(CollectionImporter.referenceOperation(offered: .move).isEmpty)
+    XCTAssertTrue(CollectionImporter.referenceOperation(offered: []).isEmpty)
+    XCTAssertTrue(CollectionImporter.accepts(types: [.string]))
+    XCTAssertTrue(CollectionImporter.accepts(types: [.init("NSFilenamesPboardType")]))
+  }
+
+  func testPayloadDragAndCopyKeepNativeTextAndFileRepresentations() throws {
+    let collection = store()
+    let link = try XCTUnwrap(URL(string: "https://example.invalid/profile"))
+    let id = try collection.addLink(link)
+    let export = try collection.prepareExport(ids: [id], forCopy: true)
+    defer { export.endAccess() }
+    let copied = HistoryItem(contents: try collection.clipboardContents(for: export))
+    XCTAssertEqual(copied.text, link.absoluteString)
+    let board = NSPasteboard.withUniqueName()
+    defer { board.releaseGlobally() }
+    let writer = CollectionPayloadWriter(fileURL: try XCTUnwrap(export.urls.first), payload: .link(link))
+    XCTAssertTrue(board.writeObjects([writer]))
+    XCTAssertEqual(board.string(forType: .string), link.absoluteString)
+    XCTAssertEqual(board.string(forType: .URL), link.absoluteString)
+    let files = try XCTUnwrap(board.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL])
+    XCTAssertEqual(files.first?.standardizedFileURL, export.urls.first?.standardizedFileURL)
+  }
+
+  func testStagingQuotaRejectsMixedCopiesAndCancellationCleansOwnCopies() throws {
+    let collection = CollectionStore(directory: directory, securityScoped: false, stagingByteLimit: 4)
+    let normal = try collection.addFile(source("normal.txt"))
+    let pinned = try collection.addFile(source("pinned.txt"))
+    try collection.togglePin(pinned)
+    XCTAssertThrowsError(try collection.prepareExport(ids: [normal, pinned]))
+    let copy = try collection.prepareExport(ids: [normal, pinned], forCopy: true)
+    XCTAssertTrue(copy.stagedDirectories.isEmpty)
+    try collection.finishExport(copy, operation: [])
+    XCTAssertEqual(collection.items.count, 2)
+    let text = try collection.addText("abc")
+    let staged = try collection.prepareExport(ids: [text])
+    let outgoing = try XCTUnwrap(staged.urls.first)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: outgoing.path))
+    try collection.finishExport(staged, operation: [])
+    XCTAssertFalse(FileManager.default.fileExists(atPath: outgoing.path))
+    XCTAssertEqual(try collection.payload(for: text), .text("abc"))
+  }
+
+  func testOversizeTextIsRefusedBeforeStorage() {
+    let collection = store()
+    XCTAssertThrowsError(try collection.addText(String(repeating: "x", count: 1024 * 1024 + 1)))
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+  }
+
+  @MainActor
+  func testUTF16AndGenericTextRepresentationsAreCollected() async throws {
+    let collection = store()
+    let first = NSItemProvider()
+    let second = NSItemProvider()
+    let value = "你好 🌟"
+    let unicode = try XCTUnwrap(value.data(using: .utf16LittleEndian))
+    first.registerDataRepresentation(forTypeIdentifier: "public.utf16-plain-text", visibility: .all) { done in done(unicode, nil); return nil }
+    second.registerDataRepresentation(forTypeIdentifier: "public.plain-text", visibility: .all) { done in done(Data("generic text".utf8), nil); return nil }
+    await CollectionImporter.collect([first, second], into: collection)
+    let payloads = try collection.items.compactMap { try collection.payload(for: $0.id) }
+    XCTAssertTrue(payloads.contains(.text(value)))
+    XCTAssertTrue(payloads.contains(.text("generic text")))
+  }
+
+  func testAbandonedLegacyPromiseCopiesArePrunedWhileFreshCopiesStay() throws {
+    let temporary = FileManager.default.temporaryDirectory
+    let old = temporary.appendingPathComponent("Clipio-Promises-\(UUID().uuidString)")
+    let fresh = temporary.appendingPathComponent("Clipio-Promises-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: old, withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: fresh, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: old); try? FileManager.default.removeItem(at: fresh) }
+    try Data("abandoned test copy".utf8).write(to: old.appendingPathComponent("test.txt"))
+    try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -90000)], ofItemAtPath: old.path)
+    _ = store()
+    XCTAssertFalse(FileManager.default.fileExists(atPath: old.path))
+    XCTAssertTrue(FileManager.default.fileExists(atPath: fresh.path))
   }
 
   func testTabOnlySwitchesWithoutModifiersAndOutsideComposition() {
@@ -653,6 +1129,114 @@ final class CollectionTests: XCTestCase {
     XCTAssertEqual(legacy.items.count, 2)
     XCTAssertNil(legacy.lastError)
     XCTAssertTrue(legacy.items.allSatisfy { $0.batchID == nil })
+  }
+
+  @MainActor
+  func testReceiptOnlyAfterEntireNewBatchHasPersisted() throws {
+    let collection = store()
+    let batch = CollectionImportBatch(count: 2, store: collection)
+    let first = try collection.addFile(source("first.txt"))
+    batch.complete(id: first)
+    XCTAssertEqual(collection.receiptGeneration, 0)
+    XCTAssertEqual(collection.importingCount, 1)
+    let second = try collection.addFile(source("second.txt"))
+    batch.complete(id: second)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    batch.complete(id: second)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    XCTAssertEqual(store().receiptGeneration, 0, "Restoring saved items must not replay success")
+  }
+
+  @MainActor
+  func testConcurrentImportFailureCannotConfirmOrCancelAnotherBatch() throws {
+    let collection = store()
+    let good = CollectionImportBatch(count: 2, store: collection)
+    let partial = CollectionImportBatch(count: 2, store: collection)
+    good.complete(id: try collection.addFile(source("good1.txt")))
+    partial.complete(id: try collection.addFile(source("partial.txt")))
+    partial.complete(error: CollectionError.unsupportedDrop)
+    XCTAssertEqual(collection.receiptGeneration, 0, "Partial failures must not claim complete success")
+    XCTAssertEqual(collection.importingCount, 1)
+    XCTAssertNotNil(collection.lastError)
+    good.complete(id: try collection.addFile(source("good2.txt")))
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    XCTAssertEqual(collection.items.count, 3)
+  }
+
+  @MainActor
+  func testProviderBatchReceiptsExcludeDuplicateEmptyAndFailedImports() async throws {
+    let collection = store()
+    let url = try source()
+    let provider = { NSItemProvider(item: url as NSURL, typeIdentifier: "public.file-url") }
+    await CollectionImporter.collect([provider()], into: collection)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    await CollectionImporter.collect([provider()], into: collection)
+    await CollectionImporter.collect([], into: collection)
+    await CollectionImporter.collect([NSItemProvider()], into: collection)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertEqual(collection.importingCount, 0)
+    try collection.clearUnpinned()
+    await CollectionImporter.collect([provider()], into: collection)
+    XCTAssertEqual(collection.receiptGeneration, 2, "A new drop still confirms when total count returns to the same value")
+  }
+
+  @MainActor
+  func testSevenProviderFilesProduceOneReceiptAndFailedSaveProducesNone() async throws {
+    let collection = store()
+    let providers = try (1...7).map { number in
+      NSItemProvider(item: try source("\(number).txt") as NSURL, typeIdentifier: "public.file-url")
+    }
+    await CollectionImporter.collect(providers, into: collection)
+    XCTAssertEqual(collection.items.count, 7)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    let broken = CollectionStore(directory: root.appendingPathComponent("broken"), securityScoped: false) { _, _ in
+      throw CocoaError(.fileWriteOutOfSpace)
+    }
+    await CollectionImporter.collect(providers, into: broken)
+    XCTAssertTrue(broken.items.isEmpty)
+    XCTAssertEqual(broken.receiptGeneration, 0)
+    XCTAssertEqual(broken.importingCount, 0)
+    XCTAssertNotNil(broken.lastError)
+  }
+
+  func testApprovedCollectionSoundIsIncludedInBuiltApp() throws {
+    let url = try XCTUnwrap(Bundle.main.url(forResource: "Collect", withExtension: "wav"))
+    let sound = try XCTUnwrap(NSSound(contentsOf: url, byReference: false))
+    XCTAssertEqual(sound.duration, 0.38, accuracy: 0.002)
+  }
+
+  @MainActor
+  func testOverlappingDropsOfSameFileOnlyConfirmOneActualInsertion() async throws {
+    let collection = store()
+    let url = try source()
+    let requested = expectation(description: "Both drops start before either file arrives")
+    requested.expectedFulfillmentCount = 2
+    let gate = DispatchSemaphore(value: 0)
+    func provider() -> NSItemProvider {
+      let provider = NSItemProvider()
+      provider.registerDataRepresentation(forTypeIdentifier: "public.file-url", visibility: .all) { completion in
+        requested.fulfill()
+        DispatchQueue.global().async {
+          _ = gate.wait(timeout: .now() + 3)
+          completion(url.dataRepresentation, nil)
+        }
+        return nil
+      }
+      return provider
+    }
+    let first = Task { await CollectionImporter.collect([provider()], into: collection) }
+    let second = Task { await CollectionImporter.collect([provider()], into: collection) }
+    await fulfillment(of: [requested], timeout: 2)
+    gate.signal()
+    gate.signal()
+    await first.value
+    await second.value
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertEqual(collection.receiptGeneration, 1, "The duplicate-only drop must not confirm another batch's insertion")
+    XCTAssertEqual(collection.importingCount, 0)
   }
 
   func testSearchHitShowsWholeStackAndLastMemberBecomesOrdinaryCard() throws {

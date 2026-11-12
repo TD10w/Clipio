@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Visada";
 "SearchVisibilityDuringSearch" = "Paieškos metu";
 "ActiveScreen" = "Aktyvus ekranas";
-"PinTo" = "Prisegti:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Viršuje";
 "PinToBottom" = "Apačioje";
-"PinToTooltip" = "Pakeiskite prisegtų elementų vietą.\nNumatytoji reikšmė: Viršuje.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Paveikslėlio aukštis:";
 "ImageHeightTooltip" = "Didžiausias paveikslėlio peržiūros aukštis.\nNumatytoji reikšmė: 40.\nPatarimas: Nustatykite 16, kad atrodytų kaip teksto elementai.";
 "PreviewDelay" = "Peržiūros vėlavimas:";

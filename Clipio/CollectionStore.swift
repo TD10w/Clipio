@@ -22,14 +22,23 @@ final class CollectionStore {
   }
   var lastError: String?
   var importingCount = 0
+  /// Session-only: restored metadata and ordinary edits never trigger receipts.
+  private(set) var receiptGeneration = 0
   var isExporting = false
   var showClearConfirmation = false
 
   let directory: URL
   private let securityScoped: Bool
+  let ownedByteLimit: Int64
+  let stagingByteLimit: Int64
+  var ownedStorageBytes: Int64 { storageBytes(at: directory.appendingPathComponent("Images"), limit: ownedByteLimit) }
+  static let maximumTextBytes = 1024 * 1024
+  static let maximumLinkBytes = 8 * 1024
+  var isReceivingDrag = false
   private let writeManifest: (Data, URL) throws -> Void
   private var canWrite = true
   private let fileManager = FileManager.default
+  @ObservationIgnored private var recycling = false
   @ObservationIgnored private var pendingMoves: [UUID: CollectionMoveObservation] = [:]
 
   private struct Manifest: Codable {
@@ -40,12 +49,17 @@ final class CollectionStore {
   init(
     directory: URL,
     securityScoped: Bool = true,
+    ownedByteLimit: Int64 = 128 * 1024 * 1024,
+    stagingByteLimit: Int64 = 128 * 1024 * 1024,
     writeManifest: @escaping (Data, URL) throws -> Void = { try $0.write(to: $1, options: .atomic) }
   ) {
     self.directory = directory
     self.securityScoped = securityScoped
+    self.ownedByteLimit = max(0, ownedByteLimit)
+    self.stagingByteLimit = max(0, stagingByteLimit)
     self.writeManifest = writeManifest
     pruneOldExports()
+    pruneAbandonedPromises()
     let manifest = directory.appendingPathComponent("items.json")
     guard fileManager.fileExists(atPath: manifest.path) else { return }
     do {
@@ -63,6 +77,8 @@ final class CollectionStore {
       lastError = CollectionError.unreadableStore.localizedDescription
     }
   }
+
+  func recordReceipt() { receiptGeneration += 1 }
 
   /// A search hit on any Stack member shows the whole Stack.
   var visibleItems: [CollectionItem] {
@@ -121,10 +137,17 @@ final class CollectionStore {
     if let existing = items.first(where: { item in
       item.ownedFileName == nil && (try? resolveURL(for: item.id).resolvingSymlinksInPath()) == url.resolvingSymlinksInPath()
     }) {
+      // Re-dropping an existing reference is also an explicit grant refresh for
+      // items saved by an older read-only build. Preserve its ID, batch and Pin.
+      let bookmark = try url.bookmarkData(options: securityScoped ? [.withSecurityScope] : [.minimalBookmark],
+        includingResourceValuesForKeys: nil, relativeTo: nil)
+      var updated = items
+      if let index = updated.firstIndex(where: { $0.id == existing.id }) { updated[index].bookmark = bookmark }
+      try commit(updated)
       return existing.id
     }
     let bookmark = try url.bookmarkData(
-      options: securityScoped ? [.withSecurityScope, .securityScopeAllowOnlyReadAccess] : [.minimalBookmark],
+      options: securityScoped ? [.withSecurityScope] : [.minimalBookmark],
       includingResourceValuesForKeys: nil,
       relativeTo: nil
     )
@@ -137,6 +160,109 @@ final class CollectionStore {
   }
 
   @discardableResult
+  func addText(_ text: String, batch: UUID? = nil) throws -> UUID {
+    guard !text.isEmpty, text.utf8.count <= Self.maximumTextBytes else { throw CollectionError.payloadTooLarge }
+    return try addPayload(Data(text.utf8), name: text.components(separatedBy: .newlines).first ?? "Text",
+      fileExtension: "txt", batch: batch)
+  }
+
+  @discardableResult
+  func addLink(_ url: URL, batch: UUID? = nil) throws -> UUID {
+    guard !url.isFileURL, url.scheme != nil, url.absoluteString.utf8.count <= Self.maximumLinkBytes else {
+      throw CollectionError.payloadTooLarge
+    }
+    let data = try PropertyListSerialization.data(fromPropertyList: ["URL": url.absoluteString], format: .xml, options: 0)
+    return try addPayload(data, name: url.host ?? url.scheme ?? "Link", fileExtension: "webloc", batch: batch)
+  }
+
+  func payload(for id: UUID) throws -> CollectionPayload? {
+    guard let item = items.first(where: { $0.id == id }), let file = item.ownedFileName else { return nil }
+    let ext = URL(fileURLWithPath: file).pathExtension
+    guard ext == "clipio-text" || ext == "clipio-link" else { return nil }
+    let url = try resolveURL(for: id)
+    let limit = ext == "clipio-text" ? Self.maximumTextBytes : Self.maximumLinkBytes * 6 + 4096
+    guard let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= limit else {
+      throw CollectionError.payloadTooLarge
+    }
+    let handle = try FileHandle(forReadingFrom: url)
+    defer { try? handle.close() }
+    var data = Data()
+    while let chunk = try handle.read(upToCount: min(65536, limit - data.count + 1)), !chunk.isEmpty {
+      data.append(chunk)
+      guard data.count <= limit else { throw CollectionError.payloadTooLarge }
+    }
+    if ext == "clipio-text", let text = String(data: data, encoding: .utf8) { return .text(text) }
+    if ext == "clipio-link",
+       let saved = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: String],
+       let value = saved["URL"], let link = URL(string: value), !link.isFileURL { return .link(link) }
+    throw CollectionError.invalidFile
+  }
+
+  func clipboardContents(for export: CollectionExport) throws -> [HistoryItemContent] {
+    var contents: [HistoryItemContent] = []
+    var text: [String] = []
+    var links: [URL] = []
+    for item in items where export.ids.contains(item.id) {
+      if let payload = try payload(for: item.id) {
+        text.append(payload.plainText)
+        if case .link(let link) = payload { links.append(link) }
+      } else if let url = export.exportedURLs[item.id] {
+        contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.fileURL.rawValue, value: url.dataRepresentation))
+      }
+    }
+    if !text.isEmpty {
+      contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.string.rawValue, value: Data(text.joined(separator: "\n").utf8)))
+    }
+    if text.count == 1, links.count == 1 {
+      contents.append(HistoryItemContent(type: NSPasteboard.PasteboardType.URL.rawValue, value: Data(links[0].absoluteString.utf8)))
+    }
+    return contents
+  }
+
+  private func storageBytes(at url: URL, limit: Int64) -> Int64 {
+    guard fileManager.fileExists(atPath: url.path) else { return 0 }
+    guard let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey]) else { return limit + 1 }
+    guard values.isDirectory == true else { return Int64(values.fileSize ?? Int(clamping: limit + 1)) }
+    guard let iterator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey]) else {
+      return limit + 1
+    }
+    var bytes: Int64 = 0
+    var entries = 0
+    for case let child as URL in iterator {
+      entries += 1
+      guard entries <= 10000, let info = try? child.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]) else { return limit + 1 }
+      if info.isRegularFile == true { bytes += Int64(info.fileSize ?? 0) }
+      if bytes > limit { return limit + 1 }
+    }
+    return bytes
+  }
+
+  private func checkOwnedCapacity(adding bytes: Int64) throws {
+    guard bytes >= 0, bytes <= Int64(CollectionImage.maximumByteCount) else { throw CollectionError.payloadTooLarge }
+    guard ownedStorageBytes <= ownedByteLimit - bytes else { throw CollectionError.storageLimit }
+  }
+
+  private func addPayload(_ data: Data, name: String, fileExtension: String, batch: UUID?) throws -> UUID {
+    guard canWrite else { throw CollectionError.unreadableStore }
+    try checkOwnedCapacity(adding: Int64(data.count))
+    let id = UUID()
+    let storedExtension = fileExtension == "txt" ? "clipio-text" : "clipio-link"
+    let file = "\(id.uuidString).\(storedExtension)"
+    let folder = directory.appendingPathComponent("Images")
+    try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
+    let url = folder.appendingPathComponent(file)
+    try data.write(to: url, options: .atomic)
+    let safeName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+      .replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "\0", with: "")
+    let title = String((safeName.isEmpty ? "Text" : safeName).prefix(60)) + "." + fileExtension
+    let item = CollectionItem(id: id, name: title, addedAt: Date(), isPinned: false,
+      bookmark: nil, ownedFileName: file, batchID: batch)
+    do { try commit(inserting(item)) }
+    catch { try? fileManager.removeItem(at: url); throw error }
+    return id
+  }
+
+  @discardableResult
   func addImage(data: Data, name: String) throws -> UUID {
     try addImage(CollectionImage(data: data, name: name))
   }
@@ -144,6 +270,7 @@ final class CollectionStore {
   @discardableResult
   func addImage(_ image: CollectionImage, batch: UUID? = nil) throws -> UUID {
     guard canWrite else { throw CollectionError.unreadableStore }
+    try checkOwnedCapacity(adding: Int64(image.data.count))
     let id = UUID()
     let fileName = "\(id.uuidString).\(image.fileExtension)"
     let images = directory.appendingPathComponent("Images")
@@ -164,7 +291,7 @@ final class CollectionStore {
     return id
   }
 
-  func resolveURL(for id: UUID) throws -> URL {
+  func resolveURL(for id: UUID, requireReadable: Bool = true) throws -> URL {
     guard let item = items.first(where: { $0.id == id }) else { throw CollectionError.unavailable }
     let url: URL
     if let fileName = item.ownedFileName {
@@ -182,7 +309,7 @@ final class CollectionStore {
         var updated = items
         if let index = updated.firstIndex(where: { $0.id == id }) {
           updated[index].bookmark = try url.bookmarkData(
-            options: securityScoped ? [.withSecurityScope, .securityScopeAllowOnlyReadAccess] : [.minimalBookmark],
+            options: securityScoped ? [.withSecurityScope] : [.minimalBookmark],
             includingResourceValuesForKeys: nil, relativeTo: nil
           )
           try commit(updated)
@@ -193,7 +320,7 @@ final class CollectionStore {
     }
     let accessed = url.startAccessingSecurityScopedResource()
     defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-    guard fileManager.isReadableFile(atPath: url.path) else { throw CollectionError.unavailable }
+    guard !requireReadable || fileManager.isReadableFile(atPath: url.path) else { throw CollectionError.unavailable }
     return url
   }
 
@@ -208,6 +335,7 @@ final class CollectionStore {
   /// Pins every item when any of them is unpinned, otherwise unpins them all, so a
   /// partly pinned selection or Stack never flips member by member.
   func togglePin(ids: Set<UUID>) throws {
+    guard !isExporting else { throw CollectionError.exportInProgress }
     let indices = items.indices.filter { ids.contains(items[$0].id) }
     guard !indices.isEmpty else { return }
     let pin = indices.contains { !items[$0].isPinned }
@@ -235,6 +363,16 @@ final class CollectionStore {
       : fileManager.temporaryDirectory.appendingPathComponent("Clipio-Exports")
   }
 
+  private func pruneAbandonedPromises() {
+    let temporary = fileManager.temporaryDirectory
+    guard let directories = try? fileManager.contentsOfDirectory(at: temporary, includingPropertiesForKeys: [.contentModificationDateKey]) else { return }
+    for url in directories where url.lastPathComponent.hasPrefix("Clipio-Promises-") {
+      guard let modified = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
+            Date().timeIntervalSince(modified) > 86400 else { continue }
+      try? fileManager.removeItem(at: url)
+    }
+  }
+
   func pruneOldExports() {
     guard let files = try? fileManager.contentsOfDirectory(
       at: outgoingDirectory, includingPropertiesForKeys: [.contentModificationDateKey]
@@ -247,13 +385,14 @@ final class CollectionStore {
     }
   }
 
-  func prepareExport(ids: Set<UUID>) throws -> CollectionExport {
+  func prepareExport(ids: Set<UUID>, forCopy: Bool = false) throws -> CollectionExport {
+    guard !isExporting else { throw CollectionError.exportInProgress }
     pruneOldExports()
     let selected = items.filter { ids.contains($0.id) }
     guard !selected.isEmpty else { throw CollectionError.unavailable }
     // AppKit negotiates one operation for the entire session. In a mixed move,
     // hand Finder copies of Pin items so their original files cannot be moved.
-    let movesOriginals = selected.contains { !$0.isPinned && $0.ownedFileName == nil }
+    let movesOriginals = !forCopy && selected.contains { !$0.isPinned && $0.ownedFileName == nil }
     var urls: [URL] = []
     var accessed: [URL] = []
     var stagedDirectories: [URL] = []
@@ -262,14 +401,17 @@ final class CollectionStore {
       for entry in resolved {
         if entry.url.startAccessingSecurityScopedResource() { accessed.append(entry.url) }
       }
+      var unknownPin = false
       let protectedURLs = items.filter { $0.isPinned && $0.ownedFileName == nil }.compactMap { item -> URL? in
-        // Missing/unavailable pins cannot be handed to a destination, but shouldn't
-        // prevent unrelated files from exporting.
-        try? resolveURL(for: item.id)
+        do { return try resolveURL(for: item.id, requireReadable: false) }
+        catch { unknownPin = true; return nil }
       }
       // Moving a parent also moves descendants, even if a child is pinned. Reject
       // overlapping batches before staging or giving any URL to a destination.
-      for parent in resolved where !parent.item.isPinned && parent.item.ownedFileName == nil {
+      for parent in resolved where movesOriginals && !parent.item.isPinned && parent.item.ownedFileName == nil {
+        if unknownPin, (try? parent.url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != false {
+          throw CollectionError.overlappingFiles
+        }
         let prefix = parent.url.resolvingSymlinksInPath().path + "/"
         if resolved.contains(where: {
           $0.item.id != parent.item.id && $0.url.resolvingSymlinksInPath().path.hasPrefix(prefix)
@@ -277,8 +419,13 @@ final class CollectionStore {
           throw CollectionError.overlappingFiles
         }
       }
+      var stagingBytes = storageBytes(at: outgoingDirectory, limit: stagingByteLimit)
       for (item, url) in resolved {
-        if item.ownedFileName != nil || (movesOriginals && item.isPinned) {
+        let inlineCopy = forCopy && item.ownedFileName.map { ["clipio-text", "clipio-link"].contains(URL(fileURLWithPath: $0).pathExtension) } == true
+        if item.ownedFileName != nil && !inlineCopy || (movesOriginals && item.isPinned) {
+          let bytes = storageBytes(at: url, limit: stagingByteLimit)
+          guard bytes <= stagingByteLimit, stagingBytes <= stagingByteLimit - bytes else { throw CollectionError.stagingLimit }
+          stagingBytes += bytes
           // Destinations may read a file URL after ending the drag. Keep this outgoing
           // copy alive independently of clear/remove, and let macOS clean its temp storage.
           let outgoing = outgoingDirectory.appendingPathComponent(UUID().uuidString)
@@ -286,6 +433,9 @@ final class CollectionStore {
           stagedDirectories.append(outgoing)
           let staged = outgoing.appendingPathComponent(item.name)
           try fileManager.copyItem(at: url, to: staged)
+          let actual = storageBytes(at: staged, limit: stagingByteLimit)
+          stagingBytes += actual - bytes
+          guard stagingBytes <= stagingByteLimit else { throw CollectionError.stagingLimit }
           urls.append(staged)
         } else {
           urls.append(url)
@@ -293,9 +443,16 @@ final class CollectionStore {
       }
       return CollectionExport(
         ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed,
-        operation: movesOriginals ? .move : .copy,
+        // Dock Trash negotiates delete rather than move. Keep Pin batches out of
+        // that negotiation: their originals must remain protected.
+        operation: (movesOriginals ? NSDragOperation.move : .copy).union(
+          selected.contains(where: \.isPinned) ? [] : .delete
+        ),
         pinnedIDs: Set(selected.filter(\.isPinned).map(\.id)),
-        exportedURLs: Dictionary(uniqueKeysWithValues: zip(selected.map(\.id), urls))
+        exportedURLs: Dictionary(uniqueKeysWithValues: zip(selected.map(\.id), urls)),
+        identities: Dictionary(uniqueKeysWithValues: try zip(selected.map(\.id), urls).map {
+          ($0.0, try CollectionFileIdentity(url: $0.1))
+        }), stagedDirectories: stagedDirectories
       )
     } catch {
       accessed.forEach { $0.stopAccessingSecurityScopedResource() }
@@ -304,16 +461,95 @@ final class CollectionStore {
     }
   }
 
+  @MainActor
+  func completeExport(_ export: CollectionExport, operation: NSDragOperation,
+    recycle: @escaping ([URL], @escaping ([URL: URL], Error?) -> Void) -> Void = { urls, done in
+      NSWorkspace.shared.recycle(urls, completionHandler: done)
+    }
+  ) async {
+    guard !recycling else {
+      export.endAccess()
+      lastError = CollectionError.exportInProgress.localizedDescription
+      return
+    }
+    isExporting = true
+    defer { isExporting = false }
+    guard operation == .delete else {
+      perform { try finishExport(export, operation: operation) }
+      return
+    }
+    recycling = true
+    defer { recycling = false; export.endAccess() }
+    do {
+      let current = items.filter { export.ids.contains($0.id) }
+      guard export.operation.contains(.delete), export.pinnedIDs.isEmpty,
+            !current.contains(where: \.isPinned) else { throw CollectionError.trashProtected }
+      guard current.count == export.ids.count, !current.isEmpty else { throw CollectionError.unavailable }
+      var unknownPin = false
+      let protected = items.filter { $0.isPinned && $0.ownedFileName == nil }.compactMap { item -> URL? in
+        do { return try resolveURL(for: item.id, requireReadable: false) }
+        catch { unknownPin = true; return nil }
+      }
+      for item in current {
+        guard let source = export.exportedURLs[item.id], let expected = export.identities[item.id],
+              try CollectionFileIdentity(url: source) == expected else { throw CollectionError.unavailable }
+        if item.ownedFileName == nil {
+          // A bookmark following a move must not cause a replacement at the old
+          // path to be trashed. Only the exact original drag payload is eligible.
+          let currentURL = try resolveURL(for: item.id)
+          guard currentURL.standardizedFileURL == source.standardizedFileURL else { throw CollectionError.unavailable }
+          if unknownPin, (try? source.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != false {
+            throw CollectionError.trashProtected
+          }
+          let prefix = source.resolvingSymlinksInPath().path + "/"
+          guard !protected.contains(where: { $0.resolvingSymlinksInPath().path.hasPrefix(prefix) }) else {
+            throw CollectionError.trashProtected
+          }
+        }
+      }
+      let result: ([URL: URL], Error?) = await withCheckedContinuation { continuation in
+        recycle(export.urls) { moved, error in continuation.resume(returning: (moved, error)) }
+      }
+      let confirmedSources = Set(result.0.filter { $0.key.standardizedFileURL != $0.value.standardizedFileURL }
+        .map { $0.key.standardizedFileURL })
+      let confirmed = Set(current.compactMap { item -> UUID? in
+        guard let source = export.exportedURLs[item.id], confirmedSources.contains(source.standardizedFileURL) else { return nil }
+        return item.id
+      })
+      // Reuse the existence check and delayed source watcher only AFTER the
+      // system has acknowledged recycling that individual file.
+      let completed = CollectionExport(ids: confirmed, urls: [], accessedURLs: [], operation: .move,
+        pinnedIDs: export.pinnedIDs, exportedURLs: export.exportedURLs)
+      try finishExport(completed, operation: .move)
+      if let error = result.1 { throw error }
+      if confirmed.count != export.ids.count { throw CollectionError.trashFailed }
+    } catch {
+      let cocoa = error as NSError
+      if cocoa.domain == NSCocoaErrorDomain && cocoa.code == NSFileWriteNoPermissionError {
+        lastError = NSLocalizedString("collection_trash_reauthorize", comment: "")
+      } else { lastError = error.localizedDescription }
+      refreshAvailability()
+    }
+  }
+
+  func cancelPreparedExport(_ export: CollectionExport) {
+    export.endAccess()
+    export.stagedDirectories.forEach { try? fileManager.removeItem(at: $0) }
+  }
+
   func finishExport(_ export: CollectionExport, operation: NSDragOperation) throws {
     defer { export.endAccess() }
-    guard operation == .move || operation == .copy else { return }
+    guard operation == .move || operation == .copy else {
+      export.stagedDirectories.forEach { try? fileManager.removeItem(at: $0) }
+      return
+    }
     var consumed: Set<UUID> = []
     for item in items where export.ids.contains(item.id) && !export.pinnedIDs.contains(item.id) && !item.isPinned {
       if operation == .move, let source = export.exportedURLs[item.id] {
         if !fileManager.fileExists(atPath: source.path) {
           consumed.insert(item.id)
         } else {
-          // Finder may return before completing a long/cross-volume operation.
+          // Finder / Dock may return before completing a file operation.
           // Watch the source, with no idle polling, until it actually leaves.
           pendingMoves[item.id] = CollectionMoveObservation(url: source, onChange: { [weak self] in
             self?.reconcileMove(id: item.id, source: source)

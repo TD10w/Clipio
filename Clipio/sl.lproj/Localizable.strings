@@ -1,17 +1,17 @@
 "clear_alert_message" = "Ali ste prepričani, da želite počistiti zgodovino?";
 "clear_alert_comment" = "Tega dejanja ne morete razveljaviti.";
 "search_placeholder" = "vnesite za iskanje …";
-"clear_all_tooltip" = "Počisti vse elemente.";
+"clear_all_tooltip" = "Clear all clipboard history, including favorites.";
 "quit_tooltip" = "Zapri aplikacijo.";
-"clear_all" = "Izbriši vse";
+"clear_all" = "Clear All (Including Favorites)";
 "about" = "Informacije";
 "preferences" = "Nastavitve…";
 "clear_alert_cancel" = "Prekliči";
 "clear_alert_confirm" = "Izbriši";
 "screen" = "Zaslon";
-"clear_tooltip" = "Počisti nepripete elemente.\nIzberite z ⇧, da počistite vse.";
+"clear_tooltip" = "Clear clipboard history. Favorites are kept.";
 "about_tooltip" = "Preberite več o aplikaciji.";
-"clear" = "Izbriši";
+"clear" = "Clear History";
 "quit" = "Zapri";
 
 /* File collection */
@@ -69,3 +69,58 @@
 "onboarding_next" = "Next";
 "onboarding_start" = "Get Started";
 "onboarding_step" = "Step %d of 3";
+
+"star_filter" = "Clipboard View";
+
+"star_all" = "All";
+
+"star_favorites" = "Favorites";
+
+"star_empty" = "Star an item to keep it here.";
+
+"star_no_results" = "No matching favorites.";
+
+"star_add" = "Add to Favorites (⌥P)";
+
+"star_remove" = "Remove from Favorites (⌥P)";
+
+"star_rename" = "Name Favorite";
+
+"star_name_placeholder" = "Name (optional)";
+
+"star_name_comment" = "This name helps you find the item. Copied content stays unchanged.";
+
+"star_save" = "Save";
+
+"star_ok" = "OK";
+
+"star_name_failed" = "The name could not be saved. Please try again.";
+
+"star_clear_menu" = "Clear History…";
+
+"star_clear_all_message" = "Clear All, Including Favorites?";
+
+"star_clear_all_comment" = "All clipboard history and favorites will be removed from Clipio. This cannot be undone.";
+
+"collection_received" = "Collected";
+
+"star_show_all" = "Show All (⇧Tab)";
+
+"star_show_favorites" = "Show Favorites (⇧Tab)";
+
+"collection_trash_failed" = "Some files could not be moved to the Trash. Unconfirmed items were kept.";
+
+"collection_trash_protected" = "Pinned files are protected. Unpin them before moving them to the Trash.";
+
+"collection_export_in_progress" = "A file operation is still in progress. Please wait before changing Pin.";
+
+"collection_trash_reauthorize" = "These items have older read-only access. Drag them in again from Finder to refresh file-operation access, then retry. Existing cards and Pin states are kept.";
+
+"collection_payload_too_large" = "This content exceeds the saved-item size limit. Drag a normal file to keep only its location.";
+
+"collection_storage_limit" = "Saved collection content has reached its 128 MB budget. Remove saved items to make room. File references use only metadata.";
+
+"collection_staging_limit" = "Temporary transfer storage is full. Try again after older transfers expire. Drag large pinned files separately.";
+
+"collection_virtual_media_needs_file" = "This source only provides a generated copy with unknown size. Save it to a Finder folder first, then drag it here to keep only its location.";
+"collection_source_requires_move" = "This source only offers a move. Restore the item to a normal folder first, then collect its reference.";

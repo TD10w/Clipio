@@ -2,7 +2,7 @@
 "TurnOffViaMenuIconDescription" = "A menü ikonra is kattinthatsz a ⌥ gomb lenyomása közben.\nCsak a következő másolás figyelmen kívül hagyásához, kattints a ⌥⇧ gombokat lenyomva.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# adatok másolása";
 "ClearHistoryOnQuit" = "Előzmények törlése kilépésnél";
-"ClearHistoryOnQuitTooltip" = "Az összes kitűzetlen elem automatikus törlése mielőtt az alkalmazás bezáródik.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "A rendszer vágólapjának is a törlése";
 "ClearSystemClipboardTooltip" = "Ha be van kapcsolva, az előzmények törlésével a rendszer aktuális vágólapját is törli.";
 "TurnOff" = "Kikapcsolás";

@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "⌥ tugmasini bosgan holda menyu belgisini ham bosishingiz mumkin.\nFaqat keyingi nusxaga e’tibor bermaslik uchun ⌥⇧ tugmasini bosing.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# ma'lumotni nusxalash";
 "ClearHistoryOnQuit" = "Dastur yopilganda tarixni tozalash";
-"ClearHistoryOnQuitTooltip" = "Ilovani yopishdan oldin barcha qo'shilmagan yozuvlarni avtomatik ravishda o'chirish.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Operatsion tizim buferini ham tozalang";
 "ClearSystemClipboardTooltip" = "Yoqilgan bo'lsa, tarixni tozalash joriy tizim buferini ham tozalaydi.";

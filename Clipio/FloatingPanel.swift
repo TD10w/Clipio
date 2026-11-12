@@ -181,6 +181,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
+    if AppState.shared.shelfMode == .clipboard { AppState.shared.history.prepareForOpening() }
     AppState.shared.popup.prepareToOpen()
     animationState.didOpen()
     // Cancel any in-progress close animation so we start clean.

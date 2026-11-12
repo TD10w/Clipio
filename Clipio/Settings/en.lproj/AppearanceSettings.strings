@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Always";
 "SearchVisibilityDuringSearch" = "During search";
 "ActiveScreen" = "Active screen";
-"PinTo" = "Pin to:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Top";
 "PinToBottom" = "Bottom";
-"PinToTooltip" = "Change the location of pinned items.\nDefault: Top.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Image height:";
 "ImageHeightTooltip" = "Maximum image preview height.\nDefault: 40.\nHint: Set to 16 to look like text items.";
 "PreviewDelay" = "Preview delay:";

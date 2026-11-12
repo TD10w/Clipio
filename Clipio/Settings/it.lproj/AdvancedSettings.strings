@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Puoi anche fare clic sull'icona del menu premendo ⌥.\nPer ignorare solo la copia successiva, fare clic con ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copia dei dati";
 "ClearHistoryOnQuit" = "Elimina la cronologia e chiudi";
-"ClearHistoryOnQuitTooltip" = "Rimuovi automaticamente gli elementi non bloccati prima di chiudere l'applicazione.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Cancella anche gli appunti di sistema";
 "ClearSystemClipboardTooltip" = "Se abilitato, la cancellazione della cronologia cancellerebbe anche gli appunti di sistema correnti.";

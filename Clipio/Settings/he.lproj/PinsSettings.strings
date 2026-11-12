@@ -1,7 +1,7 @@
-"Title" = "נעוצים";
+"Title" = "Favorites";
 "Key" = "מקש קישור";
 "Alias" = "כותרת";
 "Content" = "תוכן";
 "ContentIsNotText" = "תוכן שאינו ניתן לעריכה (תמונה או קובץ)";
 "RichTextEditWarning" = "העריכה תבטל את כל העיצוב.";
-"PinCustomizationDescription" = "ניתן להתאים אישית את מקש הקיצור, הכותרת והתוכן של כל פריט מוצמד. כדי לערוך, לחץ פעמיים על הפריט והזן ערך חדש.\nשימו לב שניתן לשנות רק טקסט רגיל.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

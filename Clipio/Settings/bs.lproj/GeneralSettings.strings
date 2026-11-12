@@ -4,8 +4,8 @@
 "CheckNow" = "Provjeri sada";
 "Open" = "Obrisati:";
 "OpenTooltip" = "Globalna prečica za otvaranje aplikacije.\nPonovljeni pritisak na glavnu tipku dok držite modifikatore odabrat će sljedeću stavku na listi. U ovom načinu rada, otpuštanje modifikatorskih tipki potvrdit će odabir i zatvoriti skočni prozor.\nZadano: ⇧⌘C.";
-"Pin" = "Zakačiti:";
-"PinTooltip" = "Prečica za zakačenje stavke istorije.\nStandardno: %@P.";
+"Pin" = "Favorite / Pin:";
+"PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Brisaniti:";
 "DeleteTooltip" = "Prečica za brisanje stavke historije.\nStandardno: %@⌫.";
 "ShowPreview" = "Pregled:";

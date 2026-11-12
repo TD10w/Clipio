@@ -4,8 +4,8 @@
 "CheckNow" = "Check now";
 "Open" = "Open:";
 "OpenTooltip" = "Global shortcut key to open application.\nA repeated press of the main key while holding modifiers will select the next item in the list. In this mode, releasing modifier keys will confirm selection and close the popup.\nDefault: ⇧⌘C.";
-"Pin" = "Pin:";
-"PinTooltip" = "Shortcut key to pin history item.\nDefault: ⌥P.";
+"Pin" = "Favorite / Pin:";
+"PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Delete:";
 "DeleteTooltip" = "Shortcut key to delete history item.\nDefault: ⌥⌫.";
 "ShowPreview" = "Preview:";

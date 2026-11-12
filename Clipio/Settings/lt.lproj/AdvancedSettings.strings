@@ -3,7 +3,7 @@
 "TurnOffDescription" = "Laikinai nepaisykite visų naujų kopijų.\nTikėtina, kad tai naudosite programiškai ir išjungsite programą kopijuodami jautrius duomenis.";
 "TurnOffViaMenuIconDescription" = "Taip pat galite spustelėti meniu piktogramą paspaudę ⌥.\nJei norite ignoruoti tik kitą kopiją, spustelėkite paspaudę ⌥⇧.";
 "ClearHistoryOnQuit" = "Ištrinti istoriją išjungiant";
-"ClearHistoryOnQuitTooltip" = "Automatiškai pašalinti visus neprisegtus elementus prieš išjungiant programą.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Taip pat išvalyti sistemos iškarpinę";
 "ClearSystemClipboardTooltip" = "Jei ši funkcija įjungta, istorijos ištrynimas taip pat ištrina dabartinę sistemos iškarpinę.";
 "TurnOffShellScript" = "defaults write com.clipio.app ignoreEvents true\n# kopijuoti duomenis\ndefaults write com.clipio.app ignoreEvents false";

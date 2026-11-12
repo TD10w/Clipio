@@ -1,7 +1,7 @@
-"Title" = "Spelden";
+"Title" = "Favorites";
 "Key" = "Sleutel";
 "Alias" = "Titel";
 "Content" = "Inhoud";
 "ContentIsNotText" = "Niet bewerkbare inhoud (afbeelding of bestand)";
 "RichTextEditWarning" = "Bewerken verwijdert alle opmaak.";
-"PinCustomizationDescription" = "Je kunt de sneltoets, titel en inhoud van elk vastgemaakt item aanpassen.\nOm te bewerken dubbelklikt u op het item en voert u een nieuwe waarde in.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

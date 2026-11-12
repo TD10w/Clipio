@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Vždy";
 "SearchVisibilityDuringSearch" = "Během vyhledávání";
 "ActiveScreen" = "Aktivní obrazovka";
-"PinTo" = "Připnout:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Nahoru";
 "PinToBottom" = "Dolů";
-"PinToTooltip" = "Změnit umístění připnutí položek.\nVýchozí: Nahoru.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Výška obrázku:";
 "ImageHeightTooltip" = "Maximální výška náhledu obrázku.\nVýchozí: 40.\nTip: Zvol 16 pro stejnou podobu jako textové položky.";
 "PreviewDelay" = "Zpoždení náhledu:";

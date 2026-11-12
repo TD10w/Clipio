@@ -49,7 +49,30 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   var previewImageGenerationTask: Task<(), Error>?
   var thumbnailImageGenerationTask: Task<(), Error>?
   var previewImage: NSImage?
-  var thumbnailImage: NSImage?
+  private static let thumbnailCache: NSCache<NSUUID, NSImage> = {
+    let cache = NSCache<NSUUID, NSImage>()
+    cache.totalCostLimit = 32 * 1024 * 1024
+    cache.countLimit = 100
+    return cache
+  }()
+  private var thumbnailRevision = 0
+  var thumbnailImage: NSImage? {
+    get {
+      _ = thumbnailRevision
+      return Self.thumbnailCache.object(forKey: id as NSUUID)
+    }
+    set {
+      let key = id as NSUUID
+      if let image = newValue {
+        let bitmapCost = image.representations.reduce(0) { $0 + max(0, $1.pixelsWide) * max(0, $1.pixelsHigh) * 4 }
+        let cost = max(bitmapCost, Int(image.size.width * image.size.height * 4))
+        if cost <= Self.thumbnailCache.totalCostLimit {
+          Self.thumbnailCache.setObject(image, forKey: key, cost: cost)
+        } else { Self.thumbnailCache.removeObject(forKey: key) }
+      } else { Self.thumbnailCache.removeObject(forKey: key) }
+      thumbnailRevision &+= 1
+    }
+  }
   var applicationImage: ApplicationImage
 
   // 10k characters seems to be more than enough on large displays.
@@ -64,6 +87,11 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     let resolved = item.previewableText.shortened(to: 10_000)
     cachedText = resolved
     return resolved
+  }
+
+  var searchableFields: [String] {
+    guard let name = item.favoriteName else { return [title] }
+    return [name, item.title]
   }
 
   var isPinned: Bool { item.pin != nil }
@@ -81,7 +109,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   init(_ item: HistoryItem, shortcuts: [KeyShortcut] = []) {
     self.item = item
     self.shortcuts = shortcuts
-    self.title = item.title
+    self.title = item.favoriteName ?? item.title
     self.applicationImage = ApplicationImageCache.shared.getImage(item: item)
 
     synchronizeItemPin()
@@ -104,11 +132,11 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     }
     let size = Self.thumbnailImageSize
     thumbnailImageGenerationTask = Task.detached(priority: .userInitiated) { [weak self] in
-      guard let image = NSImage(data: data) else { return }
-      let resized = image.resized(to: size)
-      _ = resized.cgImage(forProposedRect: nil, context: nil, hints: nil)
+      let image = NSImage.downsampled(data: data, fitting: size)
       await MainActor.run { [weak self] in
-        self?.thumbnailImage = resized
+        guard !Task.isCancelled else { return }
+        self?.thumbnailImage = image
+        self?.thumbnailImageGenerationTask = nil
       }
     }
   }
@@ -129,11 +157,10 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     }
     let size = Self.previewImageSize
     previewImageGenerationTask = Task.detached(priority: .userInitiated) { [weak self] in
-      guard let image = NSImage(data: data) else { return }
-      let resized = image.resized(to: size)
-      _ = resized.cgImage(forProposedRect: nil, context: nil, hints: nil)
+      let image = NSImage.downsampled(data: data, fitting: size)
       await MainActor.run { [weak self] in
-        self?.previewImage = resized
+        guard !Task.isCancelled else { return }
+        self?.previewImage = image
       }
     }
   }
@@ -160,6 +187,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   }
 
   @MainActor
+  func releaseThumbnailImage() {
+    thumbnailImageGenerationTask?.cancel()
+    thumbnailImageGenerationTask = nil
+    thumbnailImage = nil
+  }
+
+  @MainActor
   func cleanupImages() {
     thumbnailImageGenerationTask?.cancel()
     previewImageGenerationTask?.cancel()
@@ -177,10 +211,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     guard let data = item.imageData else {
       return
     }
-    guard let image = NSImage(data: data) else {
-      return
-    }
-    thumbnailImage = image.resized(to: HistoryItemDecorator.thumbnailImageSize)
+    thumbnailImage = NSImage.downsampled(data: data, fitting: Self.thumbnailImageSize)
   }
 
   @MainActor
@@ -191,10 +222,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     guard let data = item.imageData else {
       return
     }
-    guard let image = NSImage(data: data) else {
-      return
-    }
-    previewImage = image.resized(to: HistoryItemDecorator.previewImageSize)
+    previewImage = NSImage.downsampled(data: data, fitting: Self.previewImageSize)
   }
 
   @MainActor
@@ -204,7 +232,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   }
 
   func highlight(_ query: String, _ ranges: [Range<String.Index>]) {
-    guard !query.isEmpty, !title.isEmpty else {
+    guard item.favoriteName == nil, !query.isEmpty, !title.isEmpty else {
       attributedTitle = nil
       return
     }
@@ -253,9 +281,10 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   private func synchronizeItemTitle() {
     _ = withObservationTracking {
       item.title
+      item.favoriteName
     } onChange: {
       DispatchQueue.main.async {
-        self.title = self.item.title
+        self.title = self.item.favoriteName ?? self.item.title
         self.synchronizeItemTitle()
       }
     }

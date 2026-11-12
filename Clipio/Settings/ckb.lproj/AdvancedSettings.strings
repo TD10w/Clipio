@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "هەروەها دەتوانیت کلیک لەسەر ئایکۆنی مێنوەکە بکەیت بە داگرتنی دوگمەی ⌥.\nبۆ پشتگوێخستنی تەنها کۆپیی داهاتوو، کلیک بکە لەگەڵ داگرتنی ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copy data";
 "ClearHistoryOnQuit" = "سڕینەوەی مێژوو لەکاتی داخستندا";
-"ClearHistoryOnQuitTooltip" = "بەشێوەیەکی خۆکارانە هەموو ئایتەمە نەچەسپێنراوەکان لادەبات پێش داخستنی بەرنامەکە.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "سڕینەوەی کلیپبۆردی سیستەمیش";
 "ClearSystemClipboardTooltip" = "کاتێک کارا دەکرێت، سڕینەوەی مێژوو، کلیپبۆردی ئێستای سیستەمیش دەسڕێتەوە.";

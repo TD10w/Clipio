@@ -4,8 +4,8 @@
 "CheckNow" = "今確認する";
 "Open" = "開く:";
 "OpenTooltip" = "アプリケーションを開くグローバルショートカットキー。\n修飾キーを押しながらメインキーを繰り返し押すと、リストの次の項目が選択されます。このモードでは、修飾キーを離すと選択が確定し、ポップアップが閉じます。\nデフォルト：%@C.";
-"Pin" = "ピン:";
-"PinTooltip" = "履歴項目を固定するショートカット キー。\nデフォルト：%@P.";
+"Pin" = "Favorite / Pin:";
+"PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "デリート:";
 "DeleteTooltip" = "履歴項目を削除するショートカット キー。\nデフォルト：%@⌫。";
 "ShowPreview" = "プレビュー:";

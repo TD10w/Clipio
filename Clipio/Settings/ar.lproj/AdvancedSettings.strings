@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "يمكنك أيضًا النقر على أيقونة القائمة مع ⌥ مضغوط.\nلتجاهل النسخة التالية فقط، انقر بـ ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\nنسخ البيانات #";
 "ClearHistoryOnQuit" = "مسح السجل عند الخروج";
-"ClearHistoryOnQuitTooltip" = "إزالة جميع العناصر غير المثبتة تلقائيًا قبل إغلاق التطبيق.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "مسح حافظة النظام أيضًا";
 "ClearSystemClipboardTooltip" = "عند التمكين، سيؤدي مسح السجل أيضًا إلى مسح حافظة النظام الحالية.";

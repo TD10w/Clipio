@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Вы также можете кликнуть значок меню с нажатой клавишей ⌥.\nЧтобы игнорировать только следующую копию, кликните с ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# копировать данные";
 "ClearHistoryOnQuit" = "Очищать историю при закрытии";
-"ClearHistoryOnQuitTooltip" = "Автоматически удалять все неприкрепленные записи перед закрытием приложения.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Также очищать системный буфер обмена";
 "ClearSystemClipboardTooltip" = "Если этот параметр включен, очистка истории также очистит текущий системный буфер обмена.";

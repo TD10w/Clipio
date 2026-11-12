@@ -21,8 +21,8 @@
 "PopupAt" = "Усплываць каля:";
 "PopupAtCursor" = "Курсору";
 "SearchVisibilityAlways" = "Заўсёды";
-"PinTo" = "Замацаваць да:";
-"PinToTooltip" = "Змяніць месца замацаваных элементаў.\nПадставова: Верх.";
+"PinTo" = "Favorites position:";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "HighlightMatchColor" = "Колер";
 "OpenPreferencesWarning" = "⚠️ Націсніце ⌘, (command+comma) каб адкрыць налады калі ніжні калонтытул утоены.";
 "ShowSpecialSymbolsTooltip" = "Паказваць знакі новага радка, табуляцыі, пачатковыя і канчатковыя прабелы з дапамогай адмысловых знакаў.";

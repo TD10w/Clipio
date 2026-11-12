@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "También puede hacer clic en el icono de menú con ⌥ presionado.\nPara ignorar solo la siguiente copia, hacer clic con ⌥⇧.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# copiar datos";
 "ClearHistoryOnQuit" = "Borrar el historial al salir";
-"ClearHistoryOnQuitTooltip" = "Elimina automáticamente todos los elementos no anclados antes de salir de la aplicación.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Limpia también el portapapeles del sistema";
 "ClearSystemClipboardTooltip" = "Cuando está habilitado, borrar el historial también borrará el portapapeles actual del sistema.";

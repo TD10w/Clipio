@@ -5,6 +5,6 @@
 "TurnOffViaMenuIconDescription" = "Aynı zamanda, ⌥ basılıyken menü simgesine tıklayabilirsiniz.\nYalnızca sonraki kopyayı yok saymak için ⌥⇧ ile tıklayın.";
 "TurnOffNextShellScript" = "defaults write com.clipio.app ignoreOnlyNextEvent true\n# verileri kopyala";
 "ClearHistoryOnQuit" = "Çıkışta geçmişi temizle";
-"ClearHistoryOnQuitTooltip" = "Uygulamadan çıkmadan önce tüm iğnesi çıkarılmış ögeleri kendiliğinden kaldır.";
+"ClearHistoryOnQuitTooltip" = "Remove ordinary clipboard history on quit. Favorites are kept.";
 "ClearSystemClipboard" = "Sistem panosunu da temizle";
 "ClearSystemClipboardTooltip" = "Etkinleştirildiğinde, geçmişin temizlenmesi mevcut sistem panosunu da temizler.";

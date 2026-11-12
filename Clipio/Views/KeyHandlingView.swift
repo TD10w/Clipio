@@ -31,32 +31,11 @@ struct KeyHandlingView<Content: View>: View {
         }
 
         switch KeyChord(NSApp.currentEvent) {
-        case .clearHistory:
-          if let item = appState.footer.items.first(where: { $0.title == "clear" }),
-             item.confirmation != nil,
-             let suppressConfirmation = item.suppressConfirmation {
-            if suppressConfirmation.wrappedValue {
-              item.action()
-            } else {
-              item.showConfirmation = true
-            }
-            return .handled
-          } else {
-            return .ignored
-          }
-        case .clearHistoryAll:
-          if let item = appState.footer.items.first(where: { $0.title == "clear_all" }),
-             item.confirmation != nil,
-             let suppressConfirmation = item.suppressConfirmation {
-            if suppressConfirmation.wrappedValue {
-              item.action()
-            } else {
-              item.showConfirmation = true
-            }
-            return .handled
-          } else {
-            return .ignored
-          }
+        case .clearHistory, .clearHistoryAll:
+          let key = KeyChord(NSApp.currentEvent) == .clearHistoryAll ? "clear_all" : "clear"
+          guard let item = appState.footer.items.first(where: { $0.title == key }) else { return .ignored }
+          item.requestAction()
+          return .handled
         case .clearSearch:
           searchQuery = ""
           return .handled

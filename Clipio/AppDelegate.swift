@@ -152,6 +152,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   func applicationDidFinishLaunching(_ aNotification: Notification) {
     guard !RuntimeEnvironment.skipsApplicationStartup else { return }
 
+    SoftwareUpdater.shared.start()
+
     migrateUserDefaults()
     if Defaults[.migrations]["2026-11-09-collection-shortcuts"] != true {
       Popup.migrateLegacyDefaultShortcut()

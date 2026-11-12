@@ -1,7 +1,7 @@
-"Title" = "چەسپێنراوەکان";
+"Title" = "Favorites";
 "Key" = "دوگمە";
 "Alias" = "ناونیشان";
 "Content" = "ناوەڕۆک";
 "ContentIsNotText" = "ناوەڕۆکی دەستکارینەکراو (وێنە یان فایل)";
 "RichTextEditWarning" = "دەستکاریکردن هەموو فۆرماتەکە لادەبات.";
-"PinCustomizationDescription" = "تۆ دەتوانیت کورتەدوگمە، ناونیشان، و ناوەڕۆکی هەر ئایتمێکی چەسپێنراو بەدڵی خۆت بگۆڕیت. بۆ دەستکاریکردن، دوو-کلیک لەسەر ئایتمەکە بکە و بەهایەکی نوێ داغڵ بکە.\nتکایە ئاگاداربە کە تەنها دەقی سادە دەتوانرێت بگۆڕدرێت.";
+"PinCustomizationDescription" = "Customize favorite shortcuts and optional names. Only text content can be edited; image and file content stays unchanged.";

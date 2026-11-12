@@ -52,11 +52,7 @@ struct CollectionShelfView: View {
           .strokeBorder(isTargeted ? Color.accentColor : .clear, lineWidth: 2)
           .allowsHitTesting(false)
       }
-      .onDrop(of: CollectionImporter.supportedTypes, isTargeted: $isTargeted) { providers in
-        guard !store.isExporting else { return false }
-        Task { await CollectionImporter.collect(providers, into: store) }
-        return true
-      }
+      .overlay { CollectionDropSurface(store: store, targeted: $isTargeted) }
       .onChange(of: store.selectedIDs) { _, ids in
         if let id = store.visibleEntries.first(where: { !$0.itemIDs.isDisjoint(with: ids) })?.id {
           withAnimation(.easeOut(duration: 0.15)) { proxy.scrollTo(id, anchor: .center) }
@@ -95,6 +91,8 @@ private struct CollectionCardView: View {
   let store: CollectionStore
   @State private var thumbnail: NSImage?
   @State private var hovered = false
+  @State private var textPreview: String?
+  @State private var linkPreview = false
 
   private var item: CollectionItem { members[0] }
   private var ids: Set<UUID> { Set(members.map(\.id)) }
@@ -109,7 +107,12 @@ private struct CollectionCardView: View {
   var body: some View {
     VStack(spacing: 0) {
       ZStack {
-        if let thumbnail {
+        if let textPreview {
+          VStack(alignment: .leading, spacing: 5) {
+            if linkPreview { Image(systemName: "link").foregroundStyle(.secondary) }
+            Text(textPreview).font(.system(size: 12)).lineLimit(4)
+          }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).padding(14)
+        } else if let thumbnail {
           Image(nsImage: thumbnail).resizable().scaledToFit().padding(14)
         } else {
           Image(systemName: isUnavailable ? "exclamationmark.triangle" : "doc")
@@ -206,9 +209,14 @@ private struct CollectionCardView: View {
       guard !isUnavailable, let url = try? store.resolveURL(for: item.id) else { return }
       let accessed = url.startAccessingSecurityScopedResource()
       defer { if accessed { url.stopAccessingSecurityScopedResource() } }
+      if let payload = try? store.payload(for: item.id) {
+        textPreview = String(payload.plainText.prefix(300))
+        if case .link = payload { linkPreview = true }
+        return
+      }
       // Decode a small preview away from the UI thread; large photos never become full-size card bitmaps.
       let preview = await Task.detached(priority: .utility) {
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return Optional<CGImage>.none }
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary) else { return Optional<CGImage>.none }
         return CGImageSourceCreateThumbnailAtIndex(source, 0, [
           kCGImageSourceCreateThumbnailFromImageAlways: true,
           kCGImageSourceThumbnailMaxPixelSize: 240,
@@ -218,6 +226,7 @@ private struct CollectionCardView: View {
       guard !Task.isCancelled else { return }
       thumbnail = preview.map { NSImage(cgImage: $0, size: .zero) } ?? NSWorkspace.shared.icon(forFile: url.path)
     }
+    .onDisappear { thumbnail = nil; textPreview = nil }
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier(isStack ? "collection-stack" : "collection-item")
     .accessibilityLabel(Text(title))

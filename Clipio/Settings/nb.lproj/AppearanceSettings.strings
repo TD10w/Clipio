@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Alltid";
 "SearchVisibilityDuringSearch" = "Under søk";
 "ActiveScreen" = "Aktiv skjerm";
-"PinTo" = "Fest til:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Øverst";
 "PinToBottom" = "Nederst";
-"PinToTooltip" = "Forandre plassering av festede elementer.\nStandard: Øverst.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Bildehøyde:";
 "ImageHeightTooltip" = "Maximal bildehøyde forhåndsvisning.\nStandard: 40.\nTips: Satt til 16 for å se ut som tekst elementer.";
 "PreviewDelay" = "Forsinkelse for forhåndsvisning:";

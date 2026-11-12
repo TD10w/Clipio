@@ -10,10 +10,10 @@
 "SearchVisibilityAlways" = "Her zaman";
 "SearchVisibilityDuringSearch" = "Arama sırasında";
 "ActiveScreen" = "Aktif ekran";
-"PinTo" = "Şuraya iğnele:";
+"PinTo" = "Favorites position:";
 "PinToTop" = "Üst";
 "PinToBottom" = "Alt";
-"PinToTooltip" = "İğnelenen ögelerin konumunu değiştir.\nSaptanmış: Üst.";
+"PinToTooltip" = "Position favorites in the All view. Default: Top.";
 "ImageHeight" = "Görsel boyu:";
 "ImageHeightTooltip" = "En yüksek görsel önizlemesi boyu.\nSaptanmış: 40.\nİpucu: Metin ögeleri gibi görünmeleri için 16 olarak ayarlayın.";
 "PreviewDelay" = "Önizleme gecikmesi:";
