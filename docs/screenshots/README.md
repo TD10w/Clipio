@@ -1,5 +1,24 @@
 # Screenshot provenance
 
+## Current README images (2026-11-11)
+
+The owner supplied two real Mac desktop screenshots and explicitly authorized cleaning up the desktop/menu bar and publishing the finished images to GitHub.
+
+- `clipio-shelf.png`: the real clipboard shelf showing text, a color swatch, the app icon, a public repository link and a partially visible image card.
+- `clipio-collection.png`: the real file collection shelf showing one collected DMG file.
+
+The built-in ImageGen tool removed unrelated desktop icons/file labels and reduced the right side of the menu bar to Wi-Fi, battery and the original date/time. The original wallpaper composition, window placement, layout, controls, card contents and filenames were used as the preservation reference. These are retouched presentation images, not untouched screen captures. The original owner uploads remain private and are not committed.
+
+Visual review checked removal of desktop labels, readable header/search controls, clipboard contents and Command-number badges, and the collection card's filename. The older version number in that example DMG filename is file content, not the current Clipio download version. The download links in the README are unchanged.
+
+Prompt scope: clean desktop clutter and menu-bar clutter only; preserve the real app interface and contents; do not add UI, files, labels, titles, or feature claims. Full input prompts are retained locally with the media pack rather than publishing the desktop filenames they remove.
+
+The previous README shelf screenshot is retained in `archive/2026-09-05/`; the earlier search screenshot remains at `clipio-search.png` for historical reference.
+
+---
+
+# Earlier source-build captures (2026-09-05)
+
 Captured on 2026-09-05 from the Debug build of the app source included in release tag `v2.6.1-beta.1`.
 
 The app binary was copied to a temporary bundle with identifier
@@ -10,7 +29,7 @@ The dark appearance was passed as a launch argument for this isolated copy.
 Images were captured with macOS `screencapture -x -o -l WINDOW_ID`, preserving
 the PNG alpha channel rather than flattening transparent regions into white.
 
-- `clipio-shelf.png`: five sample cards, including text, URL, and a color swatch.
+- `archive/2026-09-05/clipio-shelf.png`: five sample cards, including text, URL, and a color swatch.
 - `clipio-search.png`: actual search results for `ideas`.
 
 Both images are window captures of the actual interface, not mockups. This is a
