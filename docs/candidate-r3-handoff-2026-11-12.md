@@ -1,5 +1,7 @@
 # Clipio R3 交接 — 2026-11-12
 
+> **后续状态：R3 已整合为 2.8.0 beta.1（68），已发布并更新本机日用版。** 旧候选与构建包已归档；不要从下方历史状态重新发版。当前代码在 `.worktrees/star-candidate` 的 `release/2.8.0-r3-updates`；[最新本机记录](/Users/dubulu/AgentOS/Project/Clipio/.worktrees/star-candidate/docs/post-release-local-2026-11-12.md)，[归档索引](/Users/dubulu/AgentOS/Project/Clipio/build/Archive/2026-11-12-release-68/INDEX.md)。正式版与候选数据保持独立、未合并。
+
 当前停在 **R3 候选已交付、等待真实体验**。不要直接发布，也不要把自动化通过写成用户已验收。下一步优先核对 R3 中的星标点击，以及从 Finder 废纸篓拖入 Drop Zone。
 
 ## 接手入口与代码位置
