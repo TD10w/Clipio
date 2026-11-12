@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 import Observation
 import QuartzCore
 import SwiftUI
@@ -13,6 +14,7 @@ final class CollectionAccessController: NSObject {
   private let dropView = CollectionEntryDropView(frame: .zero)
   private let hosting = NSHostingView(rootView: CollectionEntryLabel(dragging: false, targeted: false, action: {}))
   private var releaseWork: DispatchWorkItem?
+  private var receivingResetWork: DispatchWorkItem?
   private var monitors: [Any] = []
   private var screenObserver: NSObjectProtocol?
   private var dragChangeCount = -1
@@ -69,6 +71,11 @@ final class CollectionAccessController: NSObject {
       }
       self.updateEntry()
     }
+    dropView.importStore = store
+    dropView.onFiles = { [weak self] files, fallbacks in
+      guard let self, !self.store.isExporting else { return }
+      Task { await CollectionImporter.collectFiles(files, fallbacks: fallbacks, into: self.store) }
+    }
     dropView.onDrop = { [weak self] providers in
       guard let self, !self.store.isExporting else { return }
       Task { await CollectionImporter.collect(providers, into: self.store) }
@@ -92,6 +99,7 @@ final class CollectionAccessController: NSObject {
 
   deinit {
     releaseWork?.cancel()
+    receivingResetWork?.cancel()
     receiptDismissWork?.cancel()
     monitors.forEach(NSEvent.removeMonitor)
     if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
@@ -128,13 +136,13 @@ final class CollectionAccessController: NSObject {
         receiptDismissWork?.cancel()
         updateEntry()
       }
+      receivingResetWork?.cancel()
+      store.isReceivingDrag = false
       dragChangeCount = dragPasteboard.changeCount
     case .leftMouseDragged:
       guard !store.isExporting, dragPasteboard.changeCount != dragChangeCount,
-            dragPasteboard.types?.contains(where: { type in
-              type == .fileURL || type == .png || type == .tiff || type == .URL
-                || NSFilePromiseReceiver.readableDraggedTypes.contains(type.rawValue)
-            }) == true else { return }
+            CollectionImporter.accepts(types: dragPasteboard.types ?? []) else { return }
+      store.isReceivingDrag = true
       releaseWork?.cancel()
       let mouse = NSEvent.mouseLocation
       if openedForDrag {
@@ -155,6 +163,10 @@ final class CollectionAccessController: NSObject {
         updateEntry()
       }
     case .leftMouseUp:
+      receivingResetWork?.cancel()
+      let reset = DispatchWorkItem { [weak self] in self?.store.isReceivingDrag = false }
+      receivingResetWork = reset
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: reset)
       releaseWork?.cancel()
       springWork?.cancel()
       guard showingDrag || dropTargeted || openedForDrag else { return }
@@ -312,31 +324,9 @@ final class CollectionAccessController: NSObject {
   }
 
   private func receivePromises(_ receivers: [NSFilePromiseReceiver]) {
-    let destination = FileManager.default.temporaryDirectory.appendingPathComponent("Clipio-Promises-\(UUID().uuidString)")
-    do { try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true) }
-    catch { store.lastError = error.localizedDescription; return }
-    let queue = OperationQueue()
-    queue.maxConcurrentOperationCount = 1
-    queue.qualityOfService = .utility
-    // Each receiver may promise several files, each delivered in its own callback.
-    let fileCount = receivers.reduce(0) { $0 + max(1, $1.fileNames.count) }
-    let batch = fileCount > 1 ? UUID() : nil
-    let store = self.store
-    let receipt = CollectionImportBatch(count: fileCount, store: store)
-    for receiver in receivers {
-      receiver.receivePromisedFiles(atDestination: destination, options: [:], operationQueue: queue) { url, error in
-        let image = Result { () throws -> CollectionImage in
-          if let error { throw error }
-          return try CollectionImage(contentsOf: url)
-        }
-        DispatchQueue.main.async {
-          do { receipt.complete(id: try store.addImage(image.get(), batch: batch)) }
-          catch { receipt.complete(error: error) }
-          try? FileManager.default.removeItem(at: url)
-        }
-      }
-    }
+    CollectionImporter.collectPromises(receivers, into: store)
   }
+
 }
 
 private struct CollectionEntryLabel: View {
@@ -394,24 +384,69 @@ private struct CollectionEntrySurface: ViewModifier {
   }
 }
 
+struct CollectionDropSurface: NSViewRepresentable {
+  let store: CollectionStore
+  @Binding var targeted: Bool
+
+  func makeNSView(context: Context) -> NSView {
+    let view = CollectionEntryDropView(frame: .zero)
+    view.importStore = store
+    view.dragOnly = true
+    view.onTargetChange = { targeted = $0 }
+    view.onFiles = { files, fallbacks in
+      Task { await CollectionImporter.collectFiles(files, fallbacks: fallbacks, into: store) }
+    }
+    view.onDrop = { providers in Task { await CollectionImporter.collect(providers, into: store) } }
+    view.onPromises = { CollectionImporter.collectPromises($0, into: store) }
+    return view
+  }
+
+  func updateNSView(_ view: NSView, context: Context) {
+    (view as? CollectionEntryDropView)?.onTargetChange = { targeted = $0 }
+  }
+}
+
 private final class CollectionEntryDropView: NSView {
   var onTargetChange: ((Bool) -> Void)?
   var onDrop: (([NSItemProvider]) -> Void)?
+  var onFiles: ((CollectionFileDrop, [NSItemProvider]) -> Void)?
+  var importStore: CollectionStore?
+  var dragOnly = false
+  private static let logger = Logger(subsystem: "com.clipio.app", category: "CollectionDrop")
+
+  override func hitTest(_ point: NSPoint) -> NSView? {
+    if dragOnly && importStore?.isReceivingDrag != true { return nil }
+    return super.hitTest(point)
+  }
   var onPromises: (([NSFilePromiseReceiver]) -> Void)?
 
   override init(frame frameRect: NSRect) {
     super.init(frame: frameRect)
     let promiseTypes = NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) }
-    let types: [NSPasteboard.PasteboardType] = [.fileURL, .png, .tiff, .URL]
+    let types: [NSPasteboard.PasteboardType] = [.fileURL, .png, .tiff, .URL, .string,
+      NSPasteboard.PasteboardType("NSFilenamesPboardType"),
+      NSPasteboard.PasteboardType(UTType.image.identifier), NSPasteboard.PasteboardType(UTType.jpeg.identifier),
+      NSPasteboard.PasteboardType(UTType.heic.identifier), NSPasteboard.PasteboardType(UTType.gif.identifier),
+      NSPasteboard.PasteboardType(UTType.webP.identifier), NSPasteboard.PasteboardType(UTType.plainText.identifier),
+      NSPasteboard.PasteboardType(UTType.utf16PlainText.identifier), NSPasteboard.PasteboardType(UTType.utf16ExternalPlainText.identifier)]
     registerForDraggedTypes(types + promiseTypes)
   }
 
   required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
   override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-    guard !AppState.shared.collection.isExporting else { return [] }
-    onTargetChange?(true)
-    return .copy
+    guard !(importStore ?? AppState.shared.collection).isExporting else { return [] }
+    let operation = CollectionImporter.referenceOperation(offered: sender.draggingSourceOperationMask)
+    Self.logger.notice("Drop entered: sourceMask=\(sender.draggingSourceOperationMask.rawValue), accepted=\(operation.rawValue), types=\((sender.draggingPasteboard.types ?? []).map(\.rawValue).joined(separator: ","), privacy: .public)")
+    onTargetChange?(!operation.isEmpty)
+    return operation
+  }
+
+  override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+    guard !(importStore ?? AppState.shared.collection).isExporting else { return [] }
+    let operation = CollectionImporter.referenceOperation(offered: sender.draggingSourceOperationMask)
+    onTargetChange?(!operation.isEmpty)
+    return operation
   }
 
   override func draggingExited(_ sender: NSDraggingInfo?) {
@@ -419,46 +454,58 @@ private final class CollectionEntryDropView: NSView {
   }
 
   override func draggingEnded(_ sender: NSDraggingInfo) {
+    importStore?.isReceivingDrag = false
     onTargetChange?(false)
   }
 
   override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+    guard !(importStore ?? AppState.shared.collection).isExporting else { return false }
+    guard !CollectionImporter.referenceOperation(offered: sender.draggingSourceOperationMask).isEmpty else {
+      (importStore ?? AppState.shared.collection).lastError = NSLocalizedString("collection_source_requires_move", comment: "")
+      return false
+    }
     let pasteboard = sender.draggingPasteboard
-    if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty {
-      // Carry any image bytes on the same item too, so a URL into another app's private
-      // storage (e.g. Messages) can fall back to a copy of the image.
+    var urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
+    if urls.isEmpty, let paths = pasteboard.propertyList(forType: NSPasteboard.PasteboardType("NSFilenamesPboardType")) as? [String] {
+      urls = paths.map { URL(fileURLWithPath: $0) }
+    }
+    if !urls.isEmpty {
+      let files = CollectionFileDrop(urls: urls)
       let items = pasteboard.pasteboardItems ?? []
-      onDrop?(urls.enumerated().map { index, url in
-        let provider = NSItemProvider(item: url as NSURL, typeIdentifier: UTType.fileURL.identifier)
-        if items.count == urls.count {
-          let item = items[index]
-          for type in item.types where UTType(type.rawValue)?.conforms(to: .image) == true {
-            guard let data = item.data(forType: type) else { continue }
+      let fallbacks = urls.enumerated().map { index, url in
+        let provider = NSItemProvider()
+        if items.count == urls.count,
+          CollectionImporter.isAppPrivate(url) || !FileManager.default.isReadableFile(atPath: url.path) {
+          for type in items[index].types where UTType(type.rawValue)?.conforms(to: .image) == true {
+            guard let data = items[index].data(forType: type) else { continue }
             provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
-              completion(data, nil)
-              return nil
+              completion(data, nil); return nil
             }
           }
         }
         return provider
-      })
-      return true
+      }
+      Self.logger.notice("File drop accepted: count=\(urls.count)")
+      onFiles?(files, fallbacks)
+      return onFiles != nil
     }
-    if let receivers = pasteboard.readObjects(forClasses: [NSFilePromiseReceiver.self]) as? [NSFilePromiseReceiver], !receivers.isEmpty {
-      onPromises?(receivers)
-      return true
-    }
-    let providers = (pasteboard.pasteboardItems ?? []).map { item in
+    // Prefer bounded, directly readable representations to unknown-size promises.
+    let providers = (pasteboard.pasteboardItems ?? []).compactMap { item -> NSItemProvider? in
       let provider = NSItemProvider()
       for type in item.types {
-        if let data = item.data(forType: type) {
-          provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
-            completion(data, nil)
-            return nil
-          }
+        guard let value = UTType(type.rawValue), value.conforms(to: .image) || value.conforms(to: .plainText) || type == .URL,
+              let data = item.data(forType: type) else { continue }
+        provider.registerDataRepresentation(forTypeIdentifier: type.rawValue, visibility: .all) { completion in
+          completion(data, nil)
+          return nil
         }
       }
-      return provider
+      return provider.registeredTypeIdentifiers.isEmpty ? nil : provider
+    }
+    if providers.isEmpty,
+      let receivers = pasteboard.readObjects(forClasses: [NSFilePromiseReceiver.self]) as? [NSFilePromiseReceiver], !receivers.isEmpty {
+      onPromises?(receivers)
+      return true
     }
     guard !providers.isEmpty else { return false }
     onDrop?(providers)

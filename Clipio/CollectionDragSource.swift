@@ -60,14 +60,22 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
     do {
       let ids = itemIDs.isSubset(of: store.selectedIDs) ? store.selectedIDs : itemIDs
       let export = try store.prepareExport(ids: ids)
-      let draggingItems = export.urls.map { url in
-        let item = NSDraggingItem(pasteboardWriter: url as NSURL)
+      var began = false
+      defer { if !began { store.cancelPreparedExport(export) } }
+      let idsByURL = Dictionary(uniqueKeysWithValues: export.exportedURLs.map { ($0.value, $0.key) })
+      let draggingItems = try export.urls.map { url in
+        let writer: NSPasteboardWriting
+        if let id = idsByURL[url], let payload = try store.payload(for: id) {
+          writer = CollectionPayloadWriter(fileURL: url, payload: payload)
+        } else { writer = url as NSURL }
+        let item = NSDraggingItem(pasteboardWriter: writer)
         let icon = NSWorkspace.shared.icon(forFile: url.path)
         item.setDraggingFrame(NSRect(x: 0, y: 0, width: 48, height: 48), contents: icon)
         return item
       }
       Self.logger.notice("Collection drag began: items=\(export.ids.count), mask=\(export.operation.rawValue)")
       activeExport = export
+      began = true
       store.isExporting = true
       AppState.shared.appDelegate?.panel.isDragging = true
       beginDraggingSession(with: draggingItems, event: event, source: self)
@@ -89,5 +97,29 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
       Task { @MainActor in await store.completeExport(export, operation: operation) }
     } else { export.endAccess() }
     AppState.shared.appDelegate?.panel.isDragging = false
+  }
+}
+
+/// File targets receive the staged file URL while text/link targets receive the
+/// original payload. NSURL remains responsible for its file URL representations.
+final class CollectionPayloadWriter: NSObject, NSPasteboardWriting {
+  let fileURL: NSURL
+  let payload: CollectionPayload
+
+  init(fileURL: URL, payload: CollectionPayload) {
+    self.fileURL = fileURL as NSURL
+    self.payload = payload
+  }
+
+  func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+    var types: [NSPasteboard.PasteboardType] = [.string]
+    if case .link = payload { types.append(.URL) }
+    return types + fileURL.writableTypes(for: pasteboard).filter { !types.contains($0) }
+  }
+
+  func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+    if type == .string { return payload.plainText }
+    if type == .URL, case .link(let url) = payload { return url.absoluteString }
+    return fileURL.pasteboardPropertyList(forType: type)
   }
 }

@@ -68,12 +68,12 @@ final class AppState {
   func select() {
     if shelfMode == .collection {
       collection.perform {
-        let export = try collection.prepareExport(ids: collection.selectedIDs)
-        defer { export.endAccess() }
-        let contents = export.urls.map {
-          HistoryItemContent(type: NSPasteboard.PasteboardType.fileURL.rawValue, value: $0.dataRepresentation)
-        }
+        let export = try collection.prepareExport(ids: collection.selectedIDs, forCopy: true)
+        var copied = false
+        defer { if copied { export.endAccess() } else { collection.cancelPreparedExport(export) } }
+        let contents = try collection.clipboardContents(for: export)
         Clipboard.shared.copy(HistoryItem(contents: contents))
+        copied = true
         popup.close()
       }
       return

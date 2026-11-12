@@ -76,11 +76,13 @@ struct CardItemView: View {
       LinearKeyframe(1.06, duration: 0.07)
       SpringKeyframe(1.0, duration: 0.22, spring: .bouncy(duration: 0.22, extraBounce: 0.05))
     }
+    .contentShape(RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous))
     .overlay {
       if item.isSelected {
         RoundedRectangle(cornerRadius: Self.cardRadius, style: .continuous)
           .strokeBorder(Color.accentColor.opacity(0.95), lineWidth: 2.5)
           .shadow(color: Color.accentColor.opacity(0.45), radius: 5)
+          .allowsHitTesting(false)
       }
     }
     .overlay(alignment: .topLeading) {
@@ -93,10 +95,8 @@ struct CardItemView: View {
           .background(Color.black.opacity(0.4), in: Capsule())
           .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 0.5))
           .padding(6)
+          .allowsHitTesting(false)
       }
-    }
-    .overlay(alignment: .topTrailing) {
-      pinControl
     }
     .onTapGesture { onSelect() }
     .contextMenu {
@@ -130,9 +130,17 @@ struct CardItemView: View {
     } preview: {
       dragPreview()
     }
+    .overlay(alignment: .topTrailing) {
+      pinControl
+    }
     .onAppear {
       AppState.shared.appDelegate?.panel.finishPrewarming()
       item.ensureThumbnailImage()
+    }
+    .onDisappear {
+      item.releaseThumbnailImage()
+      item.releasePreviewImage()
+      AppState.shared.appDelegate?.hidePreviewSoon(for: item)
     }
     // No hover lift: shifting the card with .offset moves the visual but not the
     // hit area, so the hover/click would land on the wrong spot. Hover feedback
@@ -142,7 +150,7 @@ struct CardItemView: View {
       guard isSelected else { return }
       selectionPopEpoch += 1
     }
-    .accessibilityElement(children: .ignore)
+    .accessibilityElement(children: .contain)
     .accessibilityIdentifier("copy-history-item")
     .accessibilityLabel(Text(item.title.isEmpty ? "Image" : item.title))
     .accessibilityValue(Text(item.text))
@@ -213,6 +221,14 @@ struct CardItemView: View {
       .scaledToFill()
       .frame(width: Self.cardWidth, height: Self.cardHeight - Self.footerHeight)
       .clipped()
+      .contentShape(Rectangle())
+      .overlay(alignment: .bottomLeading) {
+        if let name = item.item.favoriteName {
+          Text(name).font(.system(size: 11)).lineLimit(1)
+            .padding(5).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
+            .padding(6).allowsHitTesting(false)
+        }
+      }
       .frame(maxHeight: .infinity, alignment: .top)
   }
 

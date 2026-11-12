@@ -115,3 +115,12 @@
 "collection_export_in_progress" = "文件操作仍在进行中，请稍后再更改 Pin。";
 
 "collection_trash_reauthorize" = "这些项目来自旧的只读授权。请从 Finder 重新拖入一次以更新文件操作授权，然后重试。原卡片和 Pin 状态会保留。";
+
+"collection_payload_too_large" = "内容超过单项保存限制。可先保存为普通文件，再拖入以仅保留位置。";
+
+"collection_storage_limit" = "收集区已保存内容达到 128MB 预算。移除已保存项目后可继续收集；文件引用仅保存少量记录。";
+
+"collection_staging_limit" = "临时传送缓存达到上限，请待旧传送过期后重试。较大的 Pin 文件请单独拖出。";
+
+"collection_virtual_media_needs_file" = "此来源只提供临时副本，生成前无法确认大小。请先保存到 Finder 文件夹，再拖入以仅保存位置。";
+"collection_source_requires_move" = "此来源只允许移动。请先恢复到普通文件夹，再拖入以保存引用。";

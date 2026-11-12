@@ -15,6 +15,15 @@ struct CollectionItem: Codable, Identifiable, Equatable {
   var batchID: UUID?
 }
 
+enum CollectionPayload: Equatable {
+  case text(String)
+  case link(URL)
+
+  var plainText: String {
+    switch self { case .text(let value): return value; case .link(let url): return url.absoluteString }
+  }
+}
+
 /// One slot in the collection shelf: a single card, a collapsed Stack, or the collapse
 /// handle that leads an expanded Stack's members.
 enum CollectionEntry: Identifiable {
@@ -113,11 +122,13 @@ struct CollectionExport {
   let pinnedIDs: Set<UUID>
   let exportedURLs: [UUID: URL]
   let identities: [UUID: CollectionFileIdentity]
+  let stagedDirectories: [URL]
 
   init(ids: Set<UUID>, urls: [URL], accessedURLs: [URL], operation: NSDragOperation,
-       pinnedIDs: Set<UUID>, exportedURLs: [UUID: URL], identities: [UUID: CollectionFileIdentity] = [:]) {
+       pinnedIDs: Set<UUID>, exportedURLs: [UUID: URL], identities: [UUID: CollectionFileIdentity] = [:], stagedDirectories: [URL] = []) {
     self.ids = ids; self.urls = urls; self.accessedURLs = accessedURLs; self.operation = operation
     self.pinnedIDs = pinnedIDs; self.exportedURLs = exportedURLs; self.identities = identities
+    self.stagedDirectories = stagedDirectories
   }
 
   func endAccess() {
@@ -126,7 +137,7 @@ struct CollectionExport {
 }
 
 enum CollectionError: LocalizedError {
-  case unavailable, invalidImage, invalidFile, unreadableStore, unsupportedDrop, overlappingFiles, trashFailed, trashProtected, exportInProgress
+  case unavailable, invalidImage, invalidFile, unreadableStore, unsupportedDrop, overlappingFiles, trashFailed, trashProtected, exportInProgress, payloadTooLarge, storageLimit, stagingLimit, virtualMediaNeedsFile
 
   var errorDescription: String? {
     let key: String
@@ -140,6 +151,10 @@ enum CollectionError: LocalizedError {
     case .trashFailed: key = "collection_trash_failed"
     case .trashProtected: key = "collection_trash_protected"
     case .exportInProgress: key = "collection_export_in_progress"
+    case .payloadTooLarge: key = "collection_payload_too_large"
+    case .storageLimit: key = "collection_storage_limit"
+    case .stagingLimit: key = "collection_staging_limit"
+    case .virtualMediaNeedsFile: key = "collection_virtual_media_needs_file"
     }
     return NSLocalizedString(key, comment: "")
   }

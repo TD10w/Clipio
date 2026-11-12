@@ -322,7 +322,9 @@ final class CollectionTests: XCTestCase {
       with: .leftMouseUp, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
       windowNumber: panel.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 0
     ))
-    NSApp.postEvent(released, atStart: true)
+    // Deliver the old release before starting the next drag. Posting it leaves
+    // delivery to a later run-loop turn, which can occur after the new drag.
+    NSApp.sendEvent(released)
     let checked = expectation(description: "old release cannot clear a new drag")
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { panel.isDragging = true }
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -429,7 +431,7 @@ final class CollectionTests: XCTestCase {
     let collection = store()
     let url = try source()
     let valid = NSItemProvider(item: url as NSURL, typeIdentifier: "public.file-url")
-    let unsupported = NSItemProvider(item: "plain text" as NSString, typeIdentifier: "public.utf8-plain-text")
+    let unsupported = NSItemProvider()
     await CollectionImporter.collect([valid, unsupported], into: collection)
     XCTAssertEqual(collection.items.count, 1)
     XCTAssertEqual(collection.importingCount, 0)
@@ -672,6 +674,170 @@ final class CollectionTests: XCTestCase {
     await collection.completeExport(export, operation: .delete) { _, finish in requested = true; finish([:], nil) }
     XCTAssertFalse(requested)
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "replacement")
+  }
+
+  @MainActor
+  func testPlainTextAndLinksAreSavedWithoutImageDownload() async throws {
+    let collection = store()
+    let text = "hello\nworld"
+    let link = try XCTUnwrap(URL(string: "mailto:clipio-test@example.invalid"))
+    await CollectionImporter.collect([
+      NSItemProvider(item: text as NSString, typeIdentifier: "public.utf8-plain-text"),
+      NSItemProvider(item: link as NSURL, typeIdentifier: "public.url")
+    ], into: collection)
+    XCTAssertEqual(collection.items.count, 2)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    let payloads = try collection.items.compactMap { try collection.payload(for: $0.id) }
+    XCTAssertTrue(payloads.contains(.text(text)))
+    XCTAssertTrue(payloads.contains(.link(link)))
+    XCTAssertEqual(try store().items.compactMap { try store().payload(for: $0.id) }.count, 2)
+  }
+
+  func testSavedPayloadQuotaCountsBytesAndDoesNotDeleteRetainedContent() throws {
+    let collection = CollectionStore(directory: directory, securityScoped: false, ownedByteLimit: 8)
+    let id = try collection.addText("four")
+    try collection.togglePin(id)
+    XCTAssertEqual(collection.ownedStorageBytes, 4)
+    XCTAssertThrowsError(try collection.addText("12345"))
+    XCTAssertEqual(collection.items.map(\.id), [id])
+    XCTAssertEqual(try collection.payload(for: id), .text("four"))
+    XCTAssertTrue(collection.items[0].isPinned)
+  }
+
+  func testFailedPayloadManifestWriteCleansOnlyNewOwnedFile() throws {
+    let broken = CollectionStore(directory: directory, securityScoped: false) { _, _ in throw CocoaError(.fileWriteOutOfSpace) }
+    XCTAssertThrowsError(try broken.addText("value"))
+    XCTAssertTrue(broken.items.isEmpty)
+    XCTAssertEqual(broken.ownedStorageBytes, 0)
+  }
+
+  func testVideoReferenceDoesNotSaveOrReadVideoBytes() throws {
+    let file = root.appendingPathComponent("large.mov")
+    FileManager.default.createFile(atPath: file.path, contents: Data())
+    let handle = try FileHandle(forWritingTo: file)
+    try handle.truncate(atOffset: 2 * 1024 * 1024 * 1024)
+    try handle.close()
+    let collection = store()
+    let id = try collection.addFile(file)
+    XCTAssertNil(collection.items[0].ownedFileName)
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+    XCTAssertEqual(try collection.resolveURL(for: id).standardizedFileURL, file.standardizedFileURL)
+  }
+
+  @MainActor
+  func testNativeFileIntakeKeepsReferencesAndSharesOneReceipt() async throws {
+    let collection = store()
+    let a = try source("one.txt")
+    let b = try source("two.txt")
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [a, b]), fallbacks: [], into: collection)
+    XCTAssertEqual(collection.items.count, 2)
+    XCTAssertEqual(collection.receiptGeneration, 1)
+    XCTAssertTrue(collection.items.allSatisfy { $0.ownedFileName == nil })
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+  }
+
+  @MainActor
+  func testTrashedFileCanBeCollectedAsReferenceWithoutMovingOrDuplicating() async throws {
+    let original = try source("Clipio-r3-inbound-\(UUID().uuidString).txt")
+    var returned: NSURL?
+    try FileManager.default.trashItem(at: original, resultingItemURL: &returned)
+    let trash = try XCTUnwrap(returned as URL?)
+    let access = trash.startAccessingSecurityScopedResource()
+    defer { if access { trash.stopAccessingSecurityScopedResource() } }
+    defer { try? FileManager.default.moveItem(at: trash, to: original) }
+    let collection = CollectionStore(directory: directory)
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [trash]), fallbacks: [], into: collection)
+    XCTAssertEqual(collection.items.count, 1)
+    XCTAssertNil(collection.lastError)
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: trash.path))
+    XCTAssertFalse(FileManager.default.fileExists(atPath: original.path))
+    let id = try XCTUnwrap(collection.items.first?.id)
+    let restored = CollectionStore(directory: directory)
+    XCTAssertEqual(try restored.resolveURL(for: id).standardizedFileURL, trash.standardizedFileURL)
+  }
+
+  @MainActor
+  func testReferenceNegotiationNeverPromisesAMoveForAMoveOnlySource() {
+    XCTAssertEqual(CollectionImporter.referenceOperation(offered: [.copy, .move]), .copy)
+    XCTAssertEqual(CollectionImporter.referenceOperation(offered: .link), .link)
+    XCTAssertEqual(CollectionImporter.referenceOperation(offered: .generic), .generic)
+    XCTAssertTrue(CollectionImporter.referenceOperation(offered: .move).isEmpty)
+    XCTAssertTrue(CollectionImporter.referenceOperation(offered: []).isEmpty)
+    XCTAssertTrue(CollectionImporter.accepts(types: [.string]))
+    XCTAssertTrue(CollectionImporter.accepts(types: [.init("NSFilenamesPboardType")]))
+  }
+
+  func testPayloadDragAndCopyKeepNativeTextAndFileRepresentations() throws {
+    let collection = store()
+    let link = try XCTUnwrap(URL(string: "https://example.invalid/profile"))
+    let id = try collection.addLink(link)
+    let export = try collection.prepareExport(ids: [id], forCopy: true)
+    defer { export.endAccess() }
+    let copied = HistoryItem(contents: try collection.clipboardContents(for: export))
+    XCTAssertEqual(copied.text, link.absoluteString)
+    let board = NSPasteboard.withUniqueName()
+    defer { board.releaseGlobally() }
+    let writer = CollectionPayloadWriter(fileURL: try XCTUnwrap(export.urls.first), payload: .link(link))
+    XCTAssertTrue(board.writeObjects([writer]))
+    XCTAssertEqual(board.string(forType: .string), link.absoluteString)
+    XCTAssertEqual(board.string(forType: .URL), link.absoluteString)
+    let files = try XCTUnwrap(board.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL])
+    XCTAssertEqual(files.first?.standardizedFileURL, export.urls.first?.standardizedFileURL)
+  }
+
+  func testStagingQuotaRejectsMixedCopiesAndCancellationCleansOwnCopies() throws {
+    let collection = CollectionStore(directory: directory, securityScoped: false, stagingByteLimit: 4)
+    let normal = try collection.addFile(source("normal.txt"))
+    let pinned = try collection.addFile(source("pinned.txt"))
+    try collection.togglePin(pinned)
+    XCTAssertThrowsError(try collection.prepareExport(ids: [normal, pinned]))
+    let copy = try collection.prepareExport(ids: [normal, pinned], forCopy: true)
+    XCTAssertTrue(copy.stagedDirectories.isEmpty)
+    try collection.finishExport(copy, operation: [])
+    XCTAssertEqual(collection.items.count, 2)
+    let text = try collection.addText("abc")
+    let staged = try collection.prepareExport(ids: [text])
+    let outgoing = try XCTUnwrap(staged.urls.first)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: outgoing.path))
+    try collection.finishExport(staged, operation: [])
+    XCTAssertFalse(FileManager.default.fileExists(atPath: outgoing.path))
+    XCTAssertEqual(try collection.payload(for: text), .text("abc"))
+  }
+
+  func testOversizeTextIsRefusedBeforeStorage() {
+    let collection = store()
+    XCTAssertThrowsError(try collection.addText(String(repeating: "x", count: 1024 * 1024 + 1)))
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+  }
+
+  @MainActor
+  func testUTF16AndGenericTextRepresentationsAreCollected() async throws {
+    let collection = store()
+    let first = NSItemProvider()
+    let second = NSItemProvider()
+    let value = "你好 🌟"
+    let unicode = try XCTUnwrap(value.data(using: .utf16LittleEndian))
+    first.registerDataRepresentation(forTypeIdentifier: "public.utf16-plain-text", visibility: .all) { done in done(unicode, nil); return nil }
+    second.registerDataRepresentation(forTypeIdentifier: "public.plain-text", visibility: .all) { done in done(Data("generic text".utf8), nil); return nil }
+    await CollectionImporter.collect([first, second], into: collection)
+    let payloads = try collection.items.compactMap { try collection.payload(for: $0.id) }
+    XCTAssertTrue(payloads.contains(.text(value)))
+    XCTAssertTrue(payloads.contains(.text("generic text")))
+  }
+
+  func testAbandonedLegacyPromiseCopiesArePrunedWhileFreshCopiesStay() throws {
+    let temporary = FileManager.default.temporaryDirectory
+    let old = temporary.appendingPathComponent("Clipio-Promises-\(UUID().uuidString)")
+    let fresh = temporary.appendingPathComponent("Clipio-Promises-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: old, withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: fresh, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: old); try? FileManager.default.removeItem(at: fresh) }
+    try Data("abandoned test copy".utf8).write(to: old.appendingPathComponent("test.txt"))
+    try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -90000)], ofItemAtPath: old.path)
+    _ = store()
+    XCTAssertFalse(FileManager.default.fileExists(atPath: old.path))
+    XCTAssertTrue(FileManager.default.fileExists(atPath: fresh.path))
   }
 
   func testTabOnlySwitchesWithoutModifiersAndOutsideComposition() {
