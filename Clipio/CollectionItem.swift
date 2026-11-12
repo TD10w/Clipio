@@ -3,6 +3,54 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
+/// A bounded, independently owned copy prepared while a drag's read grant is
+/// alive. Source apps keep their originals; the temporary copy cleans itself up.
+final class CollectionCopiedFile: Sendable {
+  let url: URL
+  let name: String
+  let byteCount: Int64
+  private let directory: URL
+
+  init(contentsOf source: URL) throws {
+    let accessed = source.startAccessingSecurityScopedResource()
+    defer { if accessed { source.stopAccessingSecurityScopedResource() } }
+    let values = try source.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
+    guard values.isRegularFile == true else { throw CollectionError.invalidFile }
+    let limit = Int64(CollectionImage.maximumByteCount)
+    guard Int64(values.fileSize ?? 0) <= limit else { throw CollectionError.payloadTooLarge }
+    if UTType(filenameExtension: source.pathExtension)?.conforms(to: .movie) == true,
+       values.fileSize == 0 { throw CollectionError.unavailable }
+    let manager = FileManager.default
+    let directory = manager.temporaryDirectory.appendingPathComponent("Clipio-Import-" + UUID().uuidString)
+    try manager.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
+    let destination = directory.appendingPathComponent(source.lastPathComponent)
+    do {
+      guard manager.createFile(atPath: destination.path, contents: nil, attributes: [.posixPermissions: 0o600]) else {
+        throw CollectionError.unavailable
+      }
+      let input = try FileHandle(forReadingFrom: source)
+      defer { try? input.close() }
+      let output = try FileHandle(forWritingTo: destination)
+      defer { try? output.close() }
+      var count: Int64 = 0
+      while let chunk = try input.read(upToCount: 64 * 1024), !chunk.isEmpty {
+        guard Int64(chunk.count) <= limit - count else { throw CollectionError.payloadTooLarge }
+        try output.write(contentsOf: chunk)
+        count += Int64(chunk.count)
+      }
+      self.directory = directory
+      self.url = destination
+      self.name = source.lastPathComponent
+      self.byteCount = count
+    } catch {
+      try? manager.removeItem(at: directory)
+      throw error
+    }
+  }
+
+  deinit { try? FileManager.default.removeItem(at: directory) }
+}
+
 struct CollectionItem: Codable, Identifiable, Equatable {
   let id: UUID
   let name: String

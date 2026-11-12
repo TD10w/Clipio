@@ -6,7 +6,7 @@
 "CheckForUpdates" = "Yangilanishlarni avtomatik ravishda tekshirish";
 "CheckNow" = "Hozir tekshir";
 "Open" = "Ochish:";
-"OpenTooltip" = "Ilovani ochish uchun global yorliq.\nOʻzgartirgichlarni ushlab turganda asosiy tugmani qayta-qayta bosish roʻyxatdagi keyingi elementni tanlaydi. Bu rejimda modifikator tugmachalarini bo‘shatish tanlovni tasdiqlaydi va qalqib chiquvchi oynani yopadi.\nStandart: ⇧⌘C.";
+"OpenTooltip" = "Ilovani ochish uchun global yorliq.";
 "Pin" = "Favorite / Pin:";
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "O'chirish:";
