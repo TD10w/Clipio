@@ -4,7 +4,14 @@
 
 这轮检查确实又复现了同类问题，并已批量修正。准备版本为 **2.8.3（71）候选版**，包含微信视频修复；尚未公开发布。当前公开下载仍为 2.8.2，不能把旧包当作本轮修复包转发。
 
-建议先完成下方一轮实测，再邀请更多人测试。自动化检查不能保证所有聊天应用、网盘、系统版本都能正常交付文件。
+建议本机先完成下方前 3 项实测，首位外部测试者完成第 4 项首次安装检查，再扩大范围。自动化检查不能保证所有聊天应用、网盘、系统版本都能正常交付文件。
+
+## 当前候选和发布环境
+
+- 源码检查点 `cad7d8c`；必需 Debug 编译通过（`/tmp/clipio-beta-readiness-debug.log`）。通用 Release 编译、Developer ID 全架构严格签名检查通过，实际包内版本 2.8.3（71）、Sparkle 2.9.3、生产更新地址/公钥及 31 个已编译快捷键提示表均核对。
+- 本机已安装该签名候选并启动（PID 73803），可执行文件 SHA256 为 `d1a5c3712b240787035102d8b0703f1d6dc9645e600346514b269a78520754ac`。上一份已公证微信视频候选备份于 `build/Backups/before-beta-readiness-candidate-20261112-135434/Clipio.app`。
+- **本候选未完成公证，不是外部分发包。** Apple 提交及只读 history 查询均报告找不到此前的 `Clipio-Notary-Production` 钥匙串条目，显式指定登录钥匙串也相同；当前原因未确定，不声称凭据被删除。未转储其他钥匙串内容，也未创建新凭据。日志：`/tmp/clipio-beta-readiness-candidate.log`、`/tmp/clipio-beta-readiness-notary-profile-check.log`。
+- 仅供本机测试的签名 App/ZIP 位于忽略目录 `build/ReleaseCandidate-2.8.3-beta.1-71/`，带 `LOCAL-TEST-ONLY.txt`。正式 ZIP、DMG 和 build 71 更新资产尚未生成或上传。恢复发布凭据后，可对当前准确签名候选续做公证和包装，再验证正式分发资产。
 
 ## 找到并修正的路径
 
