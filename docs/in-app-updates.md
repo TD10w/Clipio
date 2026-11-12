@@ -6,11 +6,11 @@
 设置 → 通用提供“自动检查更新”和“立即检查”。禁止静默自动安装；不发送系统概况。
 开发包、测试包和未配置更新地址/公钥的正式包不启动更新，也不显示这两个控件。
 
-代码和发布准备流程已实现，但真实更新地址、生产签名密钥、首次带更新功能的公证包尚未上线。
+代码和发布准备流程已实现。2026-11-12 已整合 R3，固定地址与生产签名密钥已配置；公开渠道尚未上传，实际升级验收仍待完成。具体状态见 `docs/release-2.8.0-beta.1-acceptance.md`。
 此前已分发的版本没有更新入口，需要用户手动安装一次新的引导版本。
 本次没有修改 App 身份、数据目录、剪贴板数据库或收藏存储。
 
-## 固定渠道（发布前确认）
+## 固定渠道（已选定，尚未公开上传）
 
 沿用现有的公开仓库 `TD10w/Clipio`，建议使用一个专用的 GitHub prerelease：
 
@@ -30,8 +30,10 @@
 <sparkle-bin>/generate_keys --account com.clipio.app.updates
 ```
 
-私钥保存在本机钥匙串，公钥用于打包。生产密钥尚未生成；本次测试只用临时密钥，并已删除。
+私钥保存在本机钥匙串，公钥用于打包。2026-11-12 已使用 account `com.clipio.app.updates` 生成生产密钥并核对包内公钥；私钥未导出。此前合成测试只使用临时密钥。
 不要把私钥加入仓库、安装包、日志或 release。发布机器须一直保留同一密钥，并安排安全备份。
+
+本机已验证可用的 notarytool 配置名是 `Clipio-Notary-Production`（2026-11-12）；它与 Apple 账号页中专用密码的备注名不同。后续直接使用这个配置，不再通过密码备注猜测。生产公钥为 `HamNrQtbtsXyKjE/688dCuJXuRWtdSeoKNdAovE4Qzc=`。
 
 ```sh
 export CLIPIO_UPDATE_FEED_URL='https://github.com/TD10w/Clipio/releases/download/clipio-updates/appcast.xml'

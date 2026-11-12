@@ -24,6 +24,7 @@ Star 长期保留剪贴板文字、链接和图片，星标筛选及 Shift+Tab�
 - 生产 Ed25519 密钥已由 Sparkle generate_keys 生成，保存在本机钥匙串 account com.clipio.app.updates；没有导出私钥。
 - 公钥 HamNrQtbtsXyKjE/688dCuJXuRWtdSeoKNdAovE4Qzc=，已核对最终签名包内嵌值。
 - 钥匙串之外的灾备副本尚未制作；不要轮换此密钥而使旧包失去更新信任。
+- 本机公证配置已恢复并验证：`Clipio-Notary-Production`。Apple 专用密码只经安全卡输入并存入钥匙串，未写入源码或发布资产。此配置名与 Apple 账号页的密码备注名不同。
 
 ## 已验证
 
@@ -35,9 +36,22 @@ Star 长期保留剪贴板文字、链接和图片，星标筛选及 Shift+Tab�
 - 旧版 cb008d8 的持久化模型属性生成独立磁盘 fixture，由当前模型属性打开迁移；历史文字、Pin、复制次数保留，新增收藏名称保存后由第二个进程重新打开保留。工具与数据库仅在 /tmp/clipio-persistent-upgrade-68。这是模型数据兼容验证，不是实际 App 或 Sparkle 安装升级。
 - 现有 CollectionTests 已覆盖文件引用/Pin/manifest 重启保留；正式 Bundle ID、Storage.swift 数据路径未变。旧设置键没有迁移或清空逻辑。
 
+## 最终本地发布资产（已公证，尚未上传）
+
+目录：`.worktrees/star-candidate/build/Release-2.8.0-beta.1-68/`。
+
+- `Clipio-2.8.0-beta.1.zip`：Developer ID 签名、Apple 公证并装订、Gatekeeper accepted。
+- `Clipio-2.8.0-beta.1.dmg`：包内 App 与 DMG 自身均公证并装订、Gatekeeper accepted；只读挂载后核对可执行文件、Info.plist、音效与源 App 字节一致。
+- `update-assets/Clipio-68.zip` 与 `update-assets/appcast.xml`：生产 Ed25519 签名，包内公钥独立校验通过；ZIP 与手动安装 ZIP SHA256 相同。
+- 每个 ZIP/DMG 旁有 `.sha256` 校验文件。旧 `PENDING-NOTARIZATION` ZIP 是首次 Apple 提交证据，不用于分发。
+- App 公证 Accepted：`97a18208-20d6-42c7-8b01-04213aa175bf`；DMG 公证 Accepted：`9c760ea3-5609-4b62-a7c4-60d1a3a11585`。
+- App 公证输入 SHA、submission/result JSON 保留在本地资产目录；校验日志 `/tmp/clipio-280-distribution-validation.log`、`/tmp/clipio-280-production-update-assets.log`、`/tmp/clipio-280-dmg.log`、`/tmp/clipio-280-mounted-validation.log`。
+- ZIP SHA256：`bff611d5fd6ad0adedd4c8e9e6f6dae0dd7cc0c0e39e79213d8fa70f9d3d672e`。
+- 本轮再次尝试桌面连接，仍返回 `Sky Computer Use native pipe startup failed`；没有实际操作更新窗口，没有安装/替换日用版。
+
 ## 尚未通过的验收与限制
 
-- Apple 公证凭据待恢复；当前只有 Developer ID 签名构建，不能标为可分发公证包。
+- Apple App 和 DMG 公证已完成；仅下列真实升级与公开渠道验收仍未完成。
 - 本轮未上传 GitHub，专用公开 feed/ZIP 尚未验证可用。
 - 未完成真实 App 内旧→新下载/安装/重启；因此历史、Star、设置、权限、快捷键在真实升级后的保留不能标为通过。
 - 未完成真实界面的“无新版/发现新版/稍后/主动检查/关闭自动检查”和断网/中断下载验收；当前桌面工具连接失败。
