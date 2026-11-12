@@ -348,6 +348,40 @@ class HistoryTests: XCTestCase {
     XCTAssertTrue(history.items.isEmpty)
   }
 
+  func testUnstarDoesNotScrollBackToOriginalHistoryPosition() {
+    let navigator = AppState.shared.navigator
+    defer { history.setFilter(.all); navigator.scrollTarget = nil }
+    history.setFilter(.all)
+    let saved = history.add(historyItem("older saved item"))
+    history.add(historyItem("newer item"))
+    history.togglePin(saved)
+    navigator.scrollTarget = nil
+
+    history.togglePin(saved)
+
+    XCTAssertTrue(saved.isUnpinned)
+    XCTAssertEqual(history.unpinnedItems.last?.id, saved.id)
+    XCTAssertNil(navigator.scrollTarget, "Unstar must not ask the shelf to follow the item")
+  }
+
+  func testUnstarInFavoritesUpdatesSelectionWithoutScrolling() {
+    let navigator = AppState.shared.navigator
+    defer { history.setFilter(.all); navigator.scrollTarget = nil }
+    let first = history.add(historyItem("first favorite"))
+    let second = history.add(historyItem("second favorite"))
+    history.togglePin(first)
+    history.togglePin(second)
+    history.setFilter(.favorites)
+    navigator.selectWithoutScrolling(item: first)
+    navigator.scrollTarget = nil
+
+    history.togglePin(first)
+
+    XCTAssertEqual(history.items, [second])
+    XCTAssertEqual(navigator.leadHistoryItem?.id, second.id)
+    XCTAssertNil(navigator.scrollTarget, "Removing a favorite must not recenter the shelf")
+  }
+
   func testFavoriteNamePreservesContentAndSurvivesDuplicateAndReload() async throws {
     defer { history.setFilter(.all); history.searchQuery = "" }
     let saved = history.add(historyItem("https://example.com/portfolio"))

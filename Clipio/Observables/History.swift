@@ -69,14 +69,18 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     return true
   }
 
-  private func refreshFilteredItems() {
+  private func refreshFilteredItems(scrollToSelection: Bool = true) {
     let scope = filter == .favorites ? all.filter(\.isPinned) : all
     updateItems(search.search(string: searchQuery, within: scope))
     if self === AppState.shared.history {
       let visible = Set(items.map(\.id))
       let navigator = AppState.shared.navigator
       if navigator.selection.items.contains(where: { !visible.contains($0.id) }) {
-        navigator.select(item: items.first)
+        if scrollToSelection {
+          navigator.select(item: items.first)
+        } else {
+          navigator.selectWithoutScrolling(item: items.first)
+        }
       }
     }
   }
@@ -423,13 +427,11 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       all.insert(item, at: newIndex)
     }
 
-    refreshFilteredItems()
+    // Star changes reorder cards, but must not move the viewport to follow them.
+    refreshFilteredItems(scrollToSelection: false)
     updateUnpinnedShortcuts()
     if filter == .favorites, item.isUnpinned, self === AppState.shared.history {
-      AppState.shared.navigator.select(item: items.first)
-    }
-    if item.isUnpinned, items.contains(item) {
-      AppState.shared.navigator.scrollTarget = item.id
+      AppState.shared.navigator.selectWithoutScrolling(item: items.first)
     }
   }
 
