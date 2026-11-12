@@ -445,7 +445,9 @@ final class CollectionStore {
         ids: Set(selected.map(\.id)), urls: urls, accessedURLs: accessed,
         // Dock Trash negotiates delete rather than move. Keep Pin batches out of
         // that negotiation: their originals must remain protected.
-        operation: (movesOriginals ? NSDragOperation.move : .copy).union(
+        // Some chat/upload targets only accept copy. Offer it alongside move so an
+        // unpinned reference can be attached without changing its Pin state.
+        operation: (movesOriginals ? NSDragOperation([.move, .copy]) : .copy).union(
           selected.contains(where: \.isPinned) ? [] : .delete
         ),
         pinnedIDs: Set(selected.filter(\.isPinned).map(\.id)),
@@ -559,10 +561,12 @@ final class CollectionStore {
           // Close the race between the existence check and installing the watch.
           if !fileManager.fileExists(atPath: source.path) { consumed.insert(item.id) }
         }
-      } else if operation == .copy && item.ownedFileName != nil {
+      } else if operation == .copy {
+        // A destination accepted the drop. Consume the unpinned shelf entry;
+        // remove(ids:) never deletes a referenced original. Owned payloads were
+        // staged separately so receivers can finish reading after this callback.
         consumed.insert(item.id)
       }
-      // A copy callback must never consume an ordinary local reference.
     }
     if !consumed.isEmpty { try remove(ids: consumed) }
     refreshAvailability()
