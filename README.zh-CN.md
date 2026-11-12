@@ -4,7 +4,7 @@
 
 一款原生 macOS 剪贴板与文件收集工具。找回复制过的内容，留住常用项，把准备移到别处的文件先收在一起。
 
-**[下载 macOS 测试版 — 2.8.2-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.8.2-beta.1/Clipio-2.8.2-beta.1.dmg)** · [版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.8.2-beta.1)
+**[下载 macOS 测试版 — 2.8.3-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.8.3-beta.1/Clipio-2.8.3-beta.1.dmg)** · [版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.8.3-beta.1)
 
 macOS 14+ · Apple Silicon 和 Intel · 已签名并通过 Apple 公证 · 早期公开测试版
 

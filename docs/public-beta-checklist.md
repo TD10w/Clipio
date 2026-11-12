@@ -1,6 +1,6 @@
 # Clipio public beta readiness
 
-Current review: [November 12 beta-readiness assessment](beta-readiness-review-2026-11-12.md). Public 2.8.2 includes the accepted updater repair; 2.8.3 (71) is an unpublished candidate for WeChat imports and adjacent hardening. The September/November 9 records below are historical evidence, not the current release status.
+Current review: [November 12 beta-readiness assessment](beta-readiness-review-2026-11-12.md). Public 2.8.3 (71) includes the updater repair, WeChat import changes and adjacent hardening. See [2.8.3 distribution evidence](release-evidence-2.8.3-beta.1.md) and the remaining manual checks in the current review. The September/November 9 records below are historical evidence, not the current release status.
 
 Assessment date: 2026-09-05. Intended audience: a small group of testers using GitHub distribution. This is not a Mac App Store submission assessment.
 
