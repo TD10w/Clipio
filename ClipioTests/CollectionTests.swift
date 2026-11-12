@@ -1154,6 +1154,73 @@ final class CollectionTests: XCTestCase {
     XCTAssertNil(collection.items[0].ownedFileName)
   }
 
+  @MainActor
+  func testWeChatPrivateVideoIsCollectedWithoutAnImageRepresentation() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Video")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("chat-video.mp4")
+    let bytes = Data("Synthetic opaque video file contents".utf8)
+    try bytes.write(to: original)
+    let collection = store()
+
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [original]), fallbacks: [], into: collection)
+
+    XCTAssertNil(collection.lastError)
+    let item = try XCTUnwrap(collection.items.first)
+    XCTAssertNotNil(item.ownedFileName)
+    XCTAssertEqual(item.name, "chat-video.mp4")
+    let imported = try collection.resolveURL(for: item.id)
+    XCTAssertNotEqual(imported, original)
+    XCTAssertEqual(try Data(contentsOf: imported), bytes)
+    let export = try collection.prepareExport(ids: [item.id])
+    XCTAssertTrue(export.operation.contains(.copy))
+    XCTAssertFalse(export.operation.contains(.move), "WeChat's original must never be moved")
+    let outgoing = try XCTUnwrap(export.urls.first)
+    try collection.finishExport(export, operation: .copy)
+    XCTAssertTrue(collection.items.isEmpty)
+    XCTAssertEqual(try Data(contentsOf: outgoing), bytes, "The receiver may read the outgoing file after completion")
+    XCTAssertEqual(try Data(contentsOf: original), bytes)
+  }
+
+  @MainActor
+  func testWeChatVideoKeepsVideoBytesInsteadOfThumbnail() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Video")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("chat-video.mp4")
+    let bytes = Data("Synthetic video, not the thumbnail".utf8)
+    try bytes.write(to: original)
+    let collection = store()
+    await CollectionImporter.collect([provider(url: original, image: try pngData())], into: collection)
+    let item = try XCTUnwrap(collection.items.first)
+    XCTAssertEqual(try Data(contentsOf: collection.resolveURL(for: item.id)), bytes)
+    XCTAssertEqual(item.name, "chat-video.mp4")
+  }
+
+  @MainActor
+  func testOversizedPrivateVideoDoesNotSilentlyCollectItsThumbnail() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Video")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("large.mp4")
+    XCTAssertTrue(FileManager.default.createFile(atPath: original.path, contents: nil))
+    let handle = try FileHandle(forWritingTo: original)
+    try handle.truncate(atOffset: 65 * 1024 * 1024)
+    try handle.close()
+    let collection = store()
+    await CollectionImporter.collect([provider(url: original, image: try pngData())], into: collection)
+    XCTAssertTrue(collection.items.isEmpty)
+    XCTAssertTrue(collection.lastError?.contains(CollectionError.payloadTooLarge.localizedDescription) == true)
+    XCTAssertTrue(FileManager.default.fileExists(atPath: original.path))
+  }
+
   // MARK: Stacks (same-drop batches)
 
   func testOneMultiItemDropFormsOneStackInDropOrderAndNextDropStaysSeparate() async throws {

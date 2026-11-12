@@ -167,6 +167,23 @@ final class CollectionStore {
   }
 
   @discardableResult
+  func addFileCopy(_ copy: CollectionCopiedFile, batch: UUID? = nil) throws -> UUID {
+    guard canWrite else { throw CollectionError.unreadableStore }
+    try checkOwnedCapacity(adding: copy.byteCount)
+    let id = UUID()
+    let fileName = id.uuidString + (copy.url.pathExtension.isEmpty ? "" : "." + copy.url.pathExtension)
+    let folder = directory.appendingPathComponent("Images")
+    try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
+    let destination = folder.appendingPathComponent(fileName)
+    try fileManager.moveItem(at: copy.url, to: destination)
+    let item = CollectionItem(id: id, name: copy.name, addedAt: Date(), isPinned: false,
+      bookmark: nil, ownedFileName: fileName, batchID: batch)
+    do { try commit(inserting(item)) }
+    catch { try? fileManager.removeItem(at: destination); throw error }
+    return id
+  }
+
+  @discardableResult
   func addLink(_ url: URL, batch: UUID? = nil) throws -> UUID {
     guard !url.isFileURL, url.scheme != nil, url.absoluteString.utf8.count <= Self.maximumLinkBytes else {
       throw CollectionError.payloadTooLarge

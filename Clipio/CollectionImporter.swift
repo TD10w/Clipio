@@ -126,10 +126,9 @@ enum CollectionImporter {
     return []
   }
 
-  /// Apps like Messages drag a URL into their own private storage alongside the image
-  /// bytes. Such a URL is unreadable from the sandbox, and referencing it would let a
-  /// later drag-out move the file out of that app's storage. Keep a copy of the bytes
-  /// instead; ordinary user files stay references.
+  /// App-private media must become owned copies, never movable references into
+  /// another app's storage. Videos use the granted file, images use validated
+  /// image representations. A video's preview thumbnail is not its content.
   private static func addFile(_ file: URL, provider: NSItemProvider, batch: UUID?, into store: CollectionStore) async throws -> UUID? {
     if !isAppPrivate(file) {
       do {
@@ -138,6 +137,10 @@ enum CollectionImporter {
         guard let image = await imageData(from: provider) else { throw error }
         return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
       }
+    }
+    if UTType(filenameExtension: file.pathExtension)?.conforms(to: .movie) == true {
+      let copy = try await Task.detached(priority: .utility) { try CollectionCopiedFile(contentsOf: file) }.value
+      return try store.addFileCopy(copy, batch: batch)
     }
     guard let image = await imageData(from: provider) else { throw CollectionError.unavailable }
     return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)

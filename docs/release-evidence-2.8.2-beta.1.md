@@ -20,3 +20,7 @@ The original broken updater may fail before installing its repair, so affected u
 For the owner to test the real install/relaunch flow, a local-only repair baseline was separately Developer ID signed, notarized (`ac3a892d-c43e-4f7f-bee3-a4b9161f95af`), stapled and Gatekeeper-validated. It contains the repaired engine and current runtime fixes, but presents build 69 to receive the real public 70 update. It is marked `ClipioUpdateRepairBaseline` and lives at `build/UpdateRepairBaseline-69-Sparkle293/Clipio.app`. It is not the original published 2.8.1 package and was not uploaded as a replacement asset.
 
 That local baseline was installed and restarted at `/Applications/Clipio.app` (PID 64111 at verification); the previous official 2.8.0 is backed up at `build/Backups/before-sparkle293-repair-20261112-123936/Clipio.app`. Actual upgrade to 70, relaunch and history/Star/Pin/settings continuity remain for owner acceptance. Preparing a signed baseline and validating feed/package signatures do not establish successful Sparkle installation.
+
+## Owner installation/relaunch accepted
+
+The owner subsequently confirmed “已成功更新并重启.” Independent inspection found build 70 installed, no `ClipioUpdateRepairBaseline` marker, Sparkle 2.9.3, a valid signature, and an executable byte-identical to the published 2.8.2 ZIP. This confirms installation/relaunch through the repaired in-app updater. It does not turn the failed original 68 → 69 attempt into a pass or establish every history/permission/settings migration scenario.
