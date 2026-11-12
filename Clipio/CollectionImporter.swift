@@ -60,23 +60,21 @@ enum CollectionImporter {
     for provider in providers {
       do {
         let id: UUID?
-        if let file = await loadURL(from: provider, type: UTType.fileURL.identifier), file.isFileURL {
+        var offeredURL = await loadURL(from: provider, type: UTType.fileURL.identifier)
+        if offeredURL == nil { offeredURL = await loadURL(from: provider, type: UTType.url.identifier) }
+        if let file = offeredURL, file.isFileURL {
           id = try await addFile(file, provider: provider, batch: batch, into: store)
         } else if let image = await imageData(from: provider) {
           let name = provider.suggestedName ?? "Image"
           let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: image, name: name) }.value
           id = try store.addImage(prepared, batch: batch)
-        } else if let url = await loadURL(from: provider, type: UTType.url.identifier) {
-          if url.isFileURL {
-            id = try addNewFile(url, batch: batch, into: store)
+        } else if let url = offeredURL {
+          if UTType(filenameExtension: url.pathExtension)?.conforms(to: .image) == true {
+            let data = try await downloadImage(url)
+            let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: data, name: url.lastPathComponent) }.value
+            id = try store.addImage(prepared, batch: batch)
           } else {
-            if UTType(filenameExtension: url.pathExtension)?.conforms(to: .image) == true {
-              let data = try await downloadImage(url)
-              let prepared = try await Task.detached(priority: .utility) { try CollectionImage(data: data, name: url.lastPathComponent) }.value
-              id = try store.addImage(prepared, batch: batch)
-            } else {
-              id = try store.addLink(url, batch: batch)
-            }
+            id = try store.addLink(url, batch: batch)
           }
         } else if let text = await loadText(from: provider) {
           id = try store.addText(text, batch: batch)
@@ -127,23 +125,31 @@ enum CollectionImporter {
   }
 
   /// App-private media must become owned copies, never movable references into
-  /// another app's storage. Videos use the granted file, images use validated
+  /// another app's storage. Files use the granted file, images use validated
   /// image representations. A video's preview thumbnail is not its content.
   private static func addFile(_ file: URL, provider: NSItemProvider, batch: UUID?, into store: CollectionStore) async throws -> UUID? {
+    let isImage = UTType(filenameExtension: file.pathExtension)?.conforms(to: .image) == true
     if !isAppPrivate(file) {
       do {
         return try addNewFile(file, batch: batch, into: store)
       } catch {
-        guard let image = await imageData(from: provider) else { throw error }
+        guard isImage, let image = await imageData(from: provider) else { throw error }
         return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
       }
     }
-    if UTType(filenameExtension: file.pathExtension)?.conforms(to: .movie) == true {
+    if !isImage {
       let copy = try await Task.detached(priority: .utility) { try CollectionCopiedFile(contentsOf: file) }.value
       return try store.addFileCopy(copy, batch: batch)
     }
-    guard let image = await imageData(from: provider) else { throw CollectionError.unavailable }
-    return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
+    if let image = await imageData(from: provider) {
+      return try await addOwnedImage(image, name: file.lastPathComponent, batch: batch, into: store)
+    }
+    let prepared = try await Task.detached(priority: .utility) {
+      let accessed = file.startAccessingSecurityScopedResource()
+      defer { if accessed { file.stopAccessingSecurityScopedResource() } }
+      return try CollectionImage(contentsOf: file)
+    }.value
+    return try store.addImage(prepared, batch: batch)
   }
 
   // No suspension between checking and adding: concurrent drops cannot claim
@@ -162,12 +168,15 @@ enum CollectionImporter {
   /// Home whose ~/Library counts as app-private. Tests point it at a scratch folder.
   static var appPrivateHome = realHomeDirectory
 
-  /// Inside the real user's ~/Library (Messages, Mail, other apps' containers…): places
-  /// that belong to an app, not to the user's documents.
+  /// Protect app-owned Library storage while treating user-visible cloud drive
+  /// folders as ordinary document locations, even though they live in Library.
   static func isAppPrivate(_ url: URL, home: String? = nil) -> Bool {
     let home = URL(fileURLWithPath: home ?? appPrivateHome).resolvingSymlinksInPath().path
     let path = url.standardizedFileURL.resolvingSymlinksInPath().path
-    return path.hasPrefix(home + "/Library/")
+    let library = home + "/Library"
+    let userDriveRoots = [library + "/CloudStorage", library + "/Mobile Documents/com~apple~CloudDocs"]
+    if userDriveRoots.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) { return false }
+    return path == library || path.hasPrefix(library + "/")
   }
 
   /// The user's actual home, not the sandbox container that NSHomeDirectory() reports.

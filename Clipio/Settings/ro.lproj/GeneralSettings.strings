@@ -2,7 +2,7 @@
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "LaunchAtLogin" = "Deschide la login";
 "CheckNow" = "Verifică acum";
-"OpenTooltip" = "Tastă globală de comandă rapidă pentru a deschide aplicația.\nO apăsare repetată a tastei principale, în timp ce taste \"modifier\" sunt menținute apăsate, va selecta următorul element din listă. Eliberare unei taste \"modifier\" va confirma selecția și va închide fereastra popup.\nImplicit: ⇧⌘C.";
+"OpenTooltip" = "Tastă globală de comandă rapidă pentru a deschide aplicația.";
 "Pin" = "Favorite / Pin:";
 "PasteAutomatically" = "Lipește automat";
 "Fuzzy" = "Aproximativă";

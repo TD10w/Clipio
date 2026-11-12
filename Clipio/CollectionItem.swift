@@ -18,6 +18,8 @@ final class CollectionCopiedFile: Sendable {
     guard values.isRegularFile == true else { throw CollectionError.invalidFile }
     let limit = Int64(CollectionImage.maximumByteCount)
     guard Int64(values.fileSize ?? 0) <= limit else { throw CollectionError.payloadTooLarge }
+    if UTType(filenameExtension: source.pathExtension)?.conforms(to: .movie) == true,
+       values.fileSize == 0 { throw CollectionError.unavailable }
     let manager = FileManager.default
     let directory = manager.temporaryDirectory.appendingPathComponent("Clipio-Import-" + UUID().uuidString)
     try manager.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])

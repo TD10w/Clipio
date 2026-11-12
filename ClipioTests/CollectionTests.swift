@@ -1,4 +1,5 @@
 import AppKit
+import Defaults
 import KeyboardShortcuts
 import XCTest
 import SwiftUI
@@ -1118,6 +1119,38 @@ final class CollectionTests: XCTestCase {
     XCTAssertFalse(CollectionImporter.isAppPrivate(URL(fileURLWithPath: "/Volumes/Disk/photo.png"), home: home))
   }
 
+  @MainActor
+  func testUserCloudFoldersAreNotAppPrivateStorage() {
+    let home = "/Users/someone"
+    XCTAssertTrue(CollectionImporter.isAppPrivate(URL(fileURLWithPath: home + "/Library"), home: home))
+    for folder in ["Mobile Documents/com~apple~CloudDocs", "CloudStorage/Dropbox", "CloudStorage/OneDrive-Personal"] {
+      XCTAssertFalse(CollectionImporter.isAppPrivate(
+        URL(fileURLWithPath: home + "/Library/" + folder + "/video.mp4"), home: home))
+    }
+    XCTAssertTrue(CollectionImporter.isAppPrivate(
+      URL(fileURLWithPath: home + "/Library/CloudStorageOtherApp/cache.mp4"), home: home))
+    XCTAssertTrue(CollectionImporter.isAppPrivate(
+      URL(fileURLWithPath: home + "/Library/Mobile Documents/com~chat~app/cache.mp4"), home: home))
+  }
+
+  @MainActor
+  func testCloudDriveFileRemainsAReferenceWithoutUsingOwnedStorageBudget() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("cloud-video.mp4")
+    try Data("Synthetic cloud file".utf8).write(to: original)
+    let collection = CollectionStore(directory: directory, securityScoped: false, ownedByteLimit: 0)
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [original]), fallbacks: [], into: collection)
+    XCTAssertNil(collection.lastError)
+    let item = try XCTUnwrap(collection.items.first)
+    XCTAssertNil(item.ownedFileName)
+    XCTAssertEqual(try collection.resolveURL(for: item.id), original)
+    XCTAssertEqual(collection.ownedStorageBytes, 0)
+  }
+
   func testUnreadableURLWithImageBytesBecomesOwnedImageCopy() async throws {
     let collection = store()
     let missing = root.appendingPathComponent("Messages/Attachments/clipio-warm.png")
@@ -1219,6 +1252,142 @@ final class CollectionTests: XCTestCase {
     XCTAssertTrue(collection.items.isEmpty)
     XCTAssertTrue(collection.lastError?.contains(CollectionError.payloadTooLarge.localizedDescription) == true)
     XCTAssertTrue(FileManager.default.fileExists(atPath: original.path))
+  }
+
+  @MainActor
+  func testPrivateDocumentsAndAudioKeepOriginalBytesAndCannotMoveTheSource() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/chat/Data/Attachments")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    for name in ["document.pdf", "voice.m4a", "archive.zip"] {
+      let original = folder.appendingPathComponent(name)
+      let bytes = Data(("Original file: " + name).utf8)
+      try bytes.write(to: original)
+      let collection = store()
+      await CollectionImporter.collect([provider(url: original, image: try pngData())], into: collection)
+      XCTAssertNil(collection.lastError)
+      let item = try XCTUnwrap(collection.items.first)
+      XCTAssertEqual(item.name, name)
+      XCTAssertNotNil(item.ownedFileName)
+      XCTAssertEqual(try Data(contentsOf: collection.resolveURL(for: item.id)), bytes)
+      let export = try collection.prepareExport(ids: [item.id])
+      defer { export.endAccess() }
+      XCTAssertFalse(export.operation.contains(.move))
+      XCTAssertEqual(try Data(contentsOf: original), bytes)
+    }
+  }
+
+  @MainActor
+  func testGenericURLFileRepresentationCannotBypassPrivateSourceProtection() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/chat/Data/Video")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("video.mp4")
+    let bytes = Data("Synthetic full video".utf8)
+    try bytes.write(to: original)
+    let provider = NSItemProvider()
+    provider.registerDataRepresentation(forTypeIdentifier: "public.url", visibility: .all) { completion in
+      completion(original.dataRepresentation, nil)
+      return nil
+    }
+    let collection = store()
+    await CollectionImporter.collect([provider], into: collection)
+    let item = try XCTUnwrap(collection.items.first)
+    XCTAssertNotNil(item.ownedFileName)
+    XCTAssertNotEqual(try collection.resolveURL(for: item.id), original)
+    XCTAssertEqual(try Data(contentsOf: collection.resolveURL(for: item.id)), bytes)
+    let export = try collection.prepareExport(ids: [item.id])
+    defer { export.endAccess() }
+    XCTAssertFalse(export.operation.contains(.move), "A URL representation must not expose the chat app's file to a move")
+  }
+
+  func testUnavailableOrdinaryVideoIsNotReplacedByItsThumbnail() async throws {
+    let collection = store()
+    let missing = root.appendingPathComponent("missing-video.mp4")
+    await CollectionImporter.collect([provider(url: missing, image: try pngData())], into: collection)
+    XCTAssertTrue(collection.items.isEmpty)
+    XCTAssertNotNil(collection.lastError)
+  }
+
+  @MainActor
+  func testEmptyPrivateVideoIsNotReportedAsACollectedVideo() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/chat/Data/Video")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("pending.mp4")
+    try Data().write(to: original)
+    let collection = store()
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [original]), fallbacks: [], into: collection)
+    XCTAssertTrue(collection.items.isEmpty)
+    XCTAssertNotNil(collection.lastError)
+    XCTAssertEqual(try Data(contentsOf: original), Data())
+  }
+
+  @MainActor
+  func testKeyboardMonitorCanResumeAfterShortcutIsClearedAndReassigned() async throws {
+    let state = AppState.shared
+    let previousDelegate = state.appDelegate
+    let previousMode = state.shelfMode
+    let previousSize = Defaults[.windowSize]
+    let delegate = AppDelegate()
+    let panel = FloatingPanel(contentRect: NSRect(x: -12000, y: -12000, width: 100, height: 100), onClose: {}) { ContentView() }
+    panel.contentView = NSView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+    panel.alphaValue = 0.01
+    panel.isReleasedWhenClosed = false
+    delegate.panel = panel
+    state.appDelegate = delegate
+    panel.orderFrontRegardless()
+    panel.makeKey()
+    panel.isPresented = true
+    defer {
+      state.popup.deinitEventsMonitor()
+      panel.isPresented = false
+      panel.orderOut(nil)
+      panel.close()
+      state.appDelegate = previousDelegate
+      state.switchShelf(to: previousMode)
+      Defaults[.windowSize] = previousSize
+    }
+    guard NSApp.keyWindow === panel else {
+      throw XCTSkip("The test panel could not become key; native keyboard interaction was not verified")
+    }
+    let tab = try XCTUnwrap(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [],
+      timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: panel.windowNumber, context: nil,
+      characters: "\t", charactersIgnoringModifiers: "\t", isARepeat: false, keyCode: 48))
+    state.switchShelf(to: .clipboard)
+    state.popup.initEventsMonitor()
+    NSApp.sendEvent(tab)
+    XCTAssertEqual(state.shelfMode, .collection, "Initial monitor must handle a real local Tab event")
+    state.popup.deinitEventsMonitor()
+    state.popup.initEventsMonitor()
+    state.switchShelf(to: .clipboard)
+    NSApp.sendEvent(tab)
+    XCTAssertEqual(state.shelfMode, .collection, "Reassigned shortcuts must restore local keyboard handling")
+  }
+
+  @MainActor
+  func testReadablePrivateImageURLDoesNotRequireSeparateImageBytes() async throws {
+    let previousHome = CollectionImporter.appPrivateHome
+    CollectionImporter.appPrivateHome = root.path
+    defer { CollectionImporter.appPrivateHome = previousHome }
+    let folder = root.appendingPathComponent("Library/Containers/chat/Data/Images")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let original = folder.appendingPathComponent("photo.png")
+    let bytes = try pngData()
+    try bytes.write(to: original)
+    let collection = store()
+    await CollectionImporter.collectFiles(CollectionFileDrop(urls: [original]), fallbacks: [], into: collection)
+    XCTAssertNil(collection.lastError)
+    let item = try XCTUnwrap(collection.items.first)
+    XCTAssertNotNil(item.ownedFileName)
+    XCTAssertEqual(try Data(contentsOf: collection.resolveURL(for: item.id)), bytes)
+    XCTAssertEqual(try Data(contentsOf: original), bytes)
   }
 
   // MARK: Stacks (same-drop batches)

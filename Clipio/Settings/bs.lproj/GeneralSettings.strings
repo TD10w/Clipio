@@ -3,7 +3,7 @@
 "CheckForUpdates" = "Provjeri dostupna ažuriranja";
 "CheckNow" = "Provjeri sada";
 "Open" = "Obrisati:";
-"OpenTooltip" = "Globalna prečica za otvaranje aplikacije.\nPonovljeni pritisak na glavnu tipku dok držite modifikatore odabrat će sljedeću stavku na listi. U ovom načinu rada, otpuštanje modifikatorskih tipki potvrdit će odabir i zatvoriti skočni prozor.\nZadano: ⇧⌘C.";
+"OpenTooltip" = "Globalna prečica za otvaranje aplikacije.";
 "Pin" = "Favorite / Pin:";
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Brisaniti:";

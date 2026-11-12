@@ -3,7 +3,7 @@
 "CheckForUpdates" = "Automatiškai tikrinti, ar yra atnaujinimų";
 "CheckNow" = "Patikrinti dabar";
 "Open" = "Atidaryti:";
-"OpenTooltip" = "Pasaulinis spartusis klavišas programai atidaryti.\nPakartotinai paspaudus pagrindinį klavišą ir laikant modifikatorių, bus pasirinktas kitas sąrašo elementas. Šiuo režimu atleidus modifikavimo klavišus bus patvirtintas pasirinkimas ir uždarytas iškylantysis langas.\nNumatytasis: ⇧⌘C.";
+"OpenTooltip" = "Pasaulinis spartusis klavišas programai atidaryti.";
 "Pin" = "Favorite / Pin:";
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Ištrinti:";

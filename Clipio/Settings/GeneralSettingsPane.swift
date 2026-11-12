@@ -36,15 +36,9 @@ struct GeneralSettingsPane: View {
       }
 
       Settings.Section(label: { Text("Open", tableName: "GeneralSettings") }) {
-        KeyboardShortcuts.Recorder(for: .popup, onChange: { newShortcut in
-          if newShortcut == nil {
-            // No shortcut is recorded. Remove keys monitor
-            AppState.shared.popup.deinitEventsMonitor()
-          } else {
-            // User is using shortcut. Ensure keys monitor is initialized
-            AppState.shared.popup.initEventsMonitor()
-          }
-        })
+        // Shelf navigation also serves the menu-bar and collection entry points,
+        // so clearing the global clipboard shortcut must not remove its monitor.
+        KeyboardShortcuts.Recorder(for: .popup)
           .help(Text("OpenTooltip", tableName: "GeneralSettings"))
       }
 

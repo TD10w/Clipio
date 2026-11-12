@@ -3,7 +3,7 @@
 "CheckForUpdates" = "Verificar atualizações automaticamente";
 "CheckNow" = "Verificar agora";
 "Open" = "Abrir:";
-"OpenTooltip" = "Tecla de atalho global para abrir a aplicação.\nUma pressão repetida da tecla principal enquanto mantém as teclas modificadoras premidas irá selecionar o item seguinte na lista. Neste modo, soltar as teclas modificadoras confirmará a seleção e fechará o pop-up.\nPadrão: ⇧⌘C.";
+"OpenTooltip" = "Tecla de atalho global para abrir a aplicação.";
 "Pin" = "Favorite / Pin:";
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Excluir:";

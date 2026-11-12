@@ -3,7 +3,7 @@
 "CheckForUpdates" = "Kiểm tra cập nhật tự động";
 "CheckNow" = "Kiểm tra ngay";
 "Open" = "Mở:";
-"OpenTooltip" = "Phím tắt mở ứng dụng.\nNhấn giữ phím chính cùng với các phím sửa đổi sẽ chọn mục tiếp theo trong danh sách. Trong chế độ này, thả các phím sửa đổi sẽ xác nhận lựa chọn và đóng cửa sổ popup.\nMặc định: ⇧⌘C.";
+"OpenTooltip" = "Phím tắt mở ứng dụng.";
 "Pin" = "Favorite / Pin:";
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Xóa:";

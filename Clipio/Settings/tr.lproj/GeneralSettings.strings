@@ -3,7 +3,7 @@
 "CheckForUpdates" = "Güncellemeleri otomatik olarak denetle";
 "CheckNow" = "Şimdi denetle";
 "Open" = "Açmak:";
-"OpenTooltip" = "Uygulamayı açmak için global kısayol tuşu.\nDeğiştiricileri basılı tutarken ana tuşa tekrar basmak listedeki bir sonraki öğeyi seçecektir. Bu modda, değiştirici tuşların bırakılması seçimi onaylayacak ve açılır pencereyi kapatacaktır.\nVarsayılan: ⇧⌘C.";
+"OpenTooltip" = "Uygulamayı açmak için global kısayol tuşu.";
 "Pin" = "Favorite / Pin:";
 "PinTooltip" = "Favorite a clipboard item or pin a Collection item. Default: ⌥P.";
 "Delete" = "Silmek:";
