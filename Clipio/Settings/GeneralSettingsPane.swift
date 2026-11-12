@@ -11,6 +11,8 @@ struct GeneralSettingsPane: View {
 
   @Default(.searchMode) private var searchMode
 
+  @State private var softwareUpdater = SoftwareUpdater.shared
+
   @State private var copyModifier = HistoryItemAction.copy.modifierFlags.description
   @State private var pasteModifier = HistoryItemAction.paste.modifierFlags.description
   @State private var pasteWithoutFormatting = HistoryItemAction.pasteWithoutFormatting.modifierFlags.description
@@ -20,6 +22,16 @@ struct GeneralSettingsPane: View {
       Settings.Section(title: "", bottomDivider: true) {
         LaunchAtLogin.Toggle {
           Text("LaunchAtLogin", tableName: "GeneralSettings")
+        }
+        if softwareUpdater.isConfigured {
+          Toggle(isOn: $softwareUpdater.automaticallyChecksForUpdates) {
+            Text("CheckForUpdates", tableName: "GeneralSettings")
+          }
+          Button(action: softwareUpdater.checkForUpdates) {
+            Text("CheckNow", tableName: "GeneralSettings")
+          }
+          .disabled(!softwareUpdater.canCheckForUpdates)
+          .accessibilityIdentifier("settings-check-for-updates")
         }
       }
 

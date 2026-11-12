@@ -6,6 +6,8 @@ project_dir=${0:A:h:h}
 derived_data=""
 output="$project_dir/build/Beta/Clipio-beta.zip"
 validate_only=""
+updates_output=""
+update_notes=""
 
 usage() {
   cat <<'EOF'
@@ -17,9 +19,15 @@ Required environment variables for a new build:
   CLIPIO_DEVELOPER_ID    Full "Developer ID Application: ..." identity
   CLIPIO_NOTARY_PROFILE  notarytool keychain profile name
 
+Optional in-app updates (both or neither):
+  CLIPIO_UPDATE_FEED_URL    HTTPS appcast URL owned by Clipio
+  CLIPIO_UPDATE_PUBLIC_KEY  Base64 Ed25519 public key
+
 Options:
   --derived-data <path>  Store Xcode build output at this path (defaults to /private/tmp).
   --output <path>        Write the final notarized ZIP to this path.
+  --updates-output <dir> Prepare signed update assets locally (requires feed/key environment).
+  --update-notes <file>  UTF-8 release notes, required with --updates-output.
   --validate-only <app>  Validate an already signed and stapled Clipio.app.
   -h, --help             Show this help.
 EOF
@@ -40,6 +48,16 @@ while (( $# > 0 )); do
     --output)
       (( $# >= 2 )) || fail "Missing path after --output"
       output="$2"
+      shift
+      ;;
+    --update-notes)
+      (( $# >= 2 )) || fail "Missing path after --update-notes"
+      update_notes="$2"
+      shift
+      ;;
+    --updates-output)
+      (( $# >= 2 )) || fail "Missing path after --updates-output"
+      updates_output="$2"
       shift
       ;;
     --validate-only)
@@ -133,6 +151,27 @@ if [[ -n "$validate_only" ]]; then
   exit 0
 fi
 
+if [[ -n "$updates_output" ]]; then
+  [[ -n "${CLIPIO_UPDATE_FEED_URL:-}" && -n "${CLIPIO_UPDATE_PUBLIC_KEY:-}" ]] || \
+    fail "--updates-output requires CLIPIO_UPDATE_FEED_URL and CLIPIO_UPDATE_PUBLIC_KEY"
+  [[ -n "$update_notes" && -s "$update_notes" ]] || fail "--updates-output requires a nonempty --update-notes file"
+  [[ ! -e "$updates_output" ]] || fail "Refusing to overwrite existing update output"
+fi
+
+# Validate update inputs before an expensive build or Apple submission.
+python3 - "$project_dir" <<'PYCONFIG'
+import importlib.util
+import os
+import sys
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("update_release", sys.argv[1] + "/scripts/update-release.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+feed, key = os.environ.get("CLIPIO_UPDATE_FEED_URL", ""), os.environ.get("CLIPIO_UPDATE_PUBLIC_KEY", "")
+if feed or key:
+    module.validate_config(feed, key)
+PYCONFIG
+
 developer_id=${CLIPIO_DEVELOPER_ID:-}
 notary_profile=${CLIPIO_NOTARY_PROFILE:-}
 [[ -n "$developer_id" ]] || fail "Set CLIPIO_DEVELOPER_ID to a Developer ID Application identity"
@@ -170,6 +209,7 @@ app_bundle="$derived_data/Build/Products/Release/Clipio.app"
 # signing is enabled. Timestamping those .o files fails on recent Xcode, so
  # timestamp the final app and nested distribution code explicitly after the
  # build has completed.
+python3 "$project_dir/scripts/update-release.py" configure --plist "$app_bundle/Contents/Info.plist"
 sign_sparkle_components "$app_bundle"
 codesign \
   --force \
@@ -194,3 +234,11 @@ validate_distribution "$app_bundle"
 mkdir -p "${output:h}"
 ditto -c -k --keepParent "$app_bundle" "$output"
 print "External beta artifact ready: $output"
+
+if [[ -n "$updates_output" ]]; then
+  python3 "$project_dir/scripts/update-release.py" prepare \
+    --app "$app_bundle" \
+    --output "$updates_output" \
+    --sparkle-bin "$derived_data/SourcePackages/artifacts/sparkle/Sparkle/bin" \
+    --notes "$update_notes"
+fi

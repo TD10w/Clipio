@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C011EC710000000000000002 /* Collect.wav in Resources */ = {isa = PBXBuildFile; fileRef = C011EC710000000000000001 /* Collect.wav */; };
+		A71100000000000000000001 /* UpdateConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71100000000000000000002 /* UpdateConfiguration.swift */; };
 		CB1C11000000000000000002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = CB1C11000000000000000001 /* AppIcon.icon */; };
 		CB0B11000000000000000016 /* OnboardingIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000015 /* OnboardingIllustration.swift */; };
 		CB0B11000000000000000014 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0B11000000000000000013 /* OnboardingView.swift */; };
@@ -179,6 +180,7 @@
 
 /* Begin PBXFileReference section */
 		C011EC710000000000000001 /* Collect.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Collect.wav; sourceTree = "<group>"; };
+		A71100000000000000000002 /* UpdateConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateConfiguration.swift; sourceTree = "<group>"; };
 		CB1C11000000000000000001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		CB0B11000000000000000015 /* OnboardingIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingIllustration.swift; sourceTree = "<group>"; };
 		CB0B11000000000000000013 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -833,6 +835,7 @@
 				CB5AFE000000000000000001 /* RuntimeEnvironment.swift */,
 				2F0EC77C2E773314003E2EA9 /* Selection.swift */,
 				DAA5ACC92C1BEE8A00B58513 /* SoftwareUpdater.swift */,
+				A71100000000000000000002 /* UpdateConfiguration.swift */,
 				DA696BCD240177E800DE80CF /* Sorter.swift */,
 				DA243D132C2F66DD0012A27F /* Storage.swift */,
 				DA81D673252A056B009977BC /* Throttler.swift */,
@@ -1121,6 +1124,7 @@
 				DA9C3C652C211B5F0056795D /* AdvancedSettingsPane.swift in Sources */,
 				2FA81FE02E43D9B700C12F92 /* Dictionary+RemoveItem.swift in Sources */,
 				DAA5ACCA2C1BEE8A00B58513 /* SoftwareUpdater.swift in Sources */,
+				A71100000000000000000001 /* UpdateConfiguration.swift in Sources */,
 				2F9B42F12F1A499D006548E5 /* ToolbarView.swift in Sources */,
 				DAA5ACB22C1B3F8800B58513 /* GeneralSettingsPane.swift in Sources */,
 				DA0EF1881E444B2A00E58577 /* Clipboard.swift in Sources */,
