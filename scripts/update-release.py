@@ -46,6 +46,20 @@ def configure(path):
     print('Clipio updates configured' if feed else 'Clipio updates disabled (no feed/key supplied)')
 
 
+def release_entitlements(app, source, output):
+    info = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
+    bundle_id = info['CFBundleIdentifier']
+    entitlements = plistlib.loads(source.read_bytes())
+    service_key = 'com.apple.security.temporary-exception.mach-lookup.global-name'
+    entitlements[service_key] = [
+        value.replace('$(PRODUCT_BUNDLE_IDENTIFIER)', bundle_id)
+        for value in entitlements.get(service_key, [])
+    ]
+    if any('$(' in value for value in entitlements[service_key]):
+        raise ValueError('Unresolved release entitlement variable')
+    output.write_bytes(plistlib.dumps(entitlements))
+
+
 def run(*arguments):
     subprocess.run([str(arg) for arg in arguments], check=True)
 
@@ -120,6 +134,10 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     config = commands.add_parser('configure', help='Apply environment configuration before signing')
     config.add_argument('--plist', required=True, type=Path)
+    entitlements = commands.add_parser('entitlements', help='Expand Sparkle service names before signing')
+    entitlements.add_argument('--app', required=True, type=Path)
+    entitlements.add_argument('--source', required=True, type=Path)
+    entitlements.add_argument('--output', required=True, type=Path)
     prep = commands.add_parser('prepare', help='Validate notarized app and prepare signed update assets locally')
     prep.add_argument('--app', required=True, type=Path)
     prep.add_argument('--output', required=True, type=Path)
@@ -129,6 +147,8 @@ def main():
     try:
         if args.command == 'configure':
             configure(args.plist)
+        elif args.command == 'entitlements':
+            release_entitlements(args.app, args.source, args.output)
         else:
             prepare(args.app.resolve(), args.output.absolute(), args.sparkle_bin.resolve(), args.notes)
     except (ValueError, OSError, KeyError, subprocess.CalledProcessError, ET.ParseError) as error:

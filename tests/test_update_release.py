@@ -72,6 +72,22 @@ class UpdateReleaseTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     module.validate_appcast(feed, archive, '68', 'https://example.com/')
 
+    def test_release_entitlements_resolve_sparkle_services_for_actual_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = root / 'Clipio.app'
+            (app / 'Contents').mkdir(parents=True)
+            (app / 'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier': 'com.clipio.app'}))
+            source = Path(__file__).resolve().parents[1] / 'Clipio/Clipio.entitlements'
+            output = root / 'release.entitlements'
+            module.release_entitlements(app, source, output)
+            info = plistlib.loads(output.read_bytes())
+            self.assertEqual(info['com.apple.security.temporary-exception.mach-lookup.global-name'],
+                             ['com.clipio.app-spks', 'com.clipio.app-spki'])
+            self.assertTrue(info['com.apple.security.app-sandbox'])
+            self.assertTrue(info['com.apple.security.files.user-selected.read-write'])
+            self.assertNotIn('com.apple.security.get-task-allow', info)
+
     def test_prepare_refuses_existing_output_before_external_commands(self):
         with tempfile.TemporaryDirectory() as tmp, patch.object(module, 'run') as run:
             with self.assertRaises(ValueError):

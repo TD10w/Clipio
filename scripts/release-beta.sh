@@ -211,18 +211,21 @@ app_bundle="$derived_data/Build/Products/Release/Clipio.app"
  # build has completed.
 python3 "$project_dir/scripts/update-release.py" configure --plist "$app_bundle/Contents/Info.plist"
 sign_sparkle_components "$app_bundle"
+notary_dir=$(mktemp -d "${TMPDIR:-/tmp}/clipio-notary.XXXXXX")
+trap 'rm -rf "$notary_dir"' EXIT
+release_entitlements="$notary_dir/release.entitlements"
+python3 "$project_dir/scripts/update-release.py" entitlements \
+  --app "$app_bundle" --source "$project_dir/Clipio/Clipio.entitlements" --output "$release_entitlements"
 codesign \
   --force \
   --sign "$developer_id" \
   --timestamp \
   --options runtime \
-  --entitlements "$project_dir/Clipio/Clipio.entitlements" \
+  --entitlements "$release_entitlements" \
   --generate-entitlement-der \
   "$app_bundle"
 validate_signature "$app_bundle"
 
-notary_dir=$(mktemp -d "${TMPDIR:-/tmp}/clipio-notary.XXXXXX")
-trap 'rm -rf "$notary_dir"' EXIT
 upload_zip="$notary_dir/Clipio-beta-upload.zip"
 ditto -c -k --keepParent "$app_bundle" "$upload_zip"
 
