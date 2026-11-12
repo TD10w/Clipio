@@ -1,6 +1,6 @@
-# Clipio 2.8.3-beta.1 candidate
+# Clipio 2.8.3-beta.1
 
-This candidate hardens collection imports before broader beta testing:
+Collection import fixes for this beta:
 
 - App-private files such as chat videos, PDFs, audio and archives are kept as bounded owned copies, preserving their content and originals.
 - File URL representations share the same source-protection rules; unavailable videos are not silently replaced by thumbnails, and empty videos are rejected.
@@ -20,4 +20,4 @@ This candidate hardens collection imports before broader beta testing:
 
 App-private saved copies have a 64 MiB per-item limit and 128 MiB default total budget. Save larger or generated-only files to a Finder folder first, then collect their location. Accepted drops consume unpinned entries; chat send/upload completion is not observed.
 
-Prepared for macOS 14 and later, Apple silicon and Intel. This is an unpublished candidate pending real-source, keyboard and another-Mac acceptance. See [the readiness review](beta-readiness-review-2026-11-12.md).
+Prepared for macOS 14 and later, Apple silicon and Intel. Real WeChat-source, shortcut-recording and another-Mac acceptance remain open for this beta. See [the readiness review](beta-readiness-review-2026-11-12.md).
