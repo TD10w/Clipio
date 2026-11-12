@@ -4,7 +4,7 @@
 
 A native macOS app for clipboard history and file collection. Find what you copied, keep useful items nearby, and gather files before moving them elsewhere.
 
-**[Download for macOS — 2.7.5-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.7.5-beta.1/Clipio-2.7.5-beta.1.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.7.5-beta.1)
+**[Download for macOS — 2.8.1-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.8.1-beta.1/Clipio-2.8.1-beta.1.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.8.1-beta.1)
 
 macOS 14+ · Apple Silicon & Intel · Signed and notarized · Early public beta
 
