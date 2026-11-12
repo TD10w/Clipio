@@ -162,11 +162,11 @@ final class CollectionTests: XCTestCase {
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
   }
 
-  func testCopyAndLinkCallbacksCannotConsumeOrdinaryReferences() throws {
+  func testUnsupportedAndCancelledCallbacksCannotConsumeOrdinaryReferences() throws {
     let collection = store()
     let original = try source()
     let id = try collection.addFile(original)
-    for operation: NSDragOperation in [.copy, .link, .delete, []] {
+    for operation: NSDragOperation in [.link, .delete, []] {
       let export = try collection.prepareExport(ids: [id])
       XCTAssertTrue(export.operation.contains(.move))
       XCTAssertTrue(export.operation.contains(.copy))
@@ -207,7 +207,8 @@ final class CollectionTests: XCTestCase {
 
       XCTAssertEqual(try Data(contentsOf: attachment), Data("original".utf8))
       XCTAssertEqual(try Data(contentsOf: original), Data("original".utf8))
-      XCTAssertTrue(collection.items.contains { $0.id == id })
+      XCTAssertFalse(collection.items.contains { $0.id == id })
+      XCTAssertFalse(store().items.contains { $0.id == id }, "Consumed attachments must stay removed after reopening")
     }
   }
 
@@ -217,6 +218,7 @@ final class CollectionTests: XCTestCase {
     let pinnedOriginal = try source("pinned.txt")
     let ordinary = try collection.addFile(original)
     let pinned = try collection.addFile(pinnedOriginal)
+    let untouched = try collection.addFile(source("untouched.txt"))
     try collection.togglePin(pinned)
     let export = try collection.prepareExport(ids: [ordinary, pinned])
     defer { export.endAccess() }
@@ -230,11 +232,26 @@ final class CollectionTests: XCTestCase {
       try FileManager.default.copyItem(at: url, to: attachments.appendingPathComponent(url.lastPathComponent))
     }
     try collection.finishExport(export, operation: acceptedOperation)
-    XCTAssertEqual(Set(collection.items.map(\.id)), [ordinary, pinned])
+    XCTAssertEqual(Set(collection.items.map(\.id)), [pinned, untouched])
+    XCTAssertEqual(Set(store().items.map(\.id)), [pinned, untouched])
     for url in [original, pinnedOriginal] {
       XCTAssertEqual(try Data(contentsOf: url), Data("original".utf8))
       XCTAssertEqual(try Data(contentsOf: attachments.appendingPathComponent(url.lastPathComponent)), Data("original".utf8))
     }
+  }
+
+  func testPinAddedAfterDragStartedKeepsCopiedCardAndOriginal() throws {
+    let collection = store()
+    let original = try source()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    try collection.togglePin(id)
+    let attachment = root.appendingPathComponent("attachment.txt")
+    try FileManager.default.copyItem(at: XCTUnwrap(export.urls.first), to: attachment)
+    try collection.finishExport(export, operation: .copy)
+    XCTAssertEqual(store().items.map(\.id), [id])
+    XCTAssertEqual(try Data(contentsOf: original), Data("original".utf8))
+    XCTAssertEqual(try Data(contentsOf: attachment), Data("original".utf8))
   }
 
   func testUnpinnedFileOffersTrashMoveAndAttachmentCopy() throws {

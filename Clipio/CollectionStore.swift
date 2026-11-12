@@ -561,10 +561,12 @@ final class CollectionStore {
           // Close the race between the existence check and installing the watch.
           if !fileManager.fileExists(atPath: source.path) { consumed.insert(item.id) }
         }
-      } else if operation == .copy && item.ownedFileName != nil {
+      } else if operation == .copy {
+        // A destination accepted the drop. Consume the unpinned shelf entry;
+        // remove(ids:) never deletes a referenced original. Owned payloads were
+        // staged separately so receivers can finish reading after this callback.
         consumed.insert(item.id)
       }
-      // A copy callback must never consume an ordinary local reference.
     }
     if !consumed.isEmpty { try remove(ids: consumed) }
     refreshAvailability()
