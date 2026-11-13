@@ -1,5 +1,12 @@
 # Screenshot provenance
 
+## README demo (2026-11-13)
+
+The owner supplied `clipio-A-liquid-glass-30s.mp4` for the README. The supplied product demo shows clipboard cards, file collection, Stack expansion, shelf switching, Favorites and pasting, with explanatory overlays. It is a supplied presentation video, not a new independent acceptance recording.
+
+`clipio-demo.gif` is a looping, silent derivative of the complete 30-second video, converted locally with FFmpeg to 640 × 360 at 5 fps and a 256-color palette. No scenes, captions or app content were added or removed. Audio is omitted by the GIF format. The supplied 1920 × 1080, 30 fps MP4 is preserved outside the repository; only the README derivative is committed. Sampled source frames were reviewed before conversion.
+
+
 ## Current README images (2026-11-11)
 
 The owner supplied two real Mac desktop screenshots and explicitly authorized cleaning up the desktop/menu bar and publishing the finished images to GitHub.
