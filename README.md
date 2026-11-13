@@ -10,13 +10,17 @@ Clipio is a native macOS clipboard manager with a horizontal card shelf and a fi
 
 macOS 14+ · Apple Silicon & Intel · Signed and notarized · Early public beta
 
-![Clipio clipboard history in a horizontal card shelf](docs/screenshots/clipio-shelf.png)
+![Clipio demo: clipboard history, file collection, Stacks and Favorites](docs/screenshots/clipio-demo.gif)
+
+*30-second demo · silent preview*
 
 ## Clipboard
 
 Find a link you copied earlier, preview an image, or reuse a text snippet without going back to the source app. Type to search the shelf, hover over a card to preview it, and star items you use often to find them in Favorites.
 
 Press **Shift + Command + V** to open the shelf. Select a card with **Return**, then paste with **Command + V**.
+
+![Clipio clipboard history in a horizontal card shelf](docs/screenshots/clipio-shelf.png)
 
 ## File collection
 

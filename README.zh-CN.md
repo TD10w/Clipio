@@ -10,13 +10,17 @@ Clipio 是一款原生 macOS 剪贴板管理工具，提供横向卡片栏和文
 
 macOS 14+ · Apple Silicon 和 Intel · 已签名并通过 Apple 公证 · 早期公开测试版
 
-![Clipio 横向卡片栏中的剪贴板历史](docs/screenshots/clipio-shelf.png)
+![Clipio 演示：剪贴板历史、文件收集、Stack 展开与收藏](docs/screenshots/clipio-demo.gif)
+
+*30 秒演示 · 无声预览*
 
 ## 剪贴板
 
 找回刚才复制的链接、预览图片、重复使用一段文字，不必再回原来的应用翻找。直接输入文字搜索，鼠标悬停查看预览，常用内容可以加星，之后在“收藏”里取用。
 
 按 **Shift + Command + V** 打开卡片栏，选中卡片按 **Return**，再用 **Command + V** 粘贴。
+
+![Clipio 横向卡片栏中的剪贴板历史](docs/screenshots/clipio-shelf.png)
 
 ## 文件收集区
 
