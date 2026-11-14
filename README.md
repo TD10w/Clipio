@@ -6,7 +6,11 @@
 
 Clipio is a native macOS clipboard manager with a horizontal card shelf and a file collection area. Search copied text, images, links and colors, then collect files from different places before dragging them to their destination.
 
-**[Download for macOS — 2.9.1](https://github.com/TD10w/Clipio/releases/download/v2.9.1/Clipio-2.9.1.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.9.1)
+[![Download Clipio for macOS](docs/screenshots/download-macos.svg)](https://github.com/TD10w/Clipio/releases/download/v2.9.1/Clipio-2.9.1.dmg)
+
+**[Download version 2.9.1 (.dmg)](https://github.com/TD10w/Clipio/releases/download/v2.9.1/Clipio-2.9.1.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/latest)
+
+Open the downloaded DMG, then drag **Clipio.app** into **Applications**.
 
 macOS 14+ · Apple Silicon & Intel · Signed and notarized · Free and open source
 
