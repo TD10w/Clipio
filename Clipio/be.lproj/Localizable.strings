@@ -90,7 +90,7 @@
 "onboarding_autopaste_allow" = "Allow in System Settings…";
 "onboarding_autopaste_turn_on" = "Turn On";
 "onboarding_not_now" = "Not now";
-"onboarding_autopaste_waiting" = "Turn on Clipio in the list. This page updates by itself.";
+"onboarding_autopaste_waiting" = "Turn on Clipio in the list. Not there? Click + under the list and choose Clipio. This page updates by itself.";
 "onboarding_open_settings" = "Open Settings";
 "onboarding_autopaste_later" = "Prefer pressing ⌘V yourself? That works too. You can turn this on later in Settings.";
 "onboarding_autopaste_on" = "Clipio can paste for you";

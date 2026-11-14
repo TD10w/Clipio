@@ -1,4 +1,3 @@
-import ApplicationServices
 import Defaults
 import KeyboardShortcuts
 import LaunchAtLogin
@@ -29,7 +28,7 @@ struct OnboardingView: View {
   @State private var openedShelf = false
   @State private var practiceText = ""
 
-  @State private var accessibilityTrusted = AXIsProcessTrusted()
+  @State private var accessibilityTrusted = Accessibility.isTrusted
   @State private var requestedPermission = false
   @State private var autoPasteText = ""
 
@@ -118,7 +117,7 @@ struct OnboardingView: View {
       }
     }
     .onReceive(permissionPoll) { _ in
-      guard step == .autoPaste, requestedPermission, !accessibilityTrusted, AXIsProcessTrusted() else { return }
+      guard step == .autoPaste, requestedPermission, !accessibilityTrusted, Accessibility.isTrusted else { return }
       accessibilityTrusted = true
       pasteByDefault = true
       OnboardingController.bringGuideToFront()
@@ -470,13 +469,15 @@ struct OnboardingView: View {
   }
 
   private func requestAutoPaste() {
-    if AXIsProcessTrusted() {
+    if Accessibility.isTrusted {
       accessibilityTrusted = true
       pasteByDefault = true
     } else {
-      // Shows macOS's own prompt, which adds Clipio to the Accessibility list.
+      // Adds Clipio (switched off) to the Accessibility list; macOS shows no dialog,
+      // so take the user straight to the list.
       _ = Accessibility.requestTrust()
       requestedPermission = true
+      Self.openAccessibilitySettings()
     }
   }
 
