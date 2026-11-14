@@ -105,16 +105,16 @@ struct OnboardingView: View {
       switch step {
       case .practice: openedShelf = true
       case .collection:
-        openedForCollection = true
-        if appState.shelfMode == .collection { switchedToCollection = true }
+        if appState.shelfMode == .collection { openedForCollection = true }
       default: break
       }
     }
     .onChange(of: appState.shelfMode) { _, mode in
-      if step == .collection, mode == .collection, !appState.popup.isClosed() {
-        openedForCollection = true
-        switchedToCollection = true
-      }
+      guard step == .collection, !appState.popup.isClosed() else { return }
+      // Tab from Clipboard into Collection also counts as finding Collection;
+      // any switch after that completes the Tab task.
+      if openedForCollection { switchedToCollection = true }
+      if mode == .collection { openedForCollection = true }
     }
     .onReceive(permissionPoll) { _ in
       guard step == .autoPaste, requestedPermission, !accessibilityTrusted, Accessibility.isTrusted else { return }
@@ -321,16 +321,19 @@ struct OnboardingView: View {
   }
 
   private var collectionStep: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    let collectionShortcut = KeyboardShortcuts.Name.collectionPopup.shortcut?.description
+    return VStack(alignment: .leading, spacing: 12) {
       VStack(alignment: .leading, spacing: 0) {
         OnboardingTaskRow(
           done: openedForCollection, current: !openedForCollection,
-          title: shortcutText.map { L("onboarding_task_open_short", $0) } ?? L("onboarding_task_open_unset")
+          title: collectionShortcut.map { L("onboarding_task_open_collection", $0) }
+            ?? L("onboarding_task_open_collection_unset"),
+          detail: L("onboarding_task_open_collection_detail")
         )
         Divider().opacity(0.5)
         OnboardingTaskRow(
           done: switchedToCollection, current: openedForCollection && !switchedToCollection,
-          title: L("onboarding_task_tab"), detail: L("onboarding_task_tab_detail")
+          title: L("onboarding_task_tab")
         )
       }
       .onboardingCard()

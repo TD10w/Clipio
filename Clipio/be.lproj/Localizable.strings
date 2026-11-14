@@ -75,7 +75,6 @@
 "onboarding_copy_sample" = "Copy Sample Text";
 "onboarding_sample_text" = "Hello from Clipio 👋";
 "onboarding_task_open" = "Press %@ to open your clipboard";
-"onboarding_task_open_short" = "Press %@";
 "onboarding_task_open_unset" = "Click the Clipio icon in the menu bar";
 "onboarding_task_open_detail" = "Your clips drop down from the top of the screen.";
 "onboarding_task_paste" = "Press Return on the card, then ⌘V below";
@@ -99,8 +98,10 @@
 "onboarding_autopaste_try_detail" = "No ⌘V this time.";
 "onboarding_collection_title" = "Collection, for files";
 "onboarding_collection_body" = "Gather files from different folders, then drag them all where they need to go.";
-"onboarding_task_tab" = "Press Tab to switch to Collection";
-"onboarding_task_tab_detail" = "To add files, drop them on the Drop Zone at the top of the screen.";
+"onboarding_task_open_collection" = "Press %@ to open Collection";
+"onboarding_task_open_collection_unset" = "Open Clipio, then press Tab";
+"onboarding_task_open_collection_detail" = "To add files, drop them on the Drop Zone at the top of the screen.";
+"onboarding_task_tab" = "Press Tab to switch between Clipboard and Collection";
 "onboarding_optional" = "Optional. Press Next to skip.";
 "onboarding_finish_title" = "You're all set";
 "onboarding_finish_body" = "Copy as usual. Whenever you need something back, open Clipio.";
