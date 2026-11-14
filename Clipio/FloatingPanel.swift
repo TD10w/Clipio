@@ -73,6 +73,40 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     super.close()
   }
 
+  /// The app the user was in when the shelf opened. The shelf is a non-activating panel
+  /// that takes keyboard focus; Cocoa apps such as TextEdit take it back when the panel
+  /// goes away, but Chromium/Electron apps (Chrome, WeChat, T3 Code) do not, so typing —
+  /// and automatic ⌘V — went nowhere after the shelf closed.
+  private var previousApp: NSRunningApplication?
+
+  /// Work that must wait until the shelf is gone and focus is back, such as automatic paste.
+  private var afterCloseWork: [() -> Void] = []
+
+  func performAfterClose(_ work: @escaping () -> Void) {
+    if isPresented || isAnimatingClose {
+      afterCloseWork.append(work)
+    } else {
+      work()
+    }
+  }
+
+  private func returnFocusToPreviousApp() {
+    defer { previousApp = nil }
+    guard let app = previousApp, !app.isTerminated,
+          app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
+    app.activate()
+  }
+
+  private func runAfterCloseWork() {
+    let work = afterCloseWork
+    afterCloseWork.removeAll()
+    guard !work.isEmpty else { return }
+    // Give the re-activation a moment to land before posting ⌘V.
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+      work.forEach { $0() }
+    }
+  }
+
   // Card order changes (new clipboard item inserted, pin toggled, item deleted) shift
   // every card's frame, but AppKit only redelivers onHover to a NSTrackingArea on an
   // actual mouse move. With a stationary cursor, the previously-hovered card's stale
@@ -184,6 +218,9 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     if AppState.shared.shelfMode == .clipboard { AppState.shared.history.prepareForOpening() }
     AppState.shared.popup.prepareToOpen()
     animationState.didOpen()
+    // Reopened before the last close finished: that paste target is no longer valid.
+    afterCloseWork.removeAll()
+    if !isPresented { previousApp = NSWorkspace.shared.frontmostApplication }
     // Cancel any in-progress close animation so we start clean.
     isAnimatingClose = false
     // Snap window alpha to cancel any in-flight close animator.
@@ -269,8 +306,8 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     AppState.shared.appDelegate?.hidePreviewNow()
     isPresented = false
     statusBarButton?.isHighlighted = false
-    // While the Getting Started guide is practising, return focus to it before any
-    // automatic ⌘V is posted (select() closes the shelf first, then pastes).
+    // While the Getting Started guide is practising, return focus to it so the
+    // automatic ⌘V (posted after the close, see performAfterClose) lands in its box.
     OnboardingController.reclaimFocusAfterShelf()
     // Collapse the shelf back toward the chip while the window fades out.
     AppState.shared.shelfExpanded = false
@@ -287,6 +324,8 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
         self.alphaValue = 1
         self.commitClose()   // calls super.close() — orders out the window
         self.onClose()
+        self.returnFocusToPreviousApp()
+        self.runAfterCloseWork()
       }
     })
   }

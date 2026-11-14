@@ -377,6 +377,16 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       .subtracting([.capsLock, .numericPad, .function]) ?? []
   }
 
+  /// Post ⌘V only once the shelf is gone and focus is back in the app the user was in.
+  @MainActor
+  private static func pasteAfterShelfCloses() {
+    if let panel = AppState.shared.appDelegate?.panel {
+      panel.performAfterClose { Clipboard.shared.paste() }
+    } else {
+      Clipboard.shared.paste()
+    }
+  }
+
   @MainActor
   func select(_ item: HistoryItemDecorator?) {
     guard let item else {
@@ -389,7 +399,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       AppState.shared.popup.close()
       Clipboard.shared.copy(item.item, removeFormatting: Defaults[.removeFormattingByDefault])
       if Defaults[.pasteByDefault] {
-        Clipboard.shared.paste()
+        Self.pasteAfterShelfCloses()
       }
     } else {
       switch HistoryItemAction(modifierFlags) {
@@ -399,11 +409,11 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       case .paste:
         AppState.shared.popup.close()
         Clipboard.shared.copy(item.item)
-        Clipboard.shared.paste()
+        Self.pasteAfterShelfCloses()
       case .pasteWithoutFormatting:
         AppState.shared.popup.close()
         Clipboard.shared.copy(item.item, removeFormatting: true)
-        Clipboard.shared.paste()
+        Self.pasteAfterShelfCloses()
       case .unknown:
         return
       }
