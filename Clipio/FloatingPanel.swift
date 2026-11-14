@@ -269,6 +269,9 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     AppState.shared.appDelegate?.hidePreviewNow()
     isPresented = false
     statusBarButton?.isHighlighted = false
+    // While the Getting Started guide is practising, return focus to it before any
+    // automatic ⌘V is posted (select() closes the shelf first, then pastes).
+    OnboardingController.reclaimFocusAfterShelf()
     // Collapse the shelf back toward the chip while the window fades out.
     AppState.shared.shelfExpanded = false
 
