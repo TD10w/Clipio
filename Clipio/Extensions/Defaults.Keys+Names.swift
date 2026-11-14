@@ -66,6 +66,8 @@ extension Defaults.Keys {
   static let lastReviewRequestedAt = Key<Date>("lastReviewRequestedAt", default: Date.now)
   static let menuIcon = Key<MenuIcon>("menuIcon", default: .clipboard)
   static let hasSeenOnboarding = Key<Bool>("hasSeenOnboarding", default: false)
+  /// Times the first-run guide was closed before it was finished or skipped.
+  static let onboardingCloseCount = Key<Int>("onboardingCloseCount", default: 0)
   static let migrations = Key<[String: Bool]>("migrations", default: [:])
   static let numberOfUsages = Key<Int>("numberOfUsages", default: 0)
   static let pasteByDefault = Key<Bool>("pasteByDefault", default: false)

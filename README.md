@@ -6,9 +6,9 @@
 
 Clipio is a native macOS clipboard manager with a horizontal card shelf and a file collection area. Search copied text, images, links and colors, then collect files from different places before dragging them to their destination.
 
-**[Download for macOS — 2.8.3-beta.1](https://github.com/TD10w/Clipio/releases/download/v2.8.3-beta.1/Clipio-2.8.3-beta.1.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.8.3-beta.1)
+**[Download for macOS — 2.9.0](https://github.com/TD10w/Clipio/releases/download/v2.9.0/Clipio-2.9.0.dmg)** · [Release notes](https://github.com/TD10w/Clipio/releases/tag/v2.9.0)
 
-macOS 14+ · Apple Silicon & Intel · Signed and notarized · Early public beta
+macOS 14+ · Apple Silicon & Intel · Signed and notarized · Free and open source
 
 ![Clipio demo: clipboard history, file collection, Stacks and Favorites](docs/screenshots/clipio-demo.gif)
 
@@ -33,14 +33,14 @@ Dragging an ordinary collection item into Finder moves the original. **Pin** it 
 ## Get started
 
 1. Download and open the DMG, then drag **Clipio.app** into **Applications**.
-2. Open Clipio. It runs in the **menu bar**.
+2. Open Clipio. It runs in the **menu bar**, and a short guide walks you through choosing a shortcut and trying it once.
 3. Copy something, then press **Shift + Command + V** to open your clipboard history.
-4. Select a card with **Return**, then paste into your destination app with **Command + V**.
+4. Select a card with **Return**. Clipio pastes it where you were typing if you allowed automatic paste in the guide; otherwise press **Command + V**.
 5. Try file collection: drag a few sample files together onto the Drop Zone, click the Stack to expand it, then drag a file into a Finder folder. Ordinary files move; pin them first if you want copies.
 
 No Xcode or terminal commands are needed to use the download.
 
-For automatic paste with **Option + Return**, allow Clipio in **System Settings → Privacy & Security → Accessibility**. The first-launch guide is also available from the gear menu → **Getting Started**.
+Automatic paste needs Clipio switched on in **System Settings → Privacy & Security → Accessibility**. The guide takes you there; if Clipio is not in the list, click **+** and choose it. Reopen the guide any time from the gear menu → **Getting Started**.
 
 ## Shortcuts
 
@@ -66,7 +66,7 @@ The collection references ordinary local files. Browser images and supported fil
 
 The official download supports in-app updates from **Settings → General → Check now**. You can also quit Clipio, download the new version, and replace the app in Applications.
 
-This is an early beta. File dragging can vary by destination app; cross-disk moves and multi-display dragging have not yet been verified. Some interface text is English only.
+Known limits: file dragging can vary by destination app; cross-disk moves and multi-display dragging have not yet been verified. Some interface text is English only.
 
 Trying Clipio for the first time? Tell us what you used it for, what worked, and where you got stuck. [Share feedback or report an issue](https://github.com/TD10w/Clipio/issues/new/choose) with your Clipio version, macOS version and steps to reproduce a problem. Use sample content in screenshots.
 

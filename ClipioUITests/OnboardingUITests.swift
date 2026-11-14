@@ -12,7 +12,7 @@ final class OnboardingUITests: XCTestCase {
     continueAfterFailure = false
     app.launchArguments = [
       "enable-testing", "enable-ui-testing", "show-ui-testing-onboarding",
-      "-hasSeenOnboarding", "false", "-pasteByDefault", "false",
+      "-hasSeenOnboarding", "false", "-onboardingCloseCount", "0", "-pasteByDefault", "false",
       "-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-appearanceMode", "light",
       "-KeyboardShortcuts_popup",
       #""{\"carbonKeyCode\":\#(kVK_ANSI_J),\"carbonModifiers\":\#(cmdKey | shiftKey | controlKey | optionKey)}""#,
@@ -28,53 +28,84 @@ final class OnboardingUITests: XCTestCase {
     super.tearDown()
   }
 
-  func testFirstLaunchNavigationAndCompletionOpensClipboard() {
+  func testFirstLaunchShowsShortcutStepAndGatesPractice() {
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
-    XCTAssertTrue(guide.staticTexts["Find Clipio here"].exists)
-    XCTAssertFalse(guide.buttons["onboarding-back"].isEnabled)
-    capture("01-entry")
-
-    guide.buttons["onboarding-next"].click()
-    XCTAssertTrue(guide.staticTexts["Clipboard"].exists)
+    XCTAssertTrue(guide.staticTexts["Open Clipio with one shortcut"].exists)
     XCTAssertEqual(shortcutText, "⌃⌥⇧⌘J")
-    capture("02-clipboard")
-    guide.buttons["onboarding-back"].click()
-    XCTAssertTrue(guide.staticTexts["Find Clipio here"].exists)
-    guide.buttons["onboarding-next"].click()
-    guide.buttons["onboarding-next"].click()
-    XCTAssertTrue(guide.staticTexts["Collection"].exists)
-    XCTAssertEqual(shortcutText, "⌃⌥⇧⌘K")
-    capture("03-collection")
-    guide.buttons["onboarding-next"].click()
-    XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
-    XCTAssertTrue(app.descendants(matching: .any)["copy-history-item"].firstMatch.waitForExistence(timeout: 5))
+    XCTAssertFalse(guide.buttons["onboarding-back"].isEnabled)
+    capture("01-shortcut")
 
-    relaunchWithoutSeenOverride()
-    XCTAssertFalse(guide.exists)
-    openShelf()
-    settingsMenu.click()
-    app.menuItems["Getting Started"].click()
-    XCTAssertTrue(guide.waitForExistence(timeout: 3))
-    XCTAssertTrue(guide.staticTexts["Find Clipio here"].exists)
+    guide.buttons["onboarding-next"].click()
+    XCTAssertTrue(guide.staticTexts["Try it once"].exists)
+    XCTAssertTrue(guide.staticTexts["Press ⌃⌥⇧⌘J to open your clipboard"].exists)
+    XCTAssertFalse(guide.buttons["onboarding-next"].isEnabled, "Practice must be done (or skipped) before Next")
+    guide.buttons["onboarding-back"].click()
+    XCTAssertTrue(guide.staticTexts["Open Clipio with one shortcut"].exists)
   }
 
-  func testSkipDoesNotAutomaticallyReappear() {
+  func testPracticeOpensShelfAndPastesIntoGuide() {
+    launch()
+    XCTAssertTrue(guide.waitForExistence(timeout: 5))
+    guide.buttons["onboarding-next"].click()
+    guide.buttons["onboarding-copy-sample"].click()
+    app.typeKey("j", modifierFlags: [.command, .shift, .option, .control])
+    XCTAssertTrue(app.descendants(matching: .any)["copy-history-item"].firstMatch.waitForExistence(timeout: 5))
+    app.typeKey(.return, modifierFlags: [])
+    XCTAssertTrue(guide.waitForExistence(timeout: 3))
+    app.typeKey("v", modifierFlags: .command)
+    let field = guide.textFields["onboarding-paste-field"]
+    XCTAssertTrue(field.waitForExistence(timeout: 3))
+    let pasted = NSPredicate(format: "value == %@", "Hello from Clipio 👋")
+    wait(for: [XCTNSPredicateExpectation(predicate: pasted, object: field)], timeout: 5)
+    XCTAssertTrue(guide.buttons["onboarding-next"].isEnabled)
+    capture("02-practice-done")
+  }
+
+  func testSkipGoesToFinishAndFinishDoesNotReappear() {
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
     guide.buttons["onboarding-skip"].click()
+    XCTAssertTrue(guide.staticTexts["You're all set"].exists)
+    XCTAssertTrue(guide.checkBoxes["onboarding-launch-at-login"].exists)
+    capture("05-finish")
+
+    guide.buttons["onboarding-back"].click()
+    XCTAssertTrue(guide.staticTexts["Collection, for files"].exists)
+    guide.buttons["onboarding-back"].click()
+    XCTAssertTrue(guide.staticTexts["Skip the ⌘V"].exists)
+    capture("03-autopaste")
+    guide.buttons["onboarding-not-now"].click()
+    XCTAssertTrue(guide.staticTexts["Collection, for files"].exists)
+    guide.buttons["onboarding-next"].click()
+    guide.buttons["onboarding-next"].click()
     XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
+
     relaunchWithoutSeenOverride()
     XCTAssertFalse(guide.exists)
+    settingsMenu.click()
+    app.menuItems["Getting Started"].click()
+    XCTAssertTrue(guide.waitForExistence(timeout: 3))
+    XCTAssertTrue(guide.staticTexts["Open Clipio with one shortcut"].exists)
   }
 
-  func testWindowCloseDoesNotAutomaticallyReappear() {
+  func testClosingMidwayShowsGuideOnceMore() {
+    resetPersistedOnboardingState()
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
     guide.buttons[XCUIIdentifierCloseWindow].click()
     XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
-    relaunchWithoutSeenOverride()
-    XCTAssertFalse(guide.exists)
+
+    removeOnboardingOverrides()
+    launch()
+    XCTAssertTrue(guide.waitForExistence(timeout: 5), "A mid-way close offers the guide again")
+    guide.buttons[XCUIIdentifierCloseWindow].click()
+    XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
+
+    app.terminate()
+    launch()
+    openShelf()
+    XCTAssertFalse(guide.exists, "Closed twice: stop showing it automatically")
   }
 
   func testUnsetShortcutAndDarkAppearance() {
@@ -84,44 +115,40 @@ final class OnboardingUITests: XCTestCase {
     app.launchArguments[appearanceIndex + 1] = "dark"
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
-    capture("04-entry-dark")
+    XCTAssertEqual(shortcutText, "Not set")
+    capture("06-unset-dark")
     guide.buttons["onboarding-next"].click()
-    XCTAssertTrue(guide.staticTexts["Not set. You can change shortcuts in Settings."].exists)
-    capture("05-unset-dark")
-    guide.buttons["onboarding-next"].click()
-    capture("06-collection-dark")
+    XCTAssertTrue(guide.staticTexts["Click the Clipio icon in the menu bar"].exists)
+    capture("07-practice-dark")
   }
 
   func testKeyboardNavigationStaysInGuide() {
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
-    app.typeKey(.tab, modifierFlags: [])
-    XCTAssertTrue(guide.staticTexts["Find Clipio here"].exists)
     app.typeKey(.return, modifierFlags: [])
-    XCTAssertTrue(guide.staticTexts["Clipboard"].exists)
+    XCTAssertTrue(guide.staticTexts["Try it once"].waitForExistence(timeout: 2))
     app.typeKey(.escape, modifierFlags: [])
-    XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
+    XCTAssertTrue(guide.staticTexts["You're all set"].waitForExistence(timeout: 2))
+    XCTAssertTrue(guide.exists)
   }
 
   func testGettingStartedFromSettings() {
     app.launchArguments += ["-menuIcon", "scissors"]
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
-    capture("07-scissors-icon")
-    guide.buttons["onboarding-skip"].click()
+    guide.buttons[XCUIIdentifierCloseWindow].click()
     openShelf()
     settingsMenu.click()
     app.menuItems["Preferences…"].click()
     activateBuiltApp()
     let button = app.buttons["settings-onboarding"]
     XCTAssertTrue(button.waitForExistence(timeout: 5))
-    let attachment = XCTAttachment(screenshot: app.windows["General"].screenshot())
-    attachment.name = "08-general-settings"
-    attachment.lifetime = .keepAlways
-    add(attachment)
     button.click()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
-    XCTAssertTrue(guide.staticTexts["Find Clipio here"].exists)
+    XCTAssertTrue(guide.staticTexts["Open Clipio with one shortcut"].exists)
+
+    guide.buttons["onboarding-skip"].click()
+    capture("08-finish-scissors")
   }
 
   private func launch() {
@@ -129,10 +156,30 @@ final class OnboardingUITests: XCTestCase {
     activateBuiltApp()
   }
 
-  private func relaunchWithoutSeenOverride() {
+  /// Earlier tests may have finished the guide in the test app's own defaults domain.
+  private func resetPersistedOnboardingState() {
+    let url = Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("Clipio.app")
+    guard let identifier = Bundle(url: url)?.bundleIdentifier else { return }
+    for key in ["hasSeenOnboarding", "onboardingCloseCount"] {
+      let process = Process()
+      process.executableURL = URL(fileURLWithPath: "/usr/bin/defaults")
+      process.arguments = ["delete", identifier, key]
+      try? process.run()
+      process.waitUntilExit()
+    }
+  }
+
+  private func removeOnboardingOverrides() {
     app.terminate()
-    let index = app.launchArguments.firstIndex(of: "-hasSeenOnboarding")!
-    app.launchArguments.removeSubrange(index...(index + 1))
+    for key in ["-hasSeenOnboarding", "-onboardingCloseCount"] {
+      if let index = app.launchArguments.firstIndex(of: key) {
+        app.launchArguments.removeSubrange(index...(index + 1))
+      }
+    }
+  }
+
+  private func relaunchWithoutSeenOverride() {
+    removeOnboardingOverrides()
     launch()
     // Wait for startup/prewarming before asserting absence of an automatic window.
     openShelf()

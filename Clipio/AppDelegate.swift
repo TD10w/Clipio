@@ -7,11 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   lazy var previewPopup = PreviewPopupPanel()
   private var previewShowWork: DispatchWorkItem?
   private var collectionAccess: CollectionAccessController?
-  @MainActor private lazy var onboarding = OnboardingController {
-    let state = AppState.shared
-    state.switchShelf(to: .clipboard)
-    state.popup.open(height: state.popup.height)
-  }
+  @MainActor private lazy var onboarding = OnboardingController()
 
   @MainActor func showOnboarding() {
     hidePreviewNow()

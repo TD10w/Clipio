@@ -1,11 +1,19 @@
 import AppKit
 
 struct Accessibility {
+  /// Clipio only needs to post ⌘V. That is the "post event" permission, which macOS lists
+  /// under Accessibility. The sandbox blocks the AX prompt
+  /// (`AXIsProcessTrustedWithOptions`): tccd answers "does not allow prompting", so the
+  /// app was never added to the list. `CGRequestPostEventAccess` is the sandbox-safe request.
+  static var isTrusted: Bool {
+    CGPreflightPostEventAccess() || AXIsProcessTrusted()
+  }
+
+  /// Returns whether paste is allowed. If not, macOS shows its own prompt and adds Clipio
+  /// to the list in System Settings.
   static func requestTrust() -> Bool {
-    let options = [
-      kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
-    ] as CFDictionary
-    return AXIsProcessTrustedWithOptions(options)
+    if isTrusted { return true }
+    return CGRequestPostEventAccess()
   }
 
   static func explainMissingPermission() {
