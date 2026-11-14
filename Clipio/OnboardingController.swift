@@ -88,7 +88,9 @@ final class OnboardingController: NSObject, NSWindowDelegate {
     window.isOpaque = false
     window.backgroundColor = .clear
     window.hasShadow = true
-    window.isMovableByWindowBackground = true
+    // Moved by its top strip like any window; a background drag would swallow the
+    // Collection step's drag-to-collect sample.
+    window.isMovableByWindowBackground = false
     window.standardWindowButton(.miniaturizeButton)?.isHidden = true
     window.standardWindowButton(.zoomButton)?.isHidden = true
     // A titled window adds the title bar on top of contentRect; the glass is drawn edge

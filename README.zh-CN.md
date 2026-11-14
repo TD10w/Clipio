@@ -6,7 +6,7 @@
 
 Clipio 是一款原生 macOS 剪贴板管理工具，提供横向卡片栏和文件收集区。复制过的文字、图片、链接和颜色可以搜索、预览；散落在不同位置的文件可以先收在一起，再拖到目标位置。
 
-**[下载 macOS 版 — 2.9.0](https://github.com/TD10w/Clipio/releases/download/v2.9.0/Clipio-2.9.0.dmg)** · [版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.9.0)
+**[下载 macOS 版 — 2.9.1](https://github.com/TD10w/Clipio/releases/download/v2.9.1/Clipio-2.9.1.dmg)** · [版本说明](https://github.com/TD10w/Clipio/releases/tag/v2.9.1)
 
 macOS 14+ · Apple Silicon 和 Intel · 已签名并通过 Apple 公证 · 免费开源
 

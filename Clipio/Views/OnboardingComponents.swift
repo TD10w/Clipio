@@ -229,3 +229,78 @@ struct OnboardingShortcutRecorder: NSViewRepresentable {
 
   func updateNSView(_ recorder: KeyboardShortcuts.RecorderCocoa, context: Context) {}
 }
+
+/// A sample picture the user drags to the Drop Zone at the top of the screen. It
+/// offers a copy of a PNG made from Clipio's own icon, so the practice never touches
+/// the user's files.
+struct OnboardingDragSample: NSViewRepresentable {
+  let onDragStart: () -> Void
+
+  func makeNSView(context: Context) -> DragSampleView {
+    let view = DragSampleView()
+    view.onDragStart = onDragStart
+    view.setAccessibilityIdentifier("onboarding-drag-sample")
+    view.setAccessibilityRole(.image)
+    view.setAccessibilityLabel(NSLocalizedString("onboarding_drag_sample", comment: ""))
+    return view
+  }
+
+  func updateNSView(_ view: DragSampleView, context: Context) {
+    view.onDragStart = onDragStart
+  }
+}
+
+final class DragSampleView: NSView, NSDraggingSource {
+  var onDragStart: (() -> Void)?
+  private var dragging = false
+  private static let side: CGFloat = 52
+
+  override var intrinsicContentSize: NSSize { NSSize(width: Self.side, height: Self.side) }
+  // The guide window moves by its background; this view must start a drag instead.
+  override var mouseDownCanMoveWindow: Bool { false }
+
+  override func draw(_ dirtyRect: NSRect) {
+    NSApp.applicationIconImage.draw(in: bounds)
+  }
+
+  // Keep the press here; passed up the responder chain it would start a window drag.
+  override func mouseDown(with event: NSEvent) {}
+  override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+  override func resetCursorRects() {
+    addCursorRect(bounds, cursor: .openHand)
+  }
+
+  override func mouseDragged(with event: NSEvent) {
+    guard !dragging else { return }
+    dragging = true
+    let icon = NSApp.applicationIconImage ?? NSImage()
+    let size = NSSize(width: 256, height: 256)
+    let picture = NSImage(size: size, flipped: false) { rect in
+      icon.draw(in: rect)
+      return true
+    }
+    guard let tiff = picture.tiffRepresentation,
+          let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
+    else { return }
+    let item = NSPasteboardItem()
+    item.setData(png, forType: .png)
+    let dragging = NSDraggingItem(pasteboardWriter: item)
+    dragging.setDraggingFrame(bounds, contents: icon)
+    onDragStart?()
+    beginDraggingSession(with: [dragging], event: event, source: self)
+  }
+
+  func draggingSession(_ session: NSDraggingSession, movedTo screenPoint: NSPoint) {
+    NotificationCenter.default.post(name: CollectionAccessController.internalDragMoved, object: nil)
+  }
+
+  func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+    dragging = false
+    NotificationCenter.default.post(name: CollectionAccessController.internalDragEnded, object: nil)
+  }
+
+  func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+    .copy
+  }
+}
