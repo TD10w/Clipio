@@ -100,7 +100,11 @@
 "onboarding_collection_body" = "Gather files from different folders, then drag them all where they need to go.";
 "onboarding_task_open_collection" = "Press %@ to open Collection";
 "onboarding_task_open_collection_unset" = "Open Clipio, then press Tab";
-"onboarding_task_open_collection_detail" = "To add files, drop them on the Drop Zone at the top of the screen.";
+"onboarding_task_open_collection_detail" = "Files and images you collect wait here until you drag them out.";
+"onboarding_task_drop" = "Drag this picture to the top of the screen";
+"onboarding_task_drop_detail" = "Drag anything from Finder or another app the same way: let go on the Drop Zone when it appears at the top. You can delete the picture from Collection afterwards.";
+"onboarding_drag_hint" = "Drag up";
+"onboarding_drag_sample" = "Sample picture to drag";
 "onboarding_task_tab" = "Press Tab to switch between Clipboard and Collection";
 "onboarding_optional" = "Optional. Press Next to skip.";
 "onboarding_finish_title" = "You're all set";

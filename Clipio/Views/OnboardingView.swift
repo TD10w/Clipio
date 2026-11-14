@@ -34,6 +34,8 @@ struct OnboardingView: View {
 
   @State private var openedForCollection = false
   @State private var switchedToCollection = false
+  @State private var draggedSample = false
+  @State private var droppedSample = false
 
   @State private var launchAtLogin: Bool
 
@@ -115,6 +117,11 @@ struct OnboardingView: View {
       // any switch after that completes the Tab task.
       if openedForCollection { switchedToCollection = true }
       if mode == .collection { openedForCollection = true }
+    }
+    .onChange(of: appState.collection.receiptGeneration) { _, _ in
+      // A receipt after the sample left the guide means it landed in Collection.
+      guard step == .collection, draggedSample else { return }
+      droppedSample = true
     }
     .onReceive(permissionPoll) { _ in
       guard step == .autoPaste, requestedPermission, !accessibilityTrusted, Accessibility.isTrusted else { return }
@@ -335,6 +342,20 @@ struct OnboardingView: View {
           done: switchedToCollection, current: openedForCollection && !switchedToCollection,
           title: L("onboarding_task_tab")
         )
+        Divider().opacity(0.5)
+        OnboardingTaskRow(
+          done: droppedSample, current: !droppedSample,
+          title: L("onboarding_task_drop"),
+          detail: L("onboarding_task_drop_detail")
+        ) {
+          HStack(spacing: 10) {
+            OnboardingDragSample { draggedSample = true }
+              .frame(width: 52, height: 52)
+            Label("onboarding_drag_hint", systemImage: "arrow.up")
+              .font(.system(size: 12, weight: .medium))
+              .foregroundStyle(.secondary)
+          }
+        }
       }
       .onboardingCard()
 

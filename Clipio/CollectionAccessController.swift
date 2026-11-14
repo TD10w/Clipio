@@ -17,6 +17,7 @@ final class CollectionAccessController: NSObject {
   private var receivingResetWork: DispatchWorkItem?
   private var monitors: [Any] = []
   private var screenObserver: NSObjectProtocol?
+  private var internalDragObservers: [NSObjectProtocol] = []
   private var dragChangeCount = -1
   private var showingDrag = false
   private var dropTargeted = false
@@ -90,6 +91,14 @@ final class CollectionAccessController: NSObject {
       self?.handle(event)
       return event
     }) { monitors.append(monitor) }
+    for (name, ended) in [(Self.internalDragMoved, false), (Self.internalDragEnded, true)] {
+      internalDragObservers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+        Task { @MainActor [weak self] in
+          guard let self else { return }
+          if ended { self.dragEnded() } else if !self.store.isExporting { self.dragMoved() }
+        }
+      })
+    }
     screenObserver = NotificationCenter.default.addObserver(
       forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
     ) { [weak self] _ in
@@ -103,6 +112,7 @@ final class CollectionAccessController: NSObject {
     receiptDismissWork?.cancel()
     monitors.forEach(NSEvent.removeMonitor)
     if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
+    internalDragObservers.forEach(NotificationCenter.default.removeObserver)
     let entryPanel = panel
     let entryStatusItem = statusItem
     Task { @MainActor in
@@ -142,55 +152,68 @@ final class CollectionAccessController: NSObject {
     case .leftMouseDragged:
       guard !store.isExporting, dragPasteboard.changeCount != dragChangeCount,
             CollectionImporter.accepts(types: dragPasteboard.types ?? []) else { return }
-      store.isReceivingDrag = true
-      releaseWork?.cancel()
-      let mouse = NSEvent.mouseLocation
-      if openedForDrag {
-        // Dragging back out of the sprung-open shelf folds it into the pill again.
-        if let shelf = AppState.shared.appDelegate?.panel, !shelf.frame.insetBy(dx: -24, dy: -24).contains(mouse) {
-          collapseSprungShelf()
-          showingDrag = true
-          updateEntry()
-        }
-        return
-      }
-      // A drag that starts inside an already open shelf (e.g. a clipboard card being
-      // dragged out) never summons the pill.
-      guard !AppState.shared.shelfExpanded else { return }
-      let pointerScreen = NSScreen.screens.first { $0.frame.contains(mouse) }
-      if !showingDrag || panel.screen != pointerScreen {
+      dragMoved()
+    case .leftMouseUp:
+      dragEnded()
+    default: break
+    }
+  }
+
+  /// A drag that started inside Clipio (the guide's sample picture) runs AppKit's own
+  /// tracking loop, which the event monitors never see; the source reports it here.
+  static let internalDragMoved = Notification.Name("ClipioInternalDragMoved")
+  static let internalDragEnded = Notification.Name("ClipioInternalDragEnded")
+
+  private func dragMoved() {
+    store.isReceivingDrag = true
+    releaseWork?.cancel()
+    let mouse = NSEvent.mouseLocation
+    if openedForDrag {
+      // Dragging back out of the sprung-open shelf folds it into the pill again.
+      if let shelf = AppState.shared.appDelegate?.panel, !shelf.frame.insetBy(dx: -24, dy: -24).contains(mouse) {
+        collapseSprungShelf()
         showingDrag = true
         updateEntry()
       }
-    case .leftMouseUp:
-      receivingResetWork?.cancel()
-      let reset = DispatchWorkItem { [weak self] in self?.store.isReceivingDrag = false }
-      receivingResetWork = reset
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: reset)
-      releaseWork?.cancel()
-      springWork?.cancel()
-      guard showingDrag || dropTargeted || openedForDrag else { return }
-      let work = DispatchWorkItem { [weak self] in
-        guard let self else { return }
-        if self.openedForDrag {
-          // Keep the shelf open only when something actually landed in it; a
-          // cancelled or rejected drag leaves nothing behind.
-          let received = self.store.items.count != self.itemCountAtSpring || self.store.importingCount > 0
-          if received {
-            AppState.shared.appDelegate?.panel.isDragging = false
-            self.openedForDrag = false
-          } else {
-            self.collapseSprungShelf()
-          }
-        }
-        self.showingDrag = false
-        self.dropTargeted = false
-        self.updateEntry()
-      }
-      releaseWork = work
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
-    default: break
+      return
     }
+    // A drag that starts inside an already open shelf (e.g. a clipboard card being
+    // dragged out) never summons the pill.
+    guard !AppState.shared.shelfExpanded else { return }
+    let pointerScreen = NSScreen.screens.first { $0.frame.contains(mouse) }
+    if !showingDrag || panel.screen != pointerScreen {
+      showingDrag = true
+      updateEntry()
+    }
+  }
+
+  private func dragEnded() {
+    receivingResetWork?.cancel()
+    let reset = DispatchWorkItem { [weak self] in self?.store.isReceivingDrag = false }
+    receivingResetWork = reset
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: reset)
+    releaseWork?.cancel()
+    springWork?.cancel()
+    guard showingDrag || dropTargeted || openedForDrag else { return }
+    let work = DispatchWorkItem { [weak self] in
+      guard let self else { return }
+      if self.openedForDrag {
+        // Keep the shelf open only when something actually landed in it; a
+        // cancelled or rejected drag leaves nothing behind.
+        let received = self.store.items.count != self.itemCountAtSpring || self.store.importingCount > 0
+        if received {
+          AppState.shared.appDelegate?.panel.isDragging = false
+          self.openedForDrag = false
+        } else {
+          self.collapseSprungShelf()
+        }
+      }
+      self.showingDrag = false
+      self.dropTargeted = false
+      self.updateEntry()
+    }
+    releaseWork = work
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
   }
 
   private func springOpen() {
