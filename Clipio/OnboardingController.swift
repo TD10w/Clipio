@@ -17,11 +17,21 @@ final class OnboardingController: NSObject, NSWindowDelegate {
     guard !RuntimeEnvironment.isTesting || (
       RuntimeEnvironment.isUITesting && CommandLine.arguments.contains("show-ui-testing-onboarding")
     ), !Defaults[.hasSeenOnboarding] else { return }
+    // Closed mid-way once: offer it again on the next launch. Closed twice: stop asking;
+    // it stays available from the gear menu and Settings.
+    guard Defaults[.onboardingCloseCount] < Self.maxAutomaticShows else {
+      Defaults[.hasSeenOnboarding] = true
+      return
+    }
     show()
   }
 
+  private static let maxAutomaticShows = 2
+  private var finished = false
+
   func show() {
     let window = window ?? makeWindow()
+    finished = false
     // A fresh view each time, so replaying the guide starts from step one.
     let host = NSHostingView(rootView: OnboardingView(
       onFinish: { [weak self] launchAtLogin in self?.finish(launchAtLogin: launchAtLogin) }
@@ -38,7 +48,11 @@ final class OnboardingController: NSObject, NSWindowDelegate {
   }
 
   func windowWillClose(_ notification: Notification) {
-    Defaults[.hasSeenOnboarding] = true
+    // Finishing (or Skip, which leads to the last step) marks the guide as seen; closing
+    // the window part-way only counts toward showing it once more on the next launch.
+    if !finished && !Defaults[.hasSeenOnboarding] {
+      Defaults[.onboardingCloseCount] += 1
+    }
   }
 
   /// The practice steps open the shelf on top of the guide. When the shelf closes,
@@ -92,6 +106,7 @@ final class OnboardingController: NSObject, NSWindowDelegate {
       LaunchAtLogin.isEnabled = launchAtLogin
     }
     AppState.shared.switchShelf(to: .clipboard)
+    finished = true
     Defaults[.hasSeenOnboarding] = true
     window?.close()
   }

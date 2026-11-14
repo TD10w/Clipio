@@ -12,7 +12,7 @@ final class OnboardingUITests: XCTestCase {
     continueAfterFailure = false
     app.launchArguments = [
       "enable-testing", "enable-ui-testing", "show-ui-testing-onboarding",
-      "-hasSeenOnboarding", "false", "-pasteByDefault", "false",
+      "-hasSeenOnboarding", "false", "-onboardingCloseCount", "0", "-pasteByDefault", "false",
       "-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-appearanceMode", "light",
       "-KeyboardShortcuts_popup",
       #""{\"carbonKeyCode\":\#(kVK_ANSI_J),\"carbonModifiers\":\#(cmdKey | shiftKey | controlKey | optionKey)}""#,
@@ -89,13 +89,23 @@ final class OnboardingUITests: XCTestCase {
     XCTAssertTrue(guide.staticTexts["Open Clipio with one shortcut"].exists)
   }
 
-  func testWindowCloseDoesNotAutomaticallyReappear() {
+  func testClosingMidwayShowsGuideOnceMore() {
+    resetPersistedOnboardingState()
     launch()
     XCTAssertTrue(guide.waitForExistence(timeout: 5))
     guide.buttons[XCUIIdentifierCloseWindow].click()
     XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
-    relaunchWithoutSeenOverride()
-    XCTAssertFalse(guide.exists)
+
+    removeOnboardingOverrides()
+    launch()
+    XCTAssertTrue(guide.waitForExistence(timeout: 5), "A mid-way close offers the guide again")
+    guide.buttons[XCUIIdentifierCloseWindow].click()
+    XCTAssertTrue(guide.waitForNonExistence(timeout: 3))
+
+    app.terminate()
+    launch()
+    openShelf()
+    XCTAssertFalse(guide.exists, "Closed twice: stop showing it automatically")
   }
 
   func testUnsetShortcutAndDarkAppearance() {
@@ -146,10 +156,30 @@ final class OnboardingUITests: XCTestCase {
     activateBuiltApp()
   }
 
-  private func relaunchWithoutSeenOverride() {
+  /// Earlier tests may have finished the guide in the test app's own defaults domain.
+  private func resetPersistedOnboardingState() {
+    let url = Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("Clipio.app")
+    guard let identifier = Bundle(url: url)?.bundleIdentifier else { return }
+    for key in ["hasSeenOnboarding", "onboardingCloseCount"] {
+      let process = Process()
+      process.executableURL = URL(fileURLWithPath: "/usr/bin/defaults")
+      process.arguments = ["delete", identifier, key]
+      try? process.run()
+      process.waitUntilExit()
+    }
+  }
+
+  private func removeOnboardingOverrides() {
     app.terminate()
-    let index = app.launchArguments.firstIndex(of: "-hasSeenOnboarding")!
-    app.launchArguments.removeSubrange(index...(index + 1))
+    for key in ["-hasSeenOnboarding", "-onboardingCloseCount"] {
+      if let index = app.launchArguments.firstIndex(of: key) {
+        app.launchArguments.removeSubrange(index...(index + 1))
+      }
+    }
+  }
+
+  private func relaunchWithoutSeenOverride() {
+    removeOnboardingOverrides()
     launch()
     // Wait for startup/prewarming before asserting absence of an automatic window.
     openShelf()
