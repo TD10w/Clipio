@@ -33,6 +33,10 @@ final class CollectionAccessController: NSObject {
   /// How long a drag must rest on the pill before it unfolds into the full shelf.
   static let springDelay: TimeInterval = 0.6
   private let dragPasteboard = NSPasteboard(name: .drag)
+  /// The Dock writes its drags without bumping the drag pasteboard's change count, so
+  /// a press whose count never moves is also checked for a window on the drag layer.
+  private var dragLayerCheckedAt = Date.distantPast
+  private var dragLayerSeen = false
 
   init(store: CollectionStore) {
     self.store = store
@@ -149,13 +153,38 @@ final class CollectionAccessController: NSObject {
       receivingResetWork?.cancel()
       store.isReceivingDrag = false
       dragChangeCount = dragPasteboard.changeCount
+      dragLayerSeen = false
+      dragLayerCheckedAt = .distantPast
     case .leftMouseDragged:
-      guard !store.isExporting, dragPasteboard.changeCount != dragChangeCount,
-            CollectionImporter.accepts(types: dragPasteboard.types ?? []) else { return }
-      dragMoved()
+      guard !store.isExporting else { return }
+      if dragPasteboard.changeCount != dragChangeCount {
+        guard CollectionImporter.accepts(types: dragPasteboard.types ?? []) else { return }
+        dragMoved()
+      } else if dragLayerSeen || otherAppShowsDragImage() {
+        // Nothing readable to vet yet; the drop view still checks what actually lands.
+        dragLayerSeen = true
+        dragMoved()
+      }
     case .leftMouseUp:
       dragEnded()
     default: break
+    }
+  }
+
+  /// True while another app has a window on the system drag layer, i.e. it is drawing
+  /// a drag image. Throttled, and only consulted during a press the pasteboard missed.
+  private func otherAppShowsDragImage() -> Bool {
+    let now = Date()
+    guard now.timeIntervalSince(dragLayerCheckedAt) > 0.2 else { return false }
+    dragLayerCheckedAt = now
+    let dragLevel = Int(CGWindowLevelForKey(.draggingWindow))
+    let ownPID = ProcessInfo.processInfo.processIdentifier
+    guard let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
+      return false
+    }
+    return windows.contains { window in
+      window[kCGWindowLayer as String] as? Int == dragLevel
+        && window[kCGWindowOwnerPID as String] as? Int32 != ownPID
     }
   }
 
