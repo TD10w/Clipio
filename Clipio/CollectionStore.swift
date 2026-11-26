@@ -482,6 +482,7 @@ final class CollectionStore {
 
   @MainActor
   func completeExport(_ export: CollectionExport, operation: NSDragOperation,
+    receiverMovesFiles: Bool = true,
     recycle: @escaping ([URL], @escaping ([URL: URL], Error?) -> Void) -> Void = { urls, done in
       NSWorkspace.shared.recycle(urls, completionHandler: done)
     }
@@ -494,7 +495,7 @@ final class CollectionStore {
     isExporting = true
     defer { isExporting = false }
     guard operation == .delete else {
-      perform { try finishExport(export, operation: operation) }
+      perform { try finishExport(export, operation: operation, receiverMovesFiles: receiverMovesFiles) }
       return
     }
     recycling = true
@@ -556,8 +557,13 @@ final class CollectionStore {
     export.stagedDirectories.forEach { try? fileManager.removeItem(at: $0) }
   }
 
-  func finishExport(_ export: CollectionExport, operation: NSDragOperation) throws {
+  /// `receiverMovesFiles` is false when the drop landed on an app that only reads
+  /// files (a browser upload area, a chat window). Such apps often report move
+  /// anyway, but never move the original, so their "move" is treated as a copy.
+  func finishExport(_ export: CollectionExport, operation: NSDragOperation,
+                    receiverMovesFiles: Bool = true) throws {
     defer { export.endAccess() }
+    let operation: NSDragOperation = (operation == .move && !receiverMovesFiles) ? .copy : operation
     guard operation == .move || operation == .copy else {
       export.stagedDirectories.forEach { try? fileManager.removeItem(at: $0) }
       return

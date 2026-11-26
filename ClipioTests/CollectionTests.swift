@@ -163,6 +163,17 @@ final class CollectionTests: XCTestCase {
     XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
   }
 
+  func testMoveReportedByReadOnlyReceiverConsumesEntryButKeepsOriginal() throws {
+    let original = try source()
+    let collection = store()
+    let id = try collection.addFile(original)
+    let export = try collection.prepareExport(ids: [id])
+    // A browser upload area reports move but only reads the file.
+    try collection.finishExport(export, operation: .move, receiverMovesFiles: false)
+    XCTAssertFalse(store().items.contains { $0.id == id })
+    XCTAssertEqual(try String(contentsOf: original, encoding: .utf8), "original")
+  }
+
   func testUnsupportedAndCancelledCallbacksCannotConsumeOrdinaryReferences() throws {
     let collection = store()
     let original = try source()

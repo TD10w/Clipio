@@ -92,11 +92,41 @@ final class CollectionDragNSView: NSView, NSDraggingSource {
   func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
     guard let export = activeExport else { return }
     activeExport = nil
-    Self.logger.notice("Collection drag ended: items=\(export.ids.count), operation=\(operation.rawValue)")
+    let receiver = operation == .move ? Self.receiverBundleID(at: screenPoint) : nil
+    let receiverMovesFiles = receiver.map(Self.fileMovingReceivers.contains) ?? true
+    Self.logger.notice("Collection drag ended: items=\(export.ids.count), operation=\(operation.rawValue), receiver=\(receiver ?? "-", privacy: .public)")
     if let store {
-      Task { @MainActor in await store.completeExport(export, operation: operation) }
+      Task { @MainActor in
+        await store.completeExport(export, operation: operation, receiverMovesFiles: receiverMovesFiles)
+      }
     } else { export.endAccess() }
     AppState.shared.appDelegate?.panel.isDragging = false
+  }
+
+  /// Apps whose "move" really moves the file. Everything else (browsers, chat apps)
+  /// may report move while only reading the file, and the original never leaves.
+  private static let fileMovingReceivers: Set<String> = ["com.apple.finder", "com.apple.dock"]
+
+  /// Bundle ID of the app owning the frontmost window under the drop point.
+  /// Returns nil when it cannot be determined, which keeps the cautious path.
+  private static func receiverBundleID(at screenPoint: NSPoint) -> String? {
+    guard let primary = NSScreen.screens.first,
+          let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]]
+    else { return nil }
+    // Cocoa screen coordinates start bottom-left; CGWindow bounds start top-left.
+    let point = CGPoint(x: screenPoint.x, y: primary.frame.maxY - screenPoint.y)
+    let ownPID = ProcessInfo.processInfo.processIdentifier
+    let dragLevel = Int(CGWindowLevelForKey(.draggingWindow))
+    for window in windows {
+      guard let pid = window[kCGWindowOwnerPID as String] as? Int32, pid != ownPID,
+            let layer = window[kCGWindowLayer as String] as? Int, layer < dragLevel,
+            (window[kCGWindowAlpha as String] as? Double ?? 1) > 0,
+            let boundsInfo = window[kCGWindowBounds as String] as? NSDictionary,
+            let bounds = CGRect(dictionaryRepresentation: boundsInfo),
+            bounds.contains(point) else { continue }
+      return NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
+    }
+    return nil
   }
 }
 
